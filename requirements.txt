@@ -1,0 +1,5 @@
+click==8.0.4
+Jinja2==3.0.3
+Requests==2.27.1
+setuptools==60.9.3
+splight-lib==0.2.29
