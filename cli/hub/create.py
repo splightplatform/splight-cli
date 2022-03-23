@@ -4,14 +4,16 @@ from jinja2 import Template
 from cli import cli
 from .utils import *
 from cli.context import pass_context, Context
-from .settings import VALID_COMPONENTS
+from .settings import VALID_COMPONENTS, IO_TYPES
+
 
 @cli.command()
 @click.option('--component_type', type=click.Choice(VALID_COMPONENTS, case_sensitive=False), required=True)
+@click.option('--io_type', type=click.Choice(IO_TYPES, case_sensitive=False))
 @click.argument("component_name", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @pass_context
-def create_component(context: Context, component_type: str, component_name: str, path: str) -> None:
+def create_component(context: Context, component_name: str, path: str, component_type: str, io_type: str) -> None:
     """
     Create a component structure in path.\n
     Args:\n
@@ -21,7 +23,8 @@ def create_component(context: Context, component_type: str, component_name: str,
     try:
         validate_component_name(component_name)
         validate_path_isdir(path)
-
+        if component_type == "io" and io_type is not None:
+            component_type = f"io_{io_type}"
         path = os.path.join(path, f"{component_name}")
         os.mkdir(path)
 
