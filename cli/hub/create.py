@@ -1,3 +1,4 @@
+from ast import Try
 import click
 import os
 from jinja2 import Template
@@ -6,14 +7,20 @@ from .utils import *
 from cli.context import pass_context, Context
 from .settings import VALID_COMPONENTS, IO_TYPES
 
+def validate_version_parameter(ctx, param, value):
+    try:
+        validate_version(value)
+    except Exception as e:
+        raise click.BadParameter(str(e))
 
 @cli.command()
 @click.option('--component_type', type=click.Choice(VALID_COMPONENTS, case_sensitive=False), required=True)
-@click.option('--io_type', type=click.Choice(IO_TYPES, case_sensitive=False))
 @click.argument("component_name", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
+@click.option('--io_type', type=click.Choice(IO_TYPES, case_sensitive=False))
+@click.option('--version', '-v', type=str, callback=validate_version_parameter, default="0_0_1")
 @pass_context
-def create_component(context: Context, component_name: str, path: str, component_type: str, io_type: str) -> None:
+def create_component(context: Context, component_name: str, path: str, component_type: str, io_type: str, version: str) -> None:
     """
     Create a component structure in path.\n
     Args:\n
@@ -33,7 +40,8 @@ def create_component(context: Context, component_name: str, path: str, component
             template: Template = get_template(file_name)
             file = template.render(
                 component_type=component_type,
-                component_name=component_name
+                component_name=component_name,
+                version=version
             )
             file_path = os.path.join(path, f"{file_name}")
             with open(file_path, "w+") as f:

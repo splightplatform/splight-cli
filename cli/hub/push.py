@@ -16,19 +16,24 @@ def import_component(component_name):
     except Exception as e:
         raise Exception(f"Failed importing component {component_name} {str(e)}")
 
-def validate_component(component):
+def validate_version(version):
     invalid_characters_version = ["/", "-"]
+    if not isinstance(version, str):
+        raise Exception(f"VERSION must be a string")
+    if len(version) > 20:
+        raise Exception(f"VERSION must be 20 characters maximum")
+    if any(x in version for x in invalid_characters_version):
+        raise Exception(f"VERSION cannot contain any of these: {invalid_characters_version}")
+
+
+def validate_component(component):
     try:
         if not isinstance(component.COMPONENT_CLASS, Type):
             raise Exception(f"COMPONENT_CLASS is not a class")
         if component.COMPONENT_TYPE not in VALID_COMPONENTS:
             raise Exception(f"COMPONENT_TYPE is not a valid component type. Valid types are: {VALID_COMPONENTS}")
-        if not isinstance(component.VERSION, str):
-            raise Exception(f"VERSION must be a string")
-        if len(component.VERSION) > 20:
-            raise Exception(f"VERSION must be 20 characters maximum")
-        if any(x in component.VERSION for x in invalid_characters_version):
-            raise Exception(f"VERSION cannot contain any of these: {invalid_characters_version}")
+        validate_version(component.VERSION)
+
 
     except Exception as e:
         raise Exception(f"Failed to validate component: {str(e)}")
