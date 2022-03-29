@@ -4,10 +4,9 @@ import json
 from cli import cli, pass_context, Context
 from .utils import *
 from settings import API_URL
-from .settings import VALID_COMPONENTS
 
 @cli.command()
-@click.option('--component_type', type=click.Choice(VALID_COMPONENTS, case_sensitive=False), required=True)
+@click.argument("component_type", nargs=1, type=str)
 @click.argument("token", nargs=1, type=str)
 @pass_context
 def list_component(context: Context, component_type: str, token: str) -> None:
