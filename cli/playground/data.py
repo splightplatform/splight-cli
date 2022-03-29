@@ -1,12 +1,11 @@
 import click
 import os
 import pandas as pd
-from cli import cli
-from cli.context import Context, pass_context
-from splight_lib.database import DatabaseClient, Attribute
+from ..cli import cli
+from ..context import Context, pass_context
+from splight_lib.database import DatabaseClient
 from splight_lib.datalake import DatalakeClient
 from splight_lib.storage import StorageClient
-from splight_lib.communication import Variable
 import splight_models as models
 
 VALID_CLIENTS = [
@@ -41,7 +40,6 @@ def load_data(context: Context, target: str, type: str, path: str) -> None:
             raise Exception("File not found")
         if not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
-
         # TODO: Support this for things different than Variables
         client.save_dataframe(pd.read_csv(path))
 
