@@ -1,7 +1,8 @@
 import click
 import requests
 import json
-from ..cli import cli, pass_context, Context
+from ..cli import cli
+from ..context import pass_context, Context
 from .utils import *
 from .settings import API_URL
 
