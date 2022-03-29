@@ -6,7 +6,7 @@ import zipfile
 import subprocess
 from typing import Type
 from .utils import *
-from settings import API_URL
+from .settings import API_URL
 
 
 class Component:
