@@ -3,7 +3,7 @@ import requests
 import json
 from cli import cli, pass_context, Context
 from .utils import *
-from settings import API_URL
+from .settings import API_URL
 
 @cli.command()
 @click.argument("component_type", nargs=1, type=str)

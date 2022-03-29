@@ -38,8 +38,8 @@ class Component:
                 raise Exception(f"{required_file} file is missing in {self.path}")
 
     def _import_component(self):
-        sys.path.append(self.path)
         component_directory_name = self.path.split(os.sep)[-1]
+        sys.path.append(os.path.dirname(self.path))
         try:
             return importlib.import_module(component_directory_name)
         except Exception as e:
