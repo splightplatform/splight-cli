@@ -4,6 +4,7 @@ import shutil
 import importlib
 import zipfile
 import subprocess
+import traceback
 from typing import Type
 from .utils import *
 from .settings import API_URL
@@ -43,7 +44,7 @@ class Component:
         try:
             return importlib.import_module(component_directory_name)
         except Exception as e:
-            raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
+            raise Exception(f"Failed importing component {component_directory_name}: {str(e)} {traceback.format_exc()}")
 
     def _validate_component(self):
         try:
