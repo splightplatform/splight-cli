@@ -1,4 +1,5 @@
 import click
+from splight_lib.deployment import Deployment
 from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context
@@ -97,6 +98,7 @@ def run_component(context: Context, type: str, path: str, instance_id: str, run_
     """
     try:
         component = Component(path)
+        run_spec = Deployment(**json.loads(run_spec))
         component.run(type, instance_id, context.namespace, run_spec)
         click.echo(f"Component running successfully")
 
