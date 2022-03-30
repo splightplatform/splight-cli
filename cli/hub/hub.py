@@ -1,9 +1,11 @@
 import click
+import requests
 from splight_lib.deployment import Deployment
 from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context
 from .component import Component
+from .settings import API_URL
 
 
 @cli.command()
@@ -78,6 +80,28 @@ def pull_component(context: Context, type: str, name: str, version: str, path: s
 
     except Exception as e:
         click.echo(f"Error pulling component of type {type}: {str(e)}")
+        return
+
+
+@cli.command()
+@click.argument("component_type", nargs=1, type=str)
+@click.argument("token", nargs=1, type=str)
+@pass_context
+def list_component(context: Context, component_type: str, token: str) -> None:
+    """
+    List components of a given type.\n
+    Args:\n
+        component_type: The type of the component.\n
+        token: Token given by Splight API.
+    """
+    try:
+        headers = {
+            'Authorization': token
+        }
+        response = requests.get(f"{API_URL}/hub/list/?component_type={component_type}", headers=headers)
+        click.echo(json.dumps(response.json(), sort_keys=True, indent=4))
+    except Exception as e:
+        click.echo(f"Error pulling component of type {component_type}: {str(e)}")
         return
 
 

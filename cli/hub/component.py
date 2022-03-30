@@ -4,7 +4,6 @@ import shutil
 import importlib
 import zipfile
 import subprocess
-import traceback
 from typing import Type
 from .utils import *
 from .settings import API_URL
@@ -44,7 +43,7 @@ class Component:
         try:
             return importlib.import_module(component_directory_name)
         except Exception as e:
-            raise Exception(f"Failed importing component {component_directory_name}: {str(e)} {traceback.format_exc()}")
+            raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
 
     def _validate_component(self):
         try:
@@ -176,14 +175,17 @@ class Component:
             'Authorization': token
         }
         data = {
-            'component_type': self.type,
-            'component_name': self.name,
+            'name': self.name,
             'version': self.version,
             'parameters': json.dumps(self.parameters),
         }
-        response = requests.post(f"{API_URL}/hub/push/", files=file, data=data, headers=headers)
-        if response.status_code != 201:
-            raise Exception(f"Failed to push component: {response.text}")
+        # TODO: Support io, network
+        if type == "algorithm":
+            response = requests.post(f"{API_URL}/algorithm/", files=file, data=data, headers=headers)
+            if response.status_code != 201:
+                raise Exception(f"Failed to push component: {response.text}")
+        else:
+            raise NotImplementedError(f"Component type: {type} is not supported")
         return
 
     def pull(self, name, type, version, token):
@@ -194,8 +196,8 @@ class Component:
             'Authorization': token
         }
         data = {
-            'component_type': self.type,
-            'component_name': self.name,
+            'type': self.type,
+            'name': self.name,
             'version': version,
         }
         response = requests.post(f"{API_URL}/hub/pull/", data=data, headers=headers)
