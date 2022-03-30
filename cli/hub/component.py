@@ -55,7 +55,7 @@ class Component:
             self.validate_version(self.spec["version"])
             self.validate_parameters(self.spec["parameters"])
 
-            component_name = self.spec["name"]
+            component_name = "Main"
             if not hasattr(self.component, component_name):
                 raise Exception(f"Component does not have a class called {component_name}")
 
@@ -225,7 +225,7 @@ class Component:
     def run(self, type, instance_id, namespace, run_spec):
         self.initialize()
         self._load_component(type)
-        component_class = getattr(self.component, self.name)
+        component_class = getattr(self.component, "Main")
         component_class(
             instance_id=instance_id,
             namespace=namespace,
