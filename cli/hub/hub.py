@@ -99,8 +99,9 @@ def run_component(context: Context, type: str, path: str, instance_id: str, run_
     try:
         component = Component(path)
         run_spec = Deployment(**json.loads(run_spec))
+        click.echo(f"Running component...")
         component.run(type, instance_id, context.namespace, run_spec)
-        click.echo(f"Component running successfully")
+        click.echo(f"Component runned successfully")
 
     except Exception as e:
         click.echo(f"Error running component: {str(e)}")

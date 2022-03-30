@@ -222,4 +222,9 @@ class Component:
     def run(self, type, instance_id, namespace, run_spec):
         self.initialize()
         self._load_component(type)
-        self.component(instance_id=instance_id, namespace=namespace, run_spec=run_spec)
+        component_class = getattr(self.component, self.name)
+        component_class(
+            instance_id=instance_id,
+            namespace=namespace,
+            run_spec=run_spec
+        )
