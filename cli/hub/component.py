@@ -205,7 +205,7 @@ class Component:
         if response.status_code != 200:
             if response.status_code == 404:
                 raise Exception(f"Component not found")
-            raise Exception(f"Failed to pull the component from splight hub")
+            raise Exception(f"Failed to pull the component from splight hub: {response.json()}")
             
         versioned_component_name = f"{self.name}-{self.version}"
         zip_filename = f"{versioned_component_name}.zip"
