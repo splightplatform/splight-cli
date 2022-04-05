@@ -7,6 +7,9 @@ import subprocess
 from typing import Type
 from .utils import *
 from .settings import API_URL
+from splight_models import StorageDirectory, StorageFile
+from splight_lib.storage import StorageClient
+from splight_lib.database import DatabaseClient
 
 
 class Component:
@@ -15,6 +18,8 @@ class Component:
     INIT_FILE = "Initialization"
     README_FILE = "README.md"
     REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
+    SPLIGHT_HUB_PUBLIC_DIRECTORY = "splight-hub-public"
+    MAIN_CLASS_NAME = "Main"
     VALID_TYPES = ["algorithm", "io", "network", "io_client", "io_server"]
     VALID_PARAMETER_VALUES = {
         "str": str,
@@ -26,6 +31,7 @@ class Component:
     type = None
     version = None
     parameters = None
+    storage_client = None
 
     def __init__(self, path):
         self.path = validate_path_isdir(os.path.abspath(path))
@@ -55,7 +61,7 @@ class Component:
             self.validate_version(self.spec["version"])
             self.validate_parameters(self.spec["parameters"])
 
-            component_name = "Main"
+            component_name = self.MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
                 raise Exception(f"Component does not have a class called {component_name}")
 
@@ -131,6 +137,10 @@ class Component:
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
 
+    def _exists_in_hub(self):
+        files_with_component_as_dir = self.storage_client.get(resource_type=StorageFile, dir=StorageDirectory(id=f"{self.name}-{self.version}"))
+        return len(files_with_component_as_dir) > 0
+
     def initialize(self):
         valid_command_prefixes = ["RUN"]
         initialization_file_path = os.path.join(self.path, self.INIT_FILE)
@@ -168,64 +178,49 @@ class Component:
             with open(file_path, "w+") as f:
                 f.write(file)
 
-    def push(self, type, token):
+    def push(self, type):
         self._load_component(type)
-        file = self._get_component_zip()
-        headers = {
-            'Authorization': token
-        }
-        data = {
-            'name': self.name,
-            'version': self.version,
-            'parameters': json.dumps(self.parameters),
-        }
-        # TODO: Support io, network
-        if type == "algorithm":
-            response = requests.post(f"{API_URL}/algorithm/", files=file, data=data, headers=headers)
-            if response.status_code != 201:
-                raise Exception(f"Failed to push component: {response.text}")
-        else:
-            raise NotImplementedError(f"Component type: {type} is not supported")
+        hub_directory = f"{self.SPLIGHT_HUB_PUBLIC_DIRECTORY}/{type}"
+        storage_client = StorageClient(hub_directory)
+        versioned_name = f"{self.name}-{self.version}"
+
+        for (dirpath, _, filenames) in os.walk(self.path):
+            directory_path = versioned_name + dirpath.replace(self.path, "")
+            storage_directory = StorageDirectory(id=directory_path)
+
+            for filename in filenames:
+                local_file = os.path.join(dirpath, filename)
+                file = StorageFile(
+                    dir = storage_directory,
+                    file = local_file
+                )
+                storage_client.save(file)
         return
 
-    def pull(self, name, type, version, token):
+    def pull(self, name, type, version):
         self.name = self.validate_name(name)
         self.type = self.validate_type(type)
         self.version = self.validate_version(version)
-        headers = {
-            'Authorization': token
-        }
-        data = {
-            'type': self.type,
-            'name': self.name,
-            'version': version,
-        }
-        response = requests.post(f"{API_URL}/hub/pull/", data=data, headers=headers)
+        versioned_name = f"{name}-{version}"
+        component_path = os.path.join(self.path, versioned_name)
 
-        if response.status_code != 200:
-            if response.status_code == 404:
-                raise Exception(f"Component not found")
-            raise Exception(f"Failed to pull the component from splight hub")
-            
-        versioned_component_name = f"{self.name}-{self.version}"
-        zip_filename = f"{versioned_component_name}.zip"
-        try:
-            with open(zip_filename, "wb") as f:
-                f.write(response.content)
+        if os.path.exists(component_path):
+            raise Exception(f"Directory with name {versioned_name} already exists in path")
 
-            component_path = os.path.join(self.path, versioned_component_name)
-            with zipfile.ZipFile(zip_filename) as zip_ref:
-                    os.mkdir(component_path)
-                    zip_ref.extractall(component_path)
-        except:
-            raise Exception(f"Failed to extract the component from splight hub to local machine. Make sure there's no directory called {versioned_component_name} in {self.path}")
-        finally:
-            os.remove(zip_filename)
+        hub_directory = f"{self.SPLIGHT_HUB_PUBLIC_DIRECTORY}/{type}"
+        self.storage_client = StorageClient(hub_directory)
 
-    def run(self, type, instance_id, namespace, run_spec):
+        if not self._exists_in_hub():
+            raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
+        
+        os.mkdir(component_path)
+        self.storage_client.download(StorageFile, StorageFile(dir=StorageDirectory(id=versioned_name), file=""), self.path, dir=True)
+
+    def run(self, type, namespace, run_spec):
         self.initialize()
         self._load_component(type)
-        component_class = getattr(self.component, "Main")
+        component_class = getattr(self.component, self.MAIN_CLASS_NAME)
+        instance_id = json.loads(run_spec['instance_id'])
         component_class(
             instance_id=instance_id,
             namespace=namespace,
