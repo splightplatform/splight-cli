@@ -7,6 +7,7 @@ from .component import Component
 from .settings import API_URL
 from splight_models import StorageFile
 from splight_lib.storage import StorageClient
+import traceback
 
 
 @cli.command()
@@ -136,5 +137,6 @@ def run_component(context: Context, type: str, path: str, run_spec: str) -> None
         click.echo(f"Component runned successfully")
 
     except Exception as e:
+        click.echo(traceback.format_exc())
         click.echo(f"Error running component: {str(e)}")
         return
