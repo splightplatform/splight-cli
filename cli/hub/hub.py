@@ -118,10 +118,9 @@ def list_component(context: Context, component_type: str) -> None:
 @cli.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
-@click.argument("instance_id", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
 @pass_context
-def run_component(context: Context, type: str, path: str,  run_spec: str) -> None:
+def run_component(context: Context, type: str, path: str, run_spec: str) -> None:
     """
     Run a component from the hub.\n
     Args:\n
