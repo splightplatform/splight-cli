@@ -220,7 +220,7 @@ class Component:
         self.initialize()
         self._load_component(type)
         component_class = getattr(self.component, self.MAIN_CLASS_NAME)
-        instance_id = json.loads(run_spec['instance_id'])
+        instance_id = json.loads(run_spec)['instance_id']
         component_class(
             instance_id=instance_id,
             namespace=namespace,
