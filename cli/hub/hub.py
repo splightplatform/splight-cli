@@ -1,10 +1,8 @@
 import click
-import requests
 from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context
 from .component import Component
-from .settings import API_URL
 from splight_models import StorageFile
 from splight_lib.storage import StorageClient
 import traceback

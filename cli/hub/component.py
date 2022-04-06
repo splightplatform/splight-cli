@@ -1,15 +1,11 @@
 import os, sys
-import requests
 import shutil
 import importlib
-import zipfile
 import subprocess
 from typing import Type
 from .utils import *
-from .settings import API_URL
 from splight_models import StorageDirectory, StorageFile
 from splight_lib.storage import StorageClient
-from splight_lib.database import DatabaseClient
 
 
 class Component:
