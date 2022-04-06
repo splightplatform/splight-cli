@@ -112,7 +112,7 @@ class Component:
                 raise Exception(f"Component parameter name must be a string")
             if not isinstance(parameter["required"], bool):
                 raise Exception(f"Component parameter required must be a boolean")
-            if [key not in ["name", "type", "required", "value"] for key in parameter.keys()]: 
+            if any([key not in ["name", "type", "required", "value"] for key in parameter.keys()]): 
                 raise Exception(f"Component parameter must have only these keys: name, type, required, value")
             if "value" in parameter:
                 if type(parameter["value"]) != self.VALID_PARAMETER_VALUES[parameter["type"]]:
