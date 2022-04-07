@@ -15,7 +15,6 @@ class Component:
     INIT_FILE = "Initialization"
     README_FILE = "README.md"
     REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
-    SPLIGHT_HUB_PUBLIC_DIRECTORY = "splight-hub-public"
     MAIN_CLASS_NAME = "Main"
     VALID_TYPES = ["algorithm", "io", "network", "io_client", "io_server"]
     VALID_PARAMETER_VALUES = {
