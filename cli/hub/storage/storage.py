@@ -9,7 +9,7 @@ from .settings import (
     AWS_ACCESS_KEY_ID,
     AWS_SECRET_ACCESS_KEY,
     AWS_REGION,
-    AWS_STORAGE_BUCKET_NAME
+    AWS_STORAGE_HUB_BUCKET_NAME
 )
 
 class S3HubClient:
@@ -43,13 +43,13 @@ class S3HubClient:
     def save_file(self, local_file, key) -> None:
         self.s3_client.upload_file(
             Filename=local_file,
-            Bucket=AWS_STORAGE_BUCKET_NAME,
+            Bucket=AWS_STORAGE_HUB_BUCKET_NAME,
             Key=key
         )
 
     def list_components(self, type, spec_file_name):
         files = self.s3_client.list_objects(
-            Bucket=AWS_STORAGE_BUCKET_NAME,
+            Bucket=AWS_STORAGE_HUB_BUCKET_NAME,
             Prefix=type
         ).get('Contents', [])
 
@@ -62,13 +62,13 @@ class S3HubClient:
             if component not in components:
                 components.add(component)
                 spec_key = f"{type}/{component}/{spec_file_name}"
-                obj = self.s3_resource.Object(AWS_STORAGE_BUCKET_NAME, spec_key)
+                obj = self.s3_resource.Object(AWS_STORAGE_HUB_BUCKET_NAME, spec_key)
                 spec = json.loads(obj.get()['Body'].read().decode('utf-8'))
                 result.append(spec)
         return result
 
 
-    def download_dir(self, dir_name, dist, local="/tmp", bucket=AWS_STORAGE_BUCKET_NAME):
+    def download_dir(self, dir_name, dist, local="/tmp", bucket=AWS_STORAGE_HUB_BUCKET_NAME):
         paginator = self.s3_client.get_paginator("list_objects")
         for result in paginator.paginate(Bucket=bucket, Delimiter="/", Prefix=dist):
             if result.get("CommonPrefixes") is not None:
@@ -87,6 +87,6 @@ class S3HubClient:
 
     def exists_in_hub(self, type, name) -> bool:
         return len(self.s3_client.list_objects(
-            Bucket=AWS_STORAGE_BUCKET_NAME,
+            Bucket=AWS_STORAGE_HUB_BUCKET_NAME,
             Prefix=f"{type}/{name}"
         ).get('Contents', [])) > 0
