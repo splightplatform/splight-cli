@@ -120,7 +120,7 @@ def run_component(context: Context, type: str, path: str, run_spec: str) -> None
     try:
         component = Component(path)
         click.echo(f"Running component...")
-        component.run(type, context.namespace, run_spec)
+        component.run(type, run_spec)
         click.echo(f"Component runned successfully")
 
     except Exception as e:

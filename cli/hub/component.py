@@ -201,11 +201,13 @@ class Component:
         os.mkdir(component_path)
         self.storage_client.download_dir(versioned_name, f"{type}/{versioned_name}", self.path)
 
-    def run(self, type, namespace, run_spec):
+    def run(self, type, run_spec):
         self.initialize()
         self._load_component(type)
         component_class = getattr(self.component, self.MAIN_CLASS_NAME)
-        instance_id = json.loads(run_spec)['external_id']
+        run_spec_dict = json.loads(run_spec)
+        instance_id = run_spec_dict['external_id']
+        namespace = run_spec_dict['namespace']
         component_class(
             instance_id=instance_id,
             namespace=namespace,
