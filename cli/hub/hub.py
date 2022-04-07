@@ -86,7 +86,7 @@ def pull_component(context: Context, type: str, name: str, version: str, path: s
 @click.argument("component_type", nargs=1, type=str)
 #@click.argument("token", nargs=1, type=str)
 @pass_context
-def list_components(context: Context, component_type: str) -> None:
+def list_component(context: Context, component_type: str) -> None:
     """
     List components of a given type.\n
     Args:\n
