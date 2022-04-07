@@ -153,7 +153,7 @@ class Component:
                     try:
                         subprocess.run(command[1:], check=True, cwd=self.path)
                     except subprocess.CalledProcessError as e:
-                        raise Exception(f"Failed to run command: {e.cmd}")
+                        raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
 
     def create(self, name, type, version):
         self.name = self.validate_name(name)
