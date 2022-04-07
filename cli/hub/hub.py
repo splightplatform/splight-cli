@@ -3,6 +3,7 @@ from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context
 from .component import Component
+from .storage import *
 from splight_models import StorageFile
 from splight_lib.storage import StorageClient
 import traceback
@@ -85,27 +86,15 @@ def pull_component(context: Context, type: str, name: str, version: str, path: s
 @click.argument("component_type", nargs=1, type=str)
 #@click.argument("token", nargs=1, type=str)
 @pass_context
-def list_component(context: Context, component_type: str) -> None:
+def list_components(context: Context, component_type: str) -> None:
     """
     List components of a given type.\n
     Args:\n
         component_type: The type of the component.\n
     """
     try:
-        hub_directory = f"{Component.SPLIGHT_HUB_PUBLIC_DIRECTORY}/{component_type}"
-        storage_client = StorageClient(hub_directory)
-        queryset = storage_client.get(StorageFile)
-        result = []
-        components = set()
-        for storage_file in queryset:
-            component_versioned_name = storage_file.dir.id.split('/')[0]
-            if component_versioned_name not in components:
-                if storage_file.file == Component.SPEC_FILE:
-                    storage_client.download(StorageFile, storage_file, "/tmp/spec.json")
-                    spec_file = open("/tmp/spec.json", "r")
-                    result.append(json.load(spec_file))
-                    components.add(component_versioned_name)
-
+        storage_client = S3HubClient()
+        result = storage_client.list_components(component_type, Component.SPEC_FILE)
         click.echo(json.dumps(result, indent=4))
         return result
 

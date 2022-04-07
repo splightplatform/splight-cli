@@ -4,6 +4,7 @@ import importlib
 import subprocess
 from typing import Type
 from .utils import *
+from .storage import *
 from splight_models import StorageDirectory, StorageFile
 from splight_lib.storage import StorageClient
 
@@ -139,10 +140,6 @@ class Component:
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
 
-    def _exists_in_hub(self):
-        files_with_component_as_dir = self.storage_client.get(resource_type=StorageFile, dir=StorageDirectory(id=f"{self.name}-{self.version}"))
-        return len(files_with_component_as_dir) > 0
-
     def initialize(self):
         valid_command_prefixes = ["RUN"]
         initialization_file_path = os.path.join(self.path, self.INIT_FILE)
@@ -182,22 +179,9 @@ class Component:
 
     def push(self, type):
         self._load_component(type)
-        hub_directory = f"{self.SPLIGHT_HUB_PUBLIC_DIRECTORY}/{type}"
-        storage_client = StorageClient(hub_directory)
+        self.storage_client = S3HubClient()
         versioned_name = f"{self.name}-{self.version}"
-
-        for (dirpath, _, filenames) in os.walk(self.path):
-            directory_path = versioned_name + dirpath.replace(self.path, "")
-            storage_directory = StorageDirectory(id=directory_path)
-
-            for filename in filenames:
-                local_file = os.path.join(dirpath, filename)
-                file = StorageFile(
-                    dir = storage_directory,
-                    file = local_file
-                )
-                storage_client.save(file)
-        return
+        self.storage_client.save_component(self.type, versioned_name, self.path)
 
     def pull(self, name, type, version):
         self.name = self.validate_name(name)
@@ -209,14 +193,13 @@ class Component:
         if os.path.exists(component_path):
             raise Exception(f"Directory with name {versioned_name} already exists in path")
 
-        hub_directory = f"{self.SPLIGHT_HUB_PUBLIC_DIRECTORY}/{type}"
-        self.storage_client = StorageClient(hub_directory)
+        self.storage_client = S3HubClient()
 
-        if not self._exists_in_hub():
+        if not self.storage_client.exists_in_hub(type, versioned_name):
             raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
         
         os.mkdir(component_path)
-        self.storage_client.download(StorageFile, StorageFile(dir=StorageDirectory(id=versioned_name), file=""), self.path, dir=True)
+        self.storage_client.download_dir(versioned_name, f"{type}/{versioned_name}", self.path)
 
     def run(self, type, namespace, run_spec):
         self.initialize()
