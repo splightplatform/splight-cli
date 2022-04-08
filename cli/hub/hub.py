@@ -4,8 +4,6 @@ from .utils import *
 from ..context import pass_context, Context
 from .component import Component
 from .storage import *
-from splight_models import StorageFile
-from splight_lib.storage import StorageClient
 import traceback
 
 

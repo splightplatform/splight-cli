@@ -5,9 +5,6 @@ import subprocess
 from typing import Type
 from .utils import *
 from .storage import *
-from splight_models import StorageDirectory, StorageFile
-from splight_lib.storage import StorageClient
-
 
 class Component:
     COMPONENT_FILE = "__init__.py"

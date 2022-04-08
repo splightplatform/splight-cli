@@ -1,6 +1,6 @@
 from splight_lib.component.io import AbstractIOComponent
 
-class {{component_name}}(AbstractIOComponent):
+class Main(AbstractIOComponent):
 
     def __init__(self, *args, **kwargs):
-        super({{component_name}}, self).__init__(*args, **kwargs)
+        super(Main, self).__init__(*args, **kwargs)
