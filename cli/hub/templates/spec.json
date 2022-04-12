@@ -1,5 +1,12 @@
 {
     "name": "{{component_name}}",
     "version": "{{version}}",
-    "parameters" : []
+    "parameters" : [
+        {
+            "name": "period",
+            "type": "int",
+            "required": false,
+            "value": 10
+        }
+    ]
 }

@@ -11,9 +11,8 @@ import traceback
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
-@click.argument("path", nargs=1, type=str)
 @pass_context
-def create_component(context: Context, name: str, type: str, version: str, path: str) -> None:
+def create(context: Context, name: str, type: str, version: str) -> None:
     """
     Create a component structure in path.\n
     Args:\n
@@ -23,6 +22,7 @@ def create_component(context: Context, name: str, type: str, version: str, path:
         path: The path where the component will be created.
     """
     try:
+        path = os.path.abspath(".")
         component = Component(path)
         component.create(name, type, version)
         click.echo(f"Component {name} created successfully in {path}")
@@ -36,7 +36,7 @@ def create_component(context: Context, name: str, type: str, version: str, path:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @pass_context
-def push_component(context: Context, type: str, path: str) -> None:
+def push(context: Context, type: str, path: str) -> None:
     """
     Push a component to the hub.\n
     Args:\n
@@ -59,9 +59,8 @@ def push_component(context: Context, type: str, path: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
-@click.argument("path", nargs=1, type=str)
 @pass_context
-def pull_component(context: Context, type: str, name: str, version: str, path: str) -> None:
+def pull(context: Context, type: str, name: str, version: str) -> None:
     """
     Pull a component from the hub.\n
     Args:\n
@@ -71,6 +70,7 @@ def pull_component(context: Context, type: str, name: str, version: str, path: s
         path: The path where the component will be created.\n
     """
     try:
+        path = os.path.abspath(".")
         component = Component(path)
         component.pull(name, type, version)
         click.echo(f"Component {name}-{version} pulled successfully in {path}")
@@ -84,7 +84,7 @@ def pull_component(context: Context, type: str, name: str, version: str, path: s
 @click.argument("component_type", nargs=1, type=str)
 #@click.argument("token", nargs=1, type=str)
 @pass_context
-def list_component(context: Context, component_type: str) -> None:
+def list(context: Context, component_type: str) -> None:
     """
     List components of a given type.\n
     Args:\n
@@ -92,7 +92,7 @@ def list_component(context: Context, component_type: str) -> None:
     """
     try:
         storage_client = S3HubClient()
-        result = storage_client.list_components(component_type, Component.SPEC_FILE)
+        result = storage_client.lists(component_type, Component.SPEC_FILE)
         click.echo(json.dumps(result, indent=4))
         return result
 
@@ -106,20 +106,40 @@ def list_component(context: Context, component_type: str) -> None:
 @click.argument("path", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
 @pass_context
-def run_component(context: Context, type: str, path: str, run_spec: str) -> None:
+def run(context: Context, type: str, path: str, run_spec: str) -> None:
     """
     Run a component from the hub.\n
     Args:\n
         type: The type of the component.\n
         path: The path where the component is in local machine.\n
-        instance_id: The instance id of the component.\n
         run_spec: The run spec of the component.
     """
     try:
         component = Component(path)
         click.echo(f"Running component...")
         component.run(type, run_spec)
-        click.echo(f"Component runned successfully")
+
+    except Exception as e:
+        click.echo(traceback.format_exc())
+        click.echo(f"Error running component: {str(e)}")
+        return
+
+@cli.command()
+@click.argument("type", nargs=1, type=str)
+@click.argument("path", nargs=1, type=str)
+@pass_context
+def test(context: Context, type: str, path: str) -> None:
+    """
+    Run a component from the hub.\n
+    Args:\n
+        type: The type of the component.\n
+        path: The path where the component is in local machine.\n
+        run_spec: The run spec of the component.
+    """
+    try:
+        component = Component(path)
+        click.echo(f"Running component...")
+        component.test(type)
 
     except Exception as e:
         click.echo(traceback.format_exc())

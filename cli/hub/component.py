@@ -156,7 +156,7 @@ class Component:
         self.name = self.validate_name(name)
         self.type = self.validate_type(type)
         self.version = self.validate_version(version)
-        self.path = os.path.join(self.path, self.name)
+        self.path = os.path.join(self.path, f"{self.name}-{self.version}")
         os.mkdir(self.path)
 
         for file_name in self.REQUIRED_FILES:
@@ -207,5 +207,22 @@ class Component:
         component_class(
             instance_id=instance_id,
             namespace=namespace,
+            run_spec=run_spec
+        )
+
+    def test(self, type):
+        self.initialize()
+        self._load_component(type)
+        component_class = getattr(self.component, self.MAIN_CLASS_NAME)
+        instance_id = "12345"
+        namespace = 'default'
+        run_spec = get_json_from_file(os.path.join(self.path, self.SPEC_FILE))
+        run_spec['type'] = "Runner"
+        run_spec['external_id'] = instance_id
+        run_spec['namespace'] = namespace
+        run_spec = json.dumps(run_spec)
+        component_class(
+            instance_id=instance_id, # Why we need this if we are overriding it?
+            namespace=namespace, # Why we need this?
             run_spec=run_spec
         )
