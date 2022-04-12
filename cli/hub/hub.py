@@ -92,7 +92,7 @@ def list(context: Context, component_type: str) -> None:
     """
     try:
         storage_client = S3HubClient()
-        result = storage_client.lists(component_type, Component.SPEC_FILE)
+        result = storage_client.list_components(component_type, Component.SPEC_FILE)
         click.echo(json.dumps(result, indent=4))
         return result
 
