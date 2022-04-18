@@ -19,6 +19,7 @@ setup(
     py_modules=['splighthub'],
     install_requires=install_requires,
     packages=find_packages(),
+    include_package_data=True,
     dependency_links=dependency_links,
     entry_points={
         'console_scripts': [
