@@ -144,9 +144,9 @@ class Component:
         initialization_file_path = os.path.join(self.path, self.INIT_FILE)
         with open(initialization_file_path) as f:
             for line in f:
+                line = line.strip()
                 if line.startswith("#"):
                     continue
-                line.rstrip()
                 command = line.split(" ")
                 if command[0] not in valid_command_prefixes:
                     raise Exception(f"Invalid command: {command[0]}")
