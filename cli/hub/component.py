@@ -146,13 +146,7 @@ class Component:
             for line in f:
                 if line.startswith("#"):
                     continue
-                logger.debug(f"Line is : {line}")
-                logger.debug(f"Applying replace \n for ''...")
-                line.replace("\n", "")
-                logger.debug(f"Line is : {line}")
-                logger.debug(f"Applying split...")
-                line.rstrip("\n")
-                logger.debug(f"Line is : {line}")
+                line.rstrip()
                 command = line.split(" ")
                 if command[0] not in valid_command_prefixes:
                     raise Exception(f"Invalid command: {command[0]}")
