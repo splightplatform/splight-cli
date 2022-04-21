@@ -134,7 +134,6 @@ def test(context: Context, type: str, path: str) -> None:
     Args:\n
         type: The type of the component.\n
         path: The path where the component is in local machine.\n
-        run_spec: The run spec of the component.
     """
     try:
         component = Component(path)
