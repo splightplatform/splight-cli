@@ -143,6 +143,7 @@ class Component:
             for line in f:
                 if line.startswith("#"):
                     continue
+                line.rstrip("\n")
                 command = line.split(" ")
                 if command[0] not in valid_command_prefixes:
                     raise Exception(f"Invalid command: {command[0]}")
