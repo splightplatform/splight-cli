@@ -152,7 +152,7 @@ class Component:
                     raise Exception(f"Invalid command: {command[0]}")
                 if command[0] == "RUN":
                     try:
-                        subprocess.run(command[1:], check=True, cwd=self.path)
+                        subprocess.run(" ".join(command[1:]), check=True, cwd=self.path)
                     except subprocess.CalledProcessError as e:
                         raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
 
