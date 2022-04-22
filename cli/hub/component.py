@@ -142,6 +142,9 @@ class Component:
     def initialize(self):
         healthy_file = "/tmp/healthy_"
         os.mknod(healthy_file)
+        logger.debug(f"Created healthy file {healthy_file}")
+        output = subprocess.check_output(["ls /tmp/"])
+        logger.debug(f"ls /tmp = {output}")
         valid_command_prefixes = ["RUN"]
         initialization_file_path = os.path.join(self.path, self.INIT_FILE)
         with open(initialization_file_path) as f:
@@ -154,7 +157,9 @@ class Component:
                     raise Exception(f"Invalid command: {command[0]}")
                 if command[0] == "RUN":
                     try:
-                        subprocess.run(" ".join(command[1:]), check=True, cwd=self.path, shell=True)
+                        command = " ".join(command[1:])
+                        logger.debug(f"Running command: {command} ...")
+                        subprocess.run(command, check=True, cwd=self.path, shell=True)
                     except subprocess.CalledProcessError as e:
                         raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
         os.remove(healthy_file)
