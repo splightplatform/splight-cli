@@ -143,7 +143,7 @@ class Component:
         healthy_file = "/tmp/healthy_"
         os.mknod(healthy_file)
         logger.debug(f"Created healthy file {healthy_file}")
-        output = subprocess.check_output(["ls /tmp/"])
+        output = subprocess.check_output("ls /tmp/", shell=True)
         logger.debug(f"ls /tmp = {output}")
         valid_command_prefixes = ["RUN"]
         initialization_file_path = os.path.join(self.path, self.INIT_FILE)
