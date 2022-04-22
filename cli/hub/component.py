@@ -140,12 +140,14 @@ class Component:
         self.parameters = self.spec["parameters"]
 
     def initialize(self):
+        healthy_file = "/tmp/healthy_"
+        os.mknod(healthy_file)
         valid_command_prefixes = ["RUN"]
         initialization_file_path = os.path.join(self.path, self.INIT_FILE)
         with open(initialization_file_path) as f:
             for line in f:
                 line = line.strip()
-                if line.startswith("#"):
+                if line.startswith("#") or line == "":
                     continue
                 command = line.split(" ")
                 if command[0] not in valid_command_prefixes:
@@ -155,6 +157,7 @@ class Component:
                         subprocess.run(" ".join(command[1:]), check=True, cwd=self.path, shell=True)
                     except subprocess.CalledProcessError as e:
                         raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
+        os.remove(healthy_file)
 
     def create(self, name, type, version):
         self.name = self.validate_name(name)
