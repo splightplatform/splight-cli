@@ -133,9 +133,9 @@ class Component:
     def _load_component(self, type):
         self.type = self.validate_type(type)
         self._validate_component_structure()
-        #self.component = self._import_component()
+        self.component = self._import_component()
         self.spec = get_json_from_file(os.path.join(self.path, self.SPEC_FILE))
-        #self._validate_component()
+        self._validate_component()
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
