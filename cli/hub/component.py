@@ -17,7 +17,7 @@ class Component:
     README_FILE = "README.md"
     REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
     MAIN_CLASS_NAME = "Main"
-    VALID_TYPES = ["algorithm", "io", "network", "io_client", "io_server"]
+    VALID_TYPES = ["algorithm", "connector", "network"]
     VALID_PARAMETER_VALUES = {
         "str": str,
         "int": int,
@@ -232,7 +232,7 @@ class Component:
         instance_id = "12345"
         namespace = 'default'
         run_spec = get_json_from_file(os.path.join(self.path, self.SPEC_FILE))
-        run_spec['type'] = "Runner"
+        run_spec['type'] = type
         run_spec['external_id'] = instance_id
         run_spec['namespace'] = namespace
         run_spec = json.dumps(run_spec)
