@@ -2,6 +2,7 @@ import os, sys
 import shutil
 import importlib
 import subprocess
+from tempfile import NamedTemporaryFile
 from typing import Type
 from .utils import *
 from .storage import *
@@ -132,37 +133,39 @@ class Component:
     def _load_component(self, type):
         self.type = self.validate_type(type)
         self._validate_component_structure()
-        self.component = self._import_component()
+        #self.component = self._import_component()
         self.spec = get_json_from_file(os.path.join(self.path, self.SPEC_FILE))
-        self._validate_component()
+        #self._validate_component()
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
 
     def initialize(self):
-        healthy_file = "/tmp/healthy_"
-        os.mknod(healthy_file)
-        logger.debug(f"Created healthy file {healthy_file}")
-        output = subprocess.check_output("ls /tmp/", shell=True)
-        logger.debug(f"ls /tmp = {output}")
-        valid_command_prefixes = ["RUN"]
-        initialization_file_path = os.path.join(self.path, self.INIT_FILE)
-        with open(initialization_file_path) as f:
-            for line in f:
-                line = line.strip()
-                if line.startswith("#") or line == "":
-                    continue
-                command = line.split(" ")
-                if command[0] not in valid_command_prefixes:
-                    raise Exception(f"Invalid command: {command[0]}")
-                if command[0] == "RUN":
-                    try:
-                        command = " ".join(command[1:])
-                        logger.debug(f"Running command: {command} ...")
-                        subprocess.run(command, check=True, cwd=self.path, shell=True)
-                    except subprocess.CalledProcessError as e:
-                        raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
-        os.remove(healthy_file)
+        health_file = NamedTemporaryFile(prefix="healthy_")
+        try:
+            logger.debug(f"Created healthy file")
+            output = subprocess.check_output("ls /tmp/", shell=True)
+            logger.debug(f"ls /tmp = {output}")
+            valid_command_prefixes = ["RUN"]
+            initialization_file_path = os.path.join(self.path, self.INIT_FILE)
+            with open(initialization_file_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("#") or line == "":
+                        continue
+                    command = line.split(" ")
+                    if command[0] not in valid_command_prefixes:
+                        raise Exception(f"Invalid command: {command[0]}")
+                    if command[0] == "RUN":
+                        try:
+                            command = " ".join(command[1:])
+                            logger.debug(f"Running initialization command: {command} ...")
+                            subprocess.run(command, check=True, cwd=self.path, shell=True)
+                        except subprocess.CalledProcessError as e:
+                            raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
+        except Exception as e:
+            health_file.close()
+            raise e
 
     def create(self, name, type, version):
         self.name = self.validate_name(name)
