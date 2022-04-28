@@ -2,9 +2,13 @@ import os, sys
 import shutil
 import importlib
 import subprocess
+from tempfile import NamedTemporaryFile
 from typing import Type
 from .utils import *
 from .storage import *
+from splight_lib import logging
+
+logger = logging.getLogger()
 
 class Component:
     COMPONENT_FILE = "__init__.py"
@@ -137,20 +141,31 @@ class Component:
         self.parameters = self.spec["parameters"]
 
     def initialize(self):
-        valid_command_prefixes = ["RUN"]
-        initialization_file_path = os.path.join(self.path, self.INIT_FILE)
-        with open(initialization_file_path) as f:
-            for line in f:
-                if line.startswith("#"):
-                    continue
-                command = line.split(" ")
-                if command[0] not in valid_command_prefixes:
-                    raise Exception(f"Invalid command: {command[0]}")
-                if command[0] == "RUN":
-                    try:
-                        subprocess.run(command[1:], check=True, cwd=self.path)
-                    except subprocess.CalledProcessError as e:
-                        raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
+        health_file = NamedTemporaryFile(prefix="healthy_")
+        try:
+            logger.debug(f"Created healthy file")
+            output = subprocess.check_output("ls /tmp/", shell=True)
+            logger.debug(f"ls /tmp = {output}")
+            valid_command_prefixes = ["RUN"]
+            initialization_file_path = os.path.join(self.path, self.INIT_FILE)
+            with open(initialization_file_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("#") or line == "":
+                        continue
+                    command = line.split(" ")
+                    if command[0] not in valid_command_prefixes:
+                        raise Exception(f"Invalid command: {command[0]}")
+                    if command[0] == "RUN":
+                        try:
+                            command = " ".join(command[1:])
+                            logger.debug(f"Running initialization command: {command} ...")
+                            subprocess.run(command, check=True, cwd=self.path, shell=True)
+                        except subprocess.CalledProcessError as e:
+                            raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
+        except Exception as e:
+            health_file.close()
+            raise e
 
     def create(self, name, type, version):
         self.name = self.validate_name(name)

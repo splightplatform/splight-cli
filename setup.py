@@ -19,6 +19,8 @@ setup(
     py_modules=['splighthub'],
     install_requires=install_requires,
     packages=find_packages(),
+    package_data={'cli': ['hub/templates/*']},
+    include_package_data=True,
     dependency_links=dependency_links,
     entry_points={
         'console_scripts': [
