@@ -2,28 +2,90 @@ import os, sys
 import shutil
 import importlib
 import subprocess
+from functools import cached_property
 from tempfile import NamedTemporaryFile
-from typing import Type
+from typing import Type, List, Union
 from .utils import *
 from .storage import *
 from splight_lib import logging
+from uuid import UUID
+from pydantic import BaseModel
+from pydantic import validator, ValidationError
+
 
 logger = logging.getLogger()
 
+
+COMPONENT_FILE = "__init__.py"
+SPEC_FILE = "spec.json"
+INIT_FILE = "Initialization"
+README_FILE = "README.md"
+REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
+MAIN_CLASS_NAME = "Main"
+VALID_TYPES = ["algorithm", "connector", "network"]
+VALID_PARAMETER_VALUES = {
+    "int": int,
+    "bool": bool,
+    "str": str,
+    "float": float,
+    "file": str,
+    "Asset": UUID,
+    "Attribute": UUID,
+    "Network": UUID,
+    "Algorithm": UUID,
+    "Connector": UUID,
+    "Rule": UUID,
+}
+class Parameter(BaseModel):
+    name: str
+    type: str
+    required: bool
+    value: Union[str, int, float, bool, UUID]
+
+    @validator("type")
+    def validate_type(cls, type):
+        if type not in VALID_PARAMETER_VALUES:
+            raise ValidationError(f"type must be one of: {list(VALID_PARAMETER_VALUES.keys())}")
+        return type
+
+    @validator("value")
+    def validate_value(cls, v, values, field):
+        if "type" not in values:
+            return values
+
+        type_ = values["type"]
+        try:
+            v = VALID_PARAMETER_VALUES[type_](v)            
+        except Exception:
+            raise ValidationError(f"value must be of type {VALID_PARAMETER_VALUES[type_].__name__}")
+        return v
+
+
+class Spec(BaseModel):
+    name: str
+    version: str
+    parameters: List[Parameter]
+
+    @validator("name")
+    def validate_name(cls, name):
+        invalid_characters = ["/", "-"]
+        if not name[0].isupper():
+            raise ValueError(f"value's first letter must be capitalized")
+        if any(x in name for x in invalid_characters):
+            raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
+        return name
+
+    @validator("version")
+    def validate_version(cls, version):
+        invalid_characters = ["/", "-"]
+        if len(version) > 20:
+            raise Exception(f"value must be 20 characters maximum")
+
+        if any(x in version for x in invalid_characters):
+            raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
+        return version
+
 class Component:
-    COMPONENT_FILE = "__init__.py"
-    SPEC_FILE = "spec.json"
-    INIT_FILE = "Initialization"
-    README_FILE = "README.md"
-    REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
-    MAIN_CLASS_NAME = "Main"
-    VALID_TYPES = ["algorithm", "connector", "network"]
-    VALID_PARAMETER_VALUES = {
-        "str": str,
-        "int": int,
-        "float": float,
-        "file": str
-    }
     name = None
     type = None
     version = None
@@ -32,11 +94,14 @@ class Component:
 
     def __init__(self, path):
         self.path = validate_path_isdir(os.path.abspath(path))
-        
+    
+    @cached_property
+    def spec(self) -> dict:
+        return get_json_from_file(os.path.join(self.path, SPEC_FILE))
 
     def _validate_component_structure(self):
         validate_path_isdir(self.path)
-        for required_file in self.REQUIRED_FILES:
+        for required_file in REQUIRED_FILES:
             if not os.path.isfile(os.path.join(self.path, required_file)):
                 raise Exception(f"{required_file} file is missing in {self.path}")
 
@@ -49,16 +114,9 @@ class Component:
             raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
 
     def _validate_component(self):
+        Spec(**self.spec)
         try:
-            for key in ["name", "version", "parameters"]:
-                if key not in self.spec:
-                    raise Exception(f"{key} is missing in {self.SPEC_FILE}")
-
-            self.validate_name(self.spec["name"])
-            self.validate_version(self.spec["version"])
-            self.validate_parameters(self.spec["parameters"])
-
-            component_name = self.MAIN_CLASS_NAME
+            component_name = MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
                 raise Exception(f"Component does not have a class called {component_name}")
 
@@ -69,57 +127,10 @@ class Component:
         except Exception as e:
             raise Exception(f"Failed to validate component: {str(e)}")
 
-    def validate_name(self, name) -> None:
-        invalid_characters = ["/", "-"]
-        if not isinstance(name, str):
-            raise Exception(f"Component name must be a string")
-        if not name[0].isupper():
-            raise ValueError(f"Component name: {name} first letter must be capitalized")
-        if any(x in name for x in invalid_characters):
-            raise Exception(f"Component name cannot contain any of these characters: {invalid_characters}")
-        return name
-
-    def validate_type(self, type) -> None:
-        if type not in self.VALID_TYPES:
+    def _validate_type(self, type) -> None:
+        if type not in VALID_TYPES:
             raise Exception(f"Invalid component type: {type}")
         return type
-
-    def validate_version(self, version):
-        invalid_characters = ["/", "-"]
-        if not isinstance(version, str):
-            raise Exception(f"Component version must be a string")
-        if len(version) > 20:
-            raise Exception(f"Component version must be 20 characters maximum")
-        if any(x in version for x in invalid_characters):
-            raise Exception(f"Component version cannot contain any of these characters: {invalid_characters}")
-        return version
-
-    def validate_parameters(self, parameters):
-        if not isinstance(parameters, list):
-            raise Exception(f"Component parameters must be a list")
-
-        for parameter in parameters:
-            if not isinstance(parameter, dict):
-                raise Exception(f"Component parameter must be a dictionary")
-            if "name" not in parameter:
-                raise Exception(f"Component parameter must have a name")
-            if "type" not in parameter:
-                raise Exception(f"Component parameter must have a type")
-            if "required" not in parameter:
-                raise Exception(f"Component parameter must have a required value")
-            if parameter["type"] not in self.VALID_PARAMETER_VALUES.keys():
-                raise Exception(f"Component parameter type must be one of: {self.VALID_PARAMETER_VALUES.keys()}")
-            if not isinstance(parameter["name"], str):
-                raise Exception(f"Component parameter name must be a string")
-            if not isinstance(parameter["required"], bool):
-                raise Exception(f"Component parameter required must be a boolean")
-            if any([key not in ["name", "type", "required", "value"] for key in parameter.keys()]): 
-                raise Exception(f"Component parameter must have only these keys: name, type, required, value")
-            if "value" in parameter:
-                if type(parameter["value"]) != self.VALID_PARAMETER_VALUES[parameter["type"]]:
-                    raise Exception(f"Component parameter value must be of type {parameter['type']}")
-
-        return parameters
 
     def _get_component_zip(self):
         shutil.make_archive(self.name, 'zip', self.path)
@@ -130,74 +141,89 @@ class Component:
         os.remove(zip_file)
         return file
 
-    def _load_component(self, type):
-        self.type = self.validate_type(type)
-        self._validate_component_structure()
+    def _load_component(self) -> None:
         self.component = self._import_component()
-        self.spec = get_json_from_file(os.path.join(self.path, self.SPEC_FILE))
         self._validate_component()
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
+    
+    def _get_command_list(self) -> List[str]:
+        initialization_file_path = os.path.join(self.path, INIT_FILE)
+        lines: List[str] = []
+        with open(initialization_file_path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("#") or line == "":
+                    continue
+                lines.append(line.split(" "))
+        return lines
+
+    def _command_run(self, command: List[str]) -> None:
+        command: str = " ".join(command) 
+        logger.debug(f"Running initialization command: {command} ...")
+        try:
+            subprocess.run(command, check=True, cwd=self.path, shell=True)
+        except subprocess.CalledProcessError as e:
+            raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
 
     def initialize(self):
         health_file = NamedTemporaryFile(prefix="healthy_")
+        logger.debug(f"Created healthy file")
+        output = subprocess.check_output("ls /tmp/", shell=True)
+        logger.debug(f"ls /tmp = {output}")
+        command_prefixes_map =  {
+            "RUN": self. _command_run,
+        }
+
         try:
-            logger.debug(f"Created healthy file")
-            output = subprocess.check_output("ls /tmp/", shell=True)
-            logger.debug(f"ls /tmp = {output}")
-            valid_command_prefixes = ["RUN"]
-            initialization_file_path = os.path.join(self.path, self.INIT_FILE)
-            with open(initialization_file_path) as f:
-                for line in f:
-                    line = line.strip()
-                    if line.startswith("#") or line == "":
-                        continue
-                    command = line.split(" ")
-                    if command[0] not in valid_command_prefixes:
-                        raise Exception(f"Invalid command: {command[0]}")
-                    if command[0] == "RUN":
-                        try:
-                            command = " ".join(command[1:])
-                            logger.debug(f"Running initialization command: {command} ...")
-                            subprocess.run(command, check=True, cwd=self.path, shell=True)
-                        except subprocess.CalledProcessError as e:
-                            raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
+            for command in self._get_command_list():
+                prefix: str = command[0]
+
+                if prefix not in command_prefixes_map.keys():
+                    raise Exception(f"Invalid command: {command[0]}")
+
+                command_prefixes_map[prefix](command[1:])
+
         except Exception as e:
             health_file.close()
             raise e
 
     def create(self, name, type, version):
-        self.name = self.validate_name(name)
-        self.type = self.validate_type(type)
-        self.version = self.validate_version(version)
-        self.path = os.path.join(self.path, f"{self.name}-{self.version}")
+        self._validate_type(type)
+
+        Spec(name=name, version=version, parameters=[])
+
+        self.path = os.path.join(self.path, f"{name}-{version}")
         os.mkdir(self.path)
 
-        for file_name in self.REQUIRED_FILES:
+        for file_name in REQUIRED_FILES:
             template_name = file_name
-            if file_name == self.COMPONENT_FILE:
+            if file_name == COMPONENT_FILE:
                 template_name = f"{type}.py"
             template: Template = get_template(template_name)
             file = template.render(
-                component_type=self.type,
-                component_name=self.name,
-                version=self.version
+                component_type=type,
+                component_name=name,
+                version=version
             )
             file_path = os.path.join(self.path, file_name)
             with open(file_path, "w+") as f:
                 f.write(file)
 
     def push(self, type):
-        self._load_component(type)
+        self.type = self._validate_type(type)
+        self._validate_component_structure()
+        self._load_component()
         self.storage_client = S3HubClient()
         versioned_name = f"{self.name}-{self.version}"
         self.storage_client.save_component(self.type, versioned_name, self.path)
 
     def pull(self, name, type, version):
-        self.name = self.validate_name(name)
-        self.type = self.validate_type(type)
-        self.version = self.validate_version(version)
+        self._validate_type(type)
+
+        Spec(name=name, version=version, parameters=[])
+
         versioned_name = f"{name}-{version}"
         component_path = os.path.join(self.path, versioned_name)
 
@@ -213,12 +239,15 @@ class Component:
         self.storage_client.download_dir(versioned_name, f"{type}/{versioned_name}", self.path)
 
     def run(self, type, run_spec):
+        self.type = self._validate_type(type)
+        self.spec = json.loads(run_spec)
+        self._validate_component_structure()
         self.initialize()
-        self._load_component(type)
-        component_class = getattr(self.component, self.MAIN_CLASS_NAME)
-        run_spec_dict = json.loads(run_spec)
-        instance_id = run_spec_dict['external_id']
-        namespace = run_spec_dict['namespace']
+        self._load_component()
+
+        component_class = getattr(self.component, MAIN_CLASS_NAME)
+        instance_id = self.spec['external_id']
+        namespace = self.spec['namespace']
         component_class(
             instance_id=instance_id,
             namespace=namespace,
@@ -226,18 +255,19 @@ class Component:
         )
 
     def test(self, type):
+        self.type = self._validate_type(type)
+        self._validate_component_structure()
         self.initialize()
-        self._load_component(type)
-        component_class = getattr(self.component, self.MAIN_CLASS_NAME)
-        instance_id = "12345"
+        self._load_component()
+        component_class = getattr(self.component, MAIN_CLASS_NAME)
+        instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = 'default'
-        run_spec = get_json_from_file(os.path.join(self.path, self.SPEC_FILE))
-        run_spec['type'] = type
-        run_spec['external_id'] = instance_id
-        run_spec['namespace'] = namespace
-        run_spec = json.dumps(run_spec)
+        self.spec['type'] = type
+        self.spec['external_id'] = instance_id
+        self.spec['namespace'] = namespace
+        run_spec_str: str = json.dumps(self.spec)
         component_class(
             instance_id=instance_id, # Why we need this if we are overriding it?
             namespace=namespace, # Why we need this?
-            run_spec=run_spec
+            run_spec=run_spec_str
         )
