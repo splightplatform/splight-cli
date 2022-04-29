@@ -15,11 +15,10 @@ pipelines:
           name: upload library to jfrog
           script:
             - printf "[distutils]\n" >> ~/.pypirc
-            - printf "index-servers=splighthub\n" >> ~/.pypirc
-            - printf "[splighthub]\n" >> ~/.pypirc
-            - printf "repository:https://splight.jfrog.io/artifactory/api/pypi/splight-local\n" >> ~/.pypirc
+            - printf "index-servers=splightlib\n" >> ~/.pypirc
+            - printf "[splightlib]\n" >> ~/.pypirc
+            - printf "repository:https://splight.jfrog.io/artifactory/api/pypi/splight/simple\n" >> ~/.pypirc
             - printf "username=$JFROG_BOT_USERNAME\n" >> ~/.pypirc
             - printf "password=$JFROG_BOT_PASS" >> ~/.pypirc
-            - python setup.py bdist_wheel upload -r splighthub
-            - rm ~/.pypirc;
+            - python setup.py install
     main: *shared
