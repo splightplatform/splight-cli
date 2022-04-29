@@ -10,7 +10,7 @@ from .storage import *
 from splight_lib import logging
 from uuid import UUID
 from pydantic import BaseModel
-from pydantic import validator, ValidationError
+from pydantic import validator
 
 
 logger = logging.getLogger()
@@ -45,7 +45,7 @@ class Parameter(BaseModel):
     @validator("type")
     def validate_type(cls, type):
         if type not in VALID_PARAMETER_VALUES:
-            raise ValidationError(f"type must be one of: {list(VALID_PARAMETER_VALUES.keys())}")
+            raise ValueError(f"type must be one of: {list(VALID_PARAMETER_VALUES.keys())}")
         return type
 
     @validator("value")
@@ -57,7 +57,7 @@ class Parameter(BaseModel):
         try:
             v = VALID_PARAMETER_VALUES[type_](v)            
         except Exception:
-            raise ValidationError(f"value must be of type {VALID_PARAMETER_VALUES[type_].__name__}")
+            raise ValueError(f"value must be of type {VALID_PARAMETER_VALUES[type_].__name__}")
         return v
 
 
@@ -212,12 +212,12 @@ class Component:
                 f.write(file)
 
     def push(self, type):
-        self.type = self._validate_type(type)
+        self._validate_type(type)
         self._validate_component_structure()
         self._load_component()
         self.storage_client = S3HubClient()
         versioned_name = f"{self.name}-{self.version}"
-        self.storage_client.save_component(self.type, versioned_name, self.path)
+        self.storage_client.save_component(type, versioned_name, self.path)
 
     def pull(self, name, type, version):
         self._validate_type(type)
@@ -239,7 +239,7 @@ class Component:
         self.storage_client.download_dir(versioned_name, f"{type}/{versioned_name}", self.path)
 
     def run(self, type, run_spec):
-        self.type = self._validate_type(type)
+        self._validate_type(type)
         self.spec = json.loads(run_spec)
         self._validate_component_structure()
         self.initialize()
@@ -255,7 +255,7 @@ class Component:
         )
 
     def test(self, type):
-        self.type = self._validate_type(type)
+        self._validate_type(type)
         self._validate_component_structure()
         self.initialize()
         self._load_component()
