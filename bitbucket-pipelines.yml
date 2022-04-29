@@ -6,7 +6,8 @@ pipelines:
           name: unit testing
           size: 1x
           script:
-            - JFROG_BOT_USERNAME=$JFROG_BOT_USERNAME JFROG_BOT_PASS=$JFROG_BOT_PASS python setup.py install
+            - pip config set global.extra-index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
+            - python setup.py install
           trigger: automatic
   branches:
     master: &shared
