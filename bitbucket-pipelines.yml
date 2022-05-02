@@ -7,6 +7,7 @@ pipelines:
           size: 1x
           script:
             - pip config set global.extra-index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
+            - pip install -r requirements.txt
             - python setup.py install
           trigger: automatic
   branches:

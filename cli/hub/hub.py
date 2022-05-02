@@ -2,7 +2,7 @@ import click
 from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context
-from .component import Component
+from .component import Component, SPEC_FILE
 from .storage import *
 import traceback
 
@@ -92,7 +92,7 @@ def list(context: Context, component_type: str) -> None:
     """
     try:
         storage_client = S3HubClient()
-        result = storage_client.list_components(component_type, Component.SPEC_FILE)
+        result = storage_client.list_components(component_type, SPEC_FILE)
         click.echo(json.dumps(result, indent=4))
         return result
 
