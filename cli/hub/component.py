@@ -115,8 +115,7 @@ class Component:
         self.component = self._import_component()
         # DO NOT VALIDATE RUN SPEC SO FAR
         #self._validate_component()
-        self.name = self.spec["name"]
-        self.version = self.spec["version"]
+        self.name, self.version = self.spec["version"].split("-")
         self.parameters = self.spec["parameters"]
     
     def _get_command_list(self) -> List[str]:
