@@ -2,18 +2,18 @@ import os, sys
 import shutil
 import importlib
 import subprocess
+import logging
+from pydantic import BaseModel, validator
 from functools import cached_property
 from tempfile import NamedTemporaryFile
 from typing import Type, List, Union
 from .utils import *
 from .storage import *
 from .settings import *
-from splight_lib import logging
-from pydantic import BaseModel
-from pydantic import validator
 
 
 logger = logging.getLogger()
+
 
 class Parameter(BaseModel):
     name: str
