@@ -113,7 +113,8 @@ class Component:
 
     def _load_component(self) -> None:
         self.component = self._import_component()
-        self._validate_component()
+        # DO NOT VALIDATE RUN SPEC SO FAR
+        #self._validate_component()
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
