@@ -7,35 +7,14 @@ from tempfile import NamedTemporaryFile
 from typing import Type, List, Union
 from .utils import *
 from .storage import *
+from .settings import *
 from splight_lib import logging
-from uuid import UUID
 from pydantic import BaseModel
 from pydantic import validator
 
 
 logger = logging.getLogger()
 
-
-COMPONENT_FILE = "__init__.py"
-SPEC_FILE = "spec.json"
-INIT_FILE = "Initialization"
-README_FILE = "README.md"
-REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
-MAIN_CLASS_NAME = "Main"
-VALID_TYPES = ["algorithm", "connector", "network"]
-VALID_PARAMETER_VALUES = {
-    "int": int,
-    "bool": bool,
-    "str": str,
-    "float": float,
-    "file": str,
-    "Asset": UUID,
-    "Attribute": UUID,
-    "Network": UUID,
-    "Algorithm": UUID,
-    "Connector": UUID,
-    "Rule": UUID,
-}
 class Parameter(BaseModel):
     name: str
     type: str
@@ -132,15 +111,6 @@ class Component:
             raise Exception(f"Invalid component type: {type}")
         return type
 
-    def _get_component_zip(self):
-        shutil.make_archive(self.name, 'zip', self.path)
-        file = {}
-        zip_file = f"{self.name}.zip"
-        with open(zip_file, 'rb') as f:
-            file['file'] = f.read()
-        os.remove(zip_file)
-        return file
-
     def _load_component(self) -> None:
         self.component = self._import_component()
         self._validate_component()
@@ -236,7 +206,14 @@ class Component:
             raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
         
         os.mkdir(component_path)
-        self.storage_client.download_dir(versioned_name, f"{type}/{versioned_name}", self.path)
+        try:
+            # Download zip
+            self.storage_client.download_dir(type, versioned_name, self.path)
+            # Download raw
+            #self.storage_client.download_dir_raw(versioned_name, f"{type}/{versioned_name}", self.path)
+        except:
+            shutil.rmtree(component_path)
+            raise
 
     def run(self, type, run_spec):
         self._validate_type(type)
