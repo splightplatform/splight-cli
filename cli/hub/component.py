@@ -34,9 +34,13 @@ class Parameter(BaseModel):
 
         type_ = values["type"]
         try:
-            v = VALID_PARAMETER_VALUES[type_](v)            
+            if VALID_PARAMETER_VALUES[type_] is None:
+                if v is not None:
+                    raise ValueError(f"value must be None")
+            else:
+                v = VALID_PARAMETER_VALUES[type_](v)            
         except Exception:
-            raise ValueError(f"value must be of type {VALID_PARAMETER_VALUES[type_].__name__}")
+            raise ValueError(f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}")
         return v
 
 
