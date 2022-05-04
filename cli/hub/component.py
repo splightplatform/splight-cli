@@ -19,7 +19,7 @@ class Parameter(BaseModel):
     name: str
     type: str
     required: bool
-    value: Union[str, int, float, bool, UUID]
+    value: Union[str, int, float, bool, UUID, None]
 
     @validator("type")
     def validate_type(cls, type):
