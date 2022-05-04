@@ -51,6 +51,7 @@ def push(context: Context, type: str, path: str) -> None:
         click.echo("Component pushed successfully")
 
     except Exception as e:
+        raise
         click.echo(f"Error pushing component: {str(e)}")
         return
 
@@ -139,6 +140,27 @@ def test(context: Context, type: str, path: str) -> None:
         component = Component(path)
         click.echo(f"Running component...")
         component.test(type)
+
+    except Exception as e:
+        click.echo(traceback.format_exc())
+        click.echo(f"Error running component: {str(e)}")
+        return
+
+@cli.command()
+@click.argument("type", nargs=1, type=str)
+@click.argument("path", nargs=1, type=str)
+@pass_context
+def install_requirements(context: Context, type: str, path: str) -> None:
+    """
+    Run a component from the hub.\n
+    Args:\n
+        type: The type of the component.\n
+        path: The path where the component is in local machine.\n
+    """
+    try:
+        component = Component(path)
+        click.echo(f"Installing component requirements...")
+        component.initialize(type)
 
     except Exception as e:
         click.echo(traceback.format_exc())

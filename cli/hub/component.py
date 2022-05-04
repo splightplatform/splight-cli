@@ -111,11 +111,16 @@ class Component:
             raise Exception(f"Invalid component type: {type}")
         return type
 
-    def _load_component(self) -> None:
+    def _load_component_in_run(self) -> None:
         self.component = self._import_component()
-        # DO NOT VALIDATE RUN SPEC SO FAR
-        #self._validate_component()
         self.name, self.version = self.spec["version"].split("-")
+        self.parameters = self.spec["parameters"]
+
+    def _load_component_in_push(self) -> None:
+        self.component = self._import_component()
+        self._validate_component()
+        self.name = self.spec["name"]
+        self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
     
     def _get_command_list(self) -> List[str]:
@@ -185,7 +190,7 @@ class Component:
     def push(self, type):
         self._validate_type(type)
         self._validate_component_structure()
-        self._load_component()
+        self._load_component_in_push()
         self.storage_client = S3HubClient()
         versioned_name = f"{self.name}-{self.version}"
         self.storage_client.save_component(type, versioned_name, self.path)
@@ -220,8 +225,7 @@ class Component:
         self._validate_type(type)
         self.spec = json.loads(run_spec)
         self._validate_component_structure()
-        self.initialize()
-        self._load_component()
+        self._load_component_in_run()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = self.spec['external_id']
