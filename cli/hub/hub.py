@@ -164,5 +164,5 @@ def install_requirements(context: Context, type: str, path: str) -> None:
 
     except Exception as e:
         click.echo(traceback.format_exc())
-        click.echo(f"Error running component: {str(e)}")
+        click.echo(f"Error installing component requirements: {str(e)}")
         return
