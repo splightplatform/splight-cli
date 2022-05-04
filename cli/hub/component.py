@@ -127,6 +127,7 @@ class Component:
                 if line.startswith("#") or line == "":
                     continue
                 lines.append(line.split(" "))
+        lines.append(["RUN", "pip", "cache", "freeze"])
         return lines
 
     def _command_run(self, command: List[str]) -> None:
