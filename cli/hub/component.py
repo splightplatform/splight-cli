@@ -121,13 +121,13 @@ class Component:
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
         lines: List[str] = []
+        lines.append(["RUN", "pip", "cache", "purge"])
         with open(initialization_file_path) as f:
             for line in f:
                 line = line.strip()
                 if line.startswith("#") or line == "":
                     continue
                 lines.append(line.split(" "))
-        lines.append(["RUN", "pip", "cache", "purge"])
         return lines
 
     def _command_run(self, command: List[str]) -> None:
