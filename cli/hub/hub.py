@@ -160,7 +160,7 @@ def install_requirements(context: Context, type: str, path: str) -> None:
     try:
         component = Component(path)
         click.echo(f"Installing component requirements...")
-        component.initialize(type)
+        component.initialize()
 
     except Exception as e:
         click.echo(traceback.format_exc())

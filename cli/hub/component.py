@@ -146,8 +146,6 @@ class Component:
     def initialize(self):
         health_file = NamedTemporaryFile(prefix="healthy_")
         logger.debug(f"Created healthy file")
-        output = subprocess.check_output("ls /tmp/", shell=True)
-        logger.debug(f"ls /tmp = {output}")
         command_prefixes_map =  {
             "RUN": self. _command_run,
         }
