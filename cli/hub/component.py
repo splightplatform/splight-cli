@@ -241,8 +241,8 @@ class Component:
     def test(self, type):
         self._validate_type(type)
         self._validate_component_structure()
-        self.initialize()
-        self._load_component()
+        #self.initialize()
+        self._load_component_in_push()
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = 'default'
