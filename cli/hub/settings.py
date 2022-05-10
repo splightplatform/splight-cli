@@ -3,6 +3,10 @@ from pathlib import Path
 from uuid import UUID
 
 TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "templates")
+#API_URL = os.getenv("API_URL", "http://splight-api-hub-service.default")
+API_URL = os.getenv("API_URL", "http://localhost:8000")
+COMPRESSION_TYPE = "7z"
+
 COMPONENT_FILE = "__init__.py"
 SPEC_FILE = "spec.json"
 INIT_FILE = "Initialization"
