@@ -62,7 +62,7 @@ class ComponentHandler:
             try:
                 with open(compressed_filename, "wb") as f:
                     f.write(response.content)
-                    
+
                 with py7zr.SevenZipFile(compressed_filename, "r") as z:
                     z.extractall(path=local_path)
             finally:
