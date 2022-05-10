@@ -4,17 +4,16 @@ import py7zr
 from ..settings import *
 import requests
 from .loader import Loader
-
 class ComponentHandler:
     def upload_component(self, type, name, version, parameters, local_path):
         """
         Save the component to the hub.
         """
         versioned_name = f"{name}-{version}"
-        sevenz_filename = f"{versioned_name}.7z"
+        compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
         with Loader("Pushing component to Splight Hub..."):
             try:
-                with py7zr.SevenZipFile(sevenz_filename, 'w') as archive:
+                with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
                     archive.writeall(local_path, versioned_name)
                 headers = {
                     #'Authorization': token
@@ -27,7 +26,7 @@ class ComponentHandler:
                 }
 
                 files = {
-                    'file': open(sevenz_filename, 'rb'),
+                    'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                 }
                 response = requests.post(f"{API_URL}/upload", files=files, data=data, headers=headers)
@@ -35,8 +34,8 @@ class ComponentHandler:
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             finally:
-                if os.path.exists(sevenz_filename):
-                    os.remove(sevenz_filename)
+                if os.path.exists(compressed_filename):
+                    os.remove(compressed_filename)
 
     def download_component(self, type, name, version, local_path):
         """
@@ -63,7 +62,7 @@ class ComponentHandler:
             try:
                 with open(compressed_filename, "wb") as f:
                     f.write(response.content)
-                
+                    
                 with py7zr.SevenZipFile(compressed_filename, "r") as z:
                     z.extractall(path=local_path)
             finally:

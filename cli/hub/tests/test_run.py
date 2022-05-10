@@ -6,6 +6,4 @@ from cli.hub.utils import ComponentHandler
 from .test_generic import SplightHubTest
 
 class TestCreate(SplightHubTest):
-
-    #TODO
-
+    pass #TODO

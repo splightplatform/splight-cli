@@ -33,7 +33,7 @@ class TestPush(SplightHubTest):
             self.component.push(self.type, force=True)
             uploader.assert_called_with(self.type, self.name, self.version, self.parameters, self.path)
         
-    def test_component_compression(self):
+    def test_component_upload(self):
         sevenz_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
         headers = {
             #'Authorization': token
@@ -45,12 +45,20 @@ class TestPush(SplightHubTest):
             'parameters': json.dumps(self.parameters),
         }
 
-        with patch.object(self.component, "exists_in_hub", return_value=False) as exists_in_hub:
+        with patch.object(self.component, "exists_in_hub", return_value=False):
             response = requests.Response()
             response.status_code = 201
             with patch.object(requests, "post", return_value=response) as post:
                 with patch.object(py7zr.SevenZipFile, "writeall") as writeall:
                     self.component.push(self.type, force=False)
+
                     writeall.assert_called_with(self.path, f"{self.name}-{self.version}")
-                    post.assert_called()
+
+                    compressed_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
+                    _, args, kwargs = post.mock_calls[0]
+                    self.assertEqual(args[0], f"{API_URL}/upload")
+                    self.assertEqual(kwargs["files"]["file"].name, compressed_filename)
+                    self.assertEqual(kwargs["files"]["readme"].name, os.path.join(self.path, README_FILE))
+                    self.assertEqual(kwargs["data"], data)
+                    self.assertEqual(kwargs["headers"], headers)
 
