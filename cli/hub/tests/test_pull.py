@@ -64,7 +64,5 @@ class TestPull(SplightHubTest):
                 self.assertEqual(kwargs["headers"], headers)
 
                 self.assertTrue(os.path.exists(self.extracted_component_path))
-                
+
                 shutil.rmtree(self.extracted_component_path)
-
-

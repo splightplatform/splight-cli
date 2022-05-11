@@ -34,7 +34,6 @@ class TestPush(SplightHubTest):
             uploader.assert_called_with(self.type, self.name, self.version, self.parameters, self.path)
         
     def test_component_upload(self):
-        sevenz_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
         headers = {
             #'Authorization': token
         }
@@ -61,4 +60,3 @@ class TestPush(SplightHubTest):
                     self.assertEqual(kwargs["files"]["readme"].name, os.path.join(self.path, README_FILE))
                     self.assertEqual(kwargs["data"], data)
                     self.assertEqual(kwargs["headers"], headers)
-

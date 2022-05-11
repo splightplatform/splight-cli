@@ -28,9 +28,3 @@ class TestInitialize(SplightHubTest):
             for command in commands:
                 calls.append(call(command, check=True, cwd=self.path, shell=True))
             runs.assert_has_calls(calls)
-        
-            
-                
-
-
-        
