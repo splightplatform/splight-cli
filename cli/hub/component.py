@@ -19,7 +19,8 @@ class Parameter(BaseModel):
     name: str
     type: str
     required: bool
-    value: Union[str, int, float, bool, UUID, None]
+    multiple: bool = False
+    value: Union[str, int, float, bool, UUID, list, None]
 
     @validator("type")
     def validate_type(cls, type):
@@ -33,14 +34,25 @@ class Parameter(BaseModel):
             return values
 
         type_ = values["type"]
-        try:
-            if VALID_PARAMETER_VALUES[type_] is None:
-                if v is not None:
-                    raise ValueError(f"value must be None")
+        if VALID_PARAMETER_VALUES[type_] is None:
+            if v is not None:
+                raise ValueError(f"value must be None")
+        else:
+            if not values["multiple"]:
+                try:
+                    v = VALID_PARAMETER_VALUES[type_](v)
+                except Exception:
+                    raise ValueError(f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}")
             else:
-                v = VALID_PARAMETER_VALUES[type_](v)            
-        except Exception:
-            raise ValueError(f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}")
+                if not isinstance(v, list):
+                    raise ValueError(f"value must be a list")
+                try:
+                    new_v = []
+                    for v_ in v:
+                        new_v.append(VALID_PARAMETER_VALUES[type_](v_))
+                    v = new_v
+                except Exception as e:
+                    raise ValueError(f"the value in the list must be of type {str(VALID_PARAMETER_VALUES[type_])}")
         return v
 
 
@@ -67,6 +79,16 @@ class Spec(BaseModel):
         if any(x in version for x in invalid_characters):
             raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
         return version
+
+    @validator("parameters")
+    def validate_parameters(cls, parameters):
+        parameters_names = set()
+        for parameter in parameters:
+            parameter_name = parameter.name
+            if parameter_name in parameters_names:
+                raise Exception(f"Parameter name {parameter_name} is not unique")
+            parameters_names.add(parameter_name)
+        return parameters
 
 class Component:
     name = None
