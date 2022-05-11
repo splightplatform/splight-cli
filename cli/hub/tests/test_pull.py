@@ -62,6 +62,9 @@ class TestPull(SplightHubTest):
                 self.assertEqual(args[0], f"{API_URL}/download")
                 self.assertEqual(kwargs["data"], data)
                 self.assertEqual(kwargs["headers"], headers)
+
                 self.assertTrue(os.path.exists(self.extracted_component_path))
+                
+                shutil.rmtree(self.extracted_component_path)
 
 
