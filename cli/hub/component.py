@@ -1,5 +1,4 @@
 import os, sys
-import shutil
 import importlib
 import subprocess
 import logging
@@ -11,9 +10,10 @@ from .utils import *
 from .storage import *
 from .settings import *
 
-
 logger = logging.getLogger()
 
+class ComponentAlreadyExistsException(Exception):
+    pass
 
 class Parameter(BaseModel):
     name: str
@@ -98,6 +98,7 @@ class Component:
     storage_client = None
 
     def __init__(self, path):
+        logger.setLevel(logging.WARNING)
         self.path = validate_path_isdir(os.path.abspath(path))
     
     @cached_property
@@ -148,6 +149,14 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
+
+    def exists_in_hub(self, type, name, version) -> bool:
+        """
+        Check if a component exists in the hub.
+        """
+        response = requests.get(f"{API_URL}/hub/{type}/?name={name}&version={version}")
+        response = response.json()
+        return response["count"] > 0
     
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
@@ -211,18 +220,19 @@ class Component:
             with open(file_path, "w+") as f:
                 f.write(file)
 
-    def push(self, type):
-        self._validate_type(type)
+    def push(self, type, force):
+        self.type = self._validate_type(type)
         self._validate_component_structure()
         self._load_component_in_push()
-        self.storage_client = S3HubClient()
-        versioned_name = f"{self.name}-{self.version}"
-        self.storage_client.save_component(type, versioned_name, self.path)
+        
+        if not force and self.exists_in_hub(self.type, self.name, self.version):
+            raise ComponentAlreadyExistsException
+
+        handler = ComponentHandler()
+        handler.upload_component(self.type, self.name, self.version, self.parameters, self.path)
 
     def pull(self, name, type, version):
         self._validate_type(type)
-
-        Spec(name=name, version=version, parameters=[])
 
         versioned_name = f"{name}-{version}"
         component_path = os.path.join(self.path, versioned_name)
@@ -230,20 +240,13 @@ class Component:
         if os.path.exists(component_path):
             raise Exception(f"Directory with name {versioned_name} already exists in path")
 
-        self.storage_client = S3HubClient()
 
-        if not self.storage_client.exists_in_hub(type, versioned_name):
+        if not self.exists_in_hub(type, name, version):
             raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
-        
-        os.mkdir(component_path)
-        try:
-            # Download zip
-            self.storage_client.download_dir(type, versioned_name, self.path)
-            # Download raw
-            #self.storage_client.download_dir_raw(versioned_name, f"{type}/{versioned_name}", self.path)
-        except:
-            shutil.rmtree(component_path)
-            raise
+
+        handler = ComponentHandler()
+        handler.download_component(type, name, version, self.path)
+            
 
     def run(self, type, run_spec):
         self._validate_type(type)
