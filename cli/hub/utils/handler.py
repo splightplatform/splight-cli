@@ -4,6 +4,7 @@ import py7zr
 from ..settings import *
 import requests
 from .loader import Loader
+from .api_requests import hub_api_post
 class ComponentHandler:
     def upload_component(self, type, name, version, parameters, local_path):
         """
@@ -16,7 +17,7 @@ class ComponentHandler:
                 with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
                     archive.writeall(local_path, versioned_name)
                 headers = {
-                    #'Authorization': token
+                    'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
                 }
                 data = {
                     'type': type,
@@ -29,7 +30,7 @@ class ComponentHandler:
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                 }
-                response = requests.post(f"{API_URL}/upload", files=files, data=data, headers=headers)
+                response = hub_api_post(f"{SPLIGHT_HUB_HOST}/{type}/upload/", files=files, data=data, headers=headers)
 
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
@@ -43,14 +44,14 @@ class ComponentHandler:
         """
         with Loader("Pulling component from Splight Hub..."):
             headers = {
-                #'Authorization': token
+                'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
             }
             data = {
                 'type': type,
                 'name': name,
                 'version': version,
             }
-            response = requests.post(f"{API_URL}/download", data=data, headers=headers)
+            response = hub_api_post(f"{SPLIGHT_HUB_HOST}/{type}/download/", data=data, headers=headers)
 
             if response.status_code != 200:
                 if response.status_code == 404:

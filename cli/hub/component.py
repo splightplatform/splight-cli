@@ -154,7 +154,10 @@ class Component:
         """
         Check if a component exists in the hub.
         """
-        response = requests.get(f"{API_URL}/hub/{type}/?name={name}&version={version}")
+        headers = {
+            'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
+        }
+        response = hub_api_get(f"{SPLIGHT_HUB_HOST}/{type}/?name={name}&version={version}", headers=headers)
         response = response.json()
         return response["count"] > 0
     
