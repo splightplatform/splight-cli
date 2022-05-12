@@ -35,7 +35,7 @@ class TestPush(SplightHubTest):
         
     def test_component_upload(self):
         headers = {
-            #'Authorization': token
+            'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
         }
         data = {
             'type': self.type,
@@ -55,7 +55,7 @@ class TestPush(SplightHubTest):
 
                     compressed_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
                     _, args, kwargs = post.mock_calls[0]
-                    self.assertEqual(args[0], f"{API_URL}/upload")
+                    self.assertEqual(args[0], f"{SPLIGHT_HUB_HOST}/{self.type}/upload/")
                     self.assertEqual(kwargs["files"]["file"].name, compressed_filename)
                     self.assertEqual(kwargs["files"]["readme"].name, os.path.join(self.path, README_FILE))
                     self.assertEqual(kwargs["data"], data)
