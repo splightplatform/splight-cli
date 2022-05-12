@@ -3,7 +3,6 @@ from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context
 from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
-from .storage import *
 import traceback
 
 @cli.command()
