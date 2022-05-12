@@ -4,6 +4,9 @@ from .utils import *
 from ..context import pass_context, Context
 from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
 import traceback
+import logging
+
+logger = logging.getLogger()
 
 @cli.command()
 @click.argument("type", nargs=1, type=str)
@@ -97,13 +100,23 @@ def list(context: Context, component_type: str) -> None:
         component_type: The type of the component.\n
     """
     try:
-        storage_client = S3HubClient()
-        result = storage_client.list_components(component_type, SPEC_FILE)
-        click.echo(json.dumps(result, indent=4))
-        return result
+        logger.setLevel(logging.WARNING)
+        headers = {"Authorization": f"Token {SPLIGHT_HUB_TOKEN}"}
+        list = []
+        page = hub_api_get(f"{SPLIGHT_HUB_HOST}/{component_type}/", headers=headers)
+        page = page.json()
+        if page["results"]:
+            list.extend(page["results"])
+        while page["next"] is not None:
+            page = hub_api_get(page["next"], headers=headers)
+            page = page.json()
+            if page["results"]:
+                list.extend(page["results"])
+        click.echo(json.dumps(list, indent=4))
+        return list
 
     except Exception as e:
-        click.secho(f"Error pulling component of type {component_type}: {str(e)}", fg="red")
+        click.secho(f"Error listing component of type {component_type}: {str(e)}", fg="red")
         return
 
 
