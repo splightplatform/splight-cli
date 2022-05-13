@@ -13,15 +13,36 @@ pipelines:
           trigger: automatic
   branches:
     master: &shared
-      - step:
-          name: upload library to jfrog
-          script:
-            - printf "[distutils]\n" >> ~/.pypirc
-            - printf "index-servers=splighthub\n" >> ~/.pypirc
-            - printf "[splighthub]\n" >> ~/.pypirc
-            - printf "repository:https://splight.jfrog.io/artifactory/api/pypi/splight-local\n" >> ~/.pypirc
-            - printf "username=$JFROG_BOT_USERNAME\n" >> ~/.pypirc
-            - printf "password=$JFROG_BOT_PASS" >> ~/.pypirc
-            - python setup.py bdist_wheel upload -r splighthub
-            - rm ~/.pypirc;
+      - parallel:
+        - step:
+            name: upload library to jfrog
+            script:
+              - printf "[distutils]\n" >> ~/.pypirc
+              - printf "index-servers=splighthub\n" >> ~/.pypirc
+              - printf "[splighthub]\n" >> ~/.pypirc
+              - printf "repository:https://splight.jfrog.io/artifactory/api/pypi/splight-local\n" >> ~/.pypirc
+              - printf "username=$JFROG_BOT_USERNAME\n" >> ~/.pypirc
+              - printf "password=$JFROG_BOT_PASS" >> ~/.pypirc
+              - python setup.py bdist_wheel upload -r splighthub
+              - rm ~/.pypirc;
+        - step:
+            size: 2x
+            name: Build and push runner image
+            caches:
+              - pip
+            script:
+              - pip install awscli
+              - aws configure set region us-east-1
+              - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+              - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+              - pip install docker-compose
+              - pass=$(aws ecr get-login-password --region us-east-1)
+              - docker login --username AWS --password $pass $API_TEST_ECR
+              - cd runner
+              - JFROG_BOT_USERNAME=$JFROG_BOT_USERNAME JFROG_BOT_PASS=$JFROG_BOT_PASS docker-compose build
+              - docker tag splight-runner:latest $API_TEST_ECR/splight-runner:latest
+              - docker push $API_TEST_ECR/splight-runner:latest
+            services:
+              - docker
     main: *shared
+    

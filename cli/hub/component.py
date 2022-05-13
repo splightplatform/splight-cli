@@ -142,9 +142,14 @@ class Component:
         self.name, self.version = self.spec["version"].split("-")
         self.parameters = self.spec["parameters"]
 
-    def _load_component_in_push(self) -> None:
-        self.component = self._import_component()
-        self._validate_component()
+    def _load_component_in_push(self, no_import) -> None:
+        if no_import:
+            self.component = None
+            Spec(**self.spec)
+        else:
+            self.component = self._import_component()
+            self._validate_component()
+            
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
@@ -222,10 +227,10 @@ class Component:
             with open(file_path, "w+") as f:
                 f.write(file)
 
-    def push(self, type, force):
+    def push(self, type, force, no_import):
         self.type = self._validate_type(type)
         self._validate_component_structure()
-        self._load_component_in_push()
+        self._load_component_in_push(no_import)
         
         if not force and self.exists_in_hub(self.type, self.name, self.version):
             raise ComponentAlreadyExistsException

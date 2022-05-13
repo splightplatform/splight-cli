@@ -5,6 +5,7 @@ from ..settings import *
 import requests
 from .loader import Loader
 from .api_requests import hub_api_post
+
 class ComponentHandler:
     def upload_component(self, type, name, version, parameters, local_path):
         """
