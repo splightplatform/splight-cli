@@ -17,7 +17,7 @@ class TestPush(SplightHubTest):
     def test_push(self):
         with patch.object(self.component, "exists_in_hub", return_value=False) as exists_in_hub:
             with patch.object(ComponentHandler, "upload_component") as uploader:
-                self.component.push(self.type, force=False)
+                self.component.push(self.type, force=False, no_import=False)
                 exists_in_hub.assert_called_with(self.type, self.name, self.version)
                 uploader.assert_called_with(self.type, self.name, self.version, self.parameters, self.path)
     
@@ -25,12 +25,12 @@ class TestPush(SplightHubTest):
         with patch.object(self.component, "exists_in_hub", return_value=True) as exists_in_hub:
             with patch.object(ComponentHandler, "upload_component") as uploader:
                 with self.assertRaises(ComponentAlreadyExistsException):
-                    self.component.push(self.type, force=False)
+                    self.component.push(self.type, force=False, no_import=False)
                 exists_in_hub.assert_called_with(self.type, self.name, self.version)
 
     def test_push_forced(self):
         with patch.object(ComponentHandler, "upload_component") as uploader:
-            self.component.push(self.type, force=True)
+            self.component.push(self.type, force=True, no_import=False)
             uploader.assert_called_with(self.type, self.name, self.version, self.parameters, self.path)
         
     def test_component_upload(self):
@@ -49,7 +49,7 @@ class TestPush(SplightHubTest):
             response.status_code = 201
             with patch.object(requests, "post", return_value=response) as post:
                 with patch.object(py7zr.SevenZipFile, "writeall") as writeall:
-                    self.component.push(self.type, force=False)
+                    self.component.push(self.type, force=False, no_import=False)
 
                     writeall.assert_called_with(self.path, f"{self.name}-{self.version}")
 

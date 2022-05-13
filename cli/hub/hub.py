@@ -5,8 +5,10 @@ from ..context import pass_context, Context
 from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
 import traceback
 import logging
+import hashlib
 
 logger = logging.getLogger()
+NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
 
 @cli.command()
 @click.argument("type", nargs=1, type=str)
@@ -37,8 +39,9 @@ def create(context: Context, name: str, type: str, version: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
+@click.option("-ni", "--no-import", is_flag=True, default=False, help="Do not import component before pushing")
 @pass_context
-def push(context: Context, type: str, path: str, force: bool) -> None:
+def push(context: Context, type: str, path: str, force: bool, no_import: bool) -> None:
     """
     Push a component to the hub.\n
     Args:\n
@@ -47,14 +50,20 @@ def push(context: Context, type: str, path: str, force: bool) -> None:
     """
 
     try:
+        if no_import:
+            password = click.prompt(click.style("Enter password to push without checking component", fg="yellow"), hide_input=True, type=str)
+            hash = hashlib.sha512(str(password).encode("utf-8")).hexdigest()
+            if hash != NO_IMPORT_PWD_HASH:
+                click.secho(f"Wrong password", fg="red")
+                return
         component = Component(path)
         try:
-            component.push(type, force)
+            component.push(type, force, no_import)
             click.secho("Component pushed successfully to Splight Hub", fg="green")
         except ComponentAlreadyExistsException:
             value = click.prompt(click.style(f"This {type} already exists in Splight Hub (you can use -f to force pushing). Do you want to overwrite it? (y/n)", fg="yellow"), type=str)
             if value in ["y", "Y"]:
-                component.push(type, force=True)
+                component.push(type, force=True, no_import=no_import)
                 click.secho("Component pushed successfully to Splight Hub", fg="green")
             else:
                 click.secho("Component not pushed", fg="blue")

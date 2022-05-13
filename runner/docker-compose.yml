@@ -1,0 +1,11 @@
+version: "3.3"
+services:
+  algorithms:
+    image: splight-runner:latest
+    build:
+      context: .
+      args:
+        - JFROG_BOT_USERNAME=$JFROG_BOT_USERNAME
+        - JFROG_BOT_PASS=$JFROG_BOT_PASS
+    command: bash
+    tty: true
