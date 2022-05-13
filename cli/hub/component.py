@@ -149,7 +149,7 @@ class Component:
         else:
             self.component = self._import_component()
             self._validate_component()
-            
+
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
@@ -256,6 +256,7 @@ class Component:
             
 
     def run(self, type, run_spec):
+        logger.setLevel(logging.DEBUG)
         self._validate_type(type)
         self.spec = json.loads(run_spec)
         self._validate_component_structure()
@@ -271,10 +272,11 @@ class Component:
         )
 
     def test(self, type):
+        logger.setLevel(logging.DEBUG)
         self._validate_type(type)
         self._validate_component_structure()
         #self.initialize()
-        self._load_component_in_push()
+        self._load_component_in_push(no_import=False)
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = 'default'
