@@ -20,7 +20,7 @@ VALID_PARAMETER_VALUES = {
     "bool": bool,
     "str": str,
     "float": float,
-    "file": str,
+    "file": None, #UUID
     "Asset": None, #UUID,
     "Attribute": None, #UUID,
     "Network": None, #UUID,
