@@ -94,11 +94,11 @@ class Component:
     type = None
     version = None
     parameters = None
-    storage_client = None
 
-    def __init__(self, path):
+    def __init__(self, path, context):
         logger.setLevel(logging.WARNING)
         self.path = validate_path_isdir(os.path.abspath(path))
+        self.context = context
     
     @cached_property
     def spec(self) -> dict:
@@ -153,17 +153,6 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
-
-    def exists_in_hub(self, type, name, version) -> bool:
-        """
-        Check if a component exists in the hub.
-        """
-        headers = {
-            'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
-        }
-        response = hub_api_get(f"{SPLIGHT_HUB_HOST}/{type}/?name={name}&version={version}", headers=headers)
-        response = response.json()
-        return response["count"] > 0
     
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
@@ -232,10 +221,10 @@ class Component:
         self._validate_component_structure()
         self._load_component_in_push(no_import)
         
-        if not force and self.exists_in_hub(self.type, self.name, self.version):
+        handler = ComponentHandler(self.context)
+        if not force and handler.exists_in_hub(self.type, self.name, self.version):
             raise ComponentAlreadyExistsException
 
-        handler = ComponentHandler()
         handler.upload_component(self.type, self.name, self.version, self.parameters, self.path)
 
     def pull(self, name, type, version):
@@ -247,11 +236,10 @@ class Component:
         if os.path.exists(component_path):
             raise Exception(f"Directory with name {versioned_name} already exists in path")
 
-
-        if not self.exists_in_hub(type, name, version):
+        handler = ComponentHandler(self.context)
+        if not handler.exists_in_hub(type, name, version):
             raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
 
-        handler = ComponentHandler()
         handler.download_component(type, name, version, self.path)
             
 

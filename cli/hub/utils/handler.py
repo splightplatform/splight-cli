@@ -4,9 +4,19 @@ import py7zr
 from ..settings import *
 import requests
 from .loader import Loader
-from .api_requests import hub_api_post
+from .api_requests import *
 
 class ComponentHandler:
+
+    def __init__(self, context):
+        self.context = context
+
+    @property
+    def authorization_header(self):
+        return {
+            'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
+        }
+
     def upload_component(self, type, name, version, parameters, local_path):
         """
         Save the component to the hub.
@@ -17,16 +27,13 @@ class ComponentHandler:
             try:
                 with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
                     archive.writeall(local_path, versioned_name)
-                headers = {
-                    'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
-                }
+                headers = self.authorization_header
                 data = {
-                    'type': type,
                     'name': name,
                     'version': version,
+                    'privacy_policy': self.context.privacy_policy.value,
                     'parameters': json.dumps(parameters),
                 }
-
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
@@ -44,11 +51,8 @@ class ComponentHandler:
         Download the component from the hub.
         """
         with Loader("Pulling component from Splight Hub..."):
-            headers = {
-                'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
-            }
+            headers = self.authorization_header
             data = {
-                'type': type,
                 'name': name,
                 'version': version,
             }
@@ -70,3 +74,23 @@ class ComponentHandler:
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
+
+    def list_components(self, type):
+        headers = self.authorization_header
+        list = []
+        page = hub_api_get(f"{SPLIGHT_HUB_HOST}/{type}/", headers=headers)
+        page = page.json()
+        if page["results"]:
+            list.extend(page["results"])
+        while page["next"] is not None:
+            page = hub_api_get(page["next"], headers=headers)
+            page = page.json()
+            if page["results"]:
+                list.extend(page["results"])
+        return list
+
+    def exists_in_hub(self, type, name, version):
+        headers = self.authorization_header
+        response = hub_api_get(f"{SPLIGHT_HUB_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
+        response = response.json()
+        return response["count"] > 0

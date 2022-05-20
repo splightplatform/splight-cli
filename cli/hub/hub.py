@@ -1,11 +1,31 @@
 import click
-from ..cli import cli
-from .utils import *
-from ..context import pass_context, Context
-from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
+from functools import update_wrapper
+import hashlib
+import signal
+import sys
 import traceback
 import logging
-import hashlib
+from ..cli import cli
+from .utils import *
+from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy
+from ..config import ConfigManager
+from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
+
+
+def signal_handler(sig, frame):
+    #print('You pressed Ctrl+C!')
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+def needs_credentials(f):
+    @pass_context
+    def run(ctx, *args, **kwargs):
+        if ctx.SPLIGHT_ACCESS_ID is None or ctx.SPLIGHT_SECRET_KEY is None:
+            click.secho(f"Please set your Splight credentials. Use \"splighthub configure\"", fg='red')
+            exit(1)
+        return f(ctx, *args, **kwargs)
+    return update_wrapper(run, f)
 
 logger = logging.getLogger()
 NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
@@ -14,7 +34,7 @@ NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
-@pass_context
+@needs_credentials
 def create(context: Context, name: str, type: str, version: str) -> None:
     """
     Create a component structure in path.\n
@@ -26,7 +46,7 @@ def create(context: Context, name: str, type: str, version: str) -> None:
     """
     try:
         path = os.path.abspath(".")
-        component = Component(path)
+        component = Component(path, context)
         component.create(name, type, version)
         click.secho(f"Component {name} created successfully in {path}", fg="green")
 
@@ -39,9 +59,10 @@ def create(context: Context, name: str, type: str, version: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
+@click.option("-p", "--public", is_flag=True, default=False, help="Create a public component.")
 @click.option("-ni", "--no-import", is_flag=True, default=False, help="Do not import component before pushing")
-@pass_context
-def push(context: Context, type: str, path: str, force: bool, no_import: bool) -> None:
+@needs_credentials
+def push(context: Context, type: str, path: str, force: bool, public: bool, no_import: bool) -> None:
     """
     Push a component to the hub.\n
     Args:\n
@@ -50,13 +71,15 @@ def push(context: Context, type: str, path: str, force: bool, no_import: bool) -
     """
 
     try:
+        if public:
+            context.privacy_policy = PrivacyPolicy.PUBLIC
         if no_import:
             password = click.prompt(click.style("Enter password to push without checking component", fg="yellow"), hide_input=True, type=str)
             hash = hashlib.sha512(str(password).encode("utf-8")).hexdigest()
             if hash != NO_IMPORT_PWD_HASH:
                 click.secho(f"Wrong password", fg="red")
                 return
-        component = Component(path)
+        component = Component(path, context)
         try:
             component.push(type, force, no_import)
             click.secho("Component pushed successfully to Splight Hub", fg="green")
@@ -77,7 +100,7 @@ def push(context: Context, type: str, path: str, force: bool, no_import: bool) -
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
-@pass_context
+@needs_credentials
 def pull(context: Context, type: str, name: str, version: str) -> None:
     """
     Pull a component from the hub.\n
@@ -89,7 +112,7 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
     """
     try:
         path = os.path.abspath(".")
-        component = Component(path)
+        component = Component(path, context)
         component.pull(name, type, version)
         click.secho(f"Component {name}-{version} pulled successfully in {path}", fg="green")
 
@@ -101,7 +124,7 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 @cli.command()
 @click.argument("component_type", nargs=1, type=str)
 #@click.argument("token", nargs=1, type=str)
-@pass_context
+@needs_credentials
 def list(context: Context, component_type: str) -> None:
     """
     List components of a given type.\n
@@ -110,17 +133,8 @@ def list(context: Context, component_type: str) -> None:
     """
     try:
         logger.setLevel(logging.WARNING)
-        headers = {"Authorization": f"Token {SPLIGHT_HUB_TOKEN}"}
-        list = []
-        page = hub_api_get(f"{SPLIGHT_HUB_HOST}/{component_type}/", headers=headers)
-        page = page.json()
-        if page["results"]:
-            list.extend(page["results"])
-        while page["next"] is not None:
-            page = hub_api_get(page["next"], headers=headers)
-            page = page.json()
-            if page["results"]:
-                list.extend(page["results"])
+        handler = ComponentHandler(context)
+        list = handler.list_components(component_type)
         click.echo(json.dumps(list, indent=4))
         return list
 
@@ -133,7 +147,7 @@ def list(context: Context, component_type: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
-@pass_context
+@needs_credentials
 def run(context: Context, type: str, path: str, run_spec: str) -> None:
     """
     Run a component from the hub.\n
@@ -143,19 +157,18 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
         run_spec: The run spec of the component.
     """
     try:
-        component = Component(path)
+        component = Component(path, context)
         click.secho(f"Running component...", fg="green")
         component.run(type, run_spec)
 
     except Exception as e:
-        click.echo(traceback.format_exc())
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
 @cli.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
-@pass_context
+@needs_credentials
 def test(context: Context, type: str, path: str) -> None:
     """
     Run a component from the hub.\n
@@ -164,19 +177,18 @@ def test(context: Context, type: str, path: str) -> None:
         path: The path where the component is in local machine.\n
     """
     try:
-        component = Component(path)
+        component = Component(path, context)
         click.secho(f"Running component...", fg="green")
         component.test(type)
 
     except Exception as e:
-        click.echo(traceback.format_exc())
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
 @cli.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
-@pass_context
+@needs_credentials
 def install_requirements(context: Context, type: str, path: str) -> None:
     """
     Run a component from the hub.\n
@@ -185,11 +197,50 @@ def install_requirements(context: Context, type: str, path: str) -> None:
         path: The path where the component is in local machine.\n
     """
     try:
-        component = Component(path)
+        component = Component(path, context)
         click.secho(f"Installing component requirements...", fg="green")
         component.initialize()
 
     except Exception as e:
-        click.echo(traceback.format_exc())
         click.secho(f"Error installing component requirements: {str(e)}", fg="red")
+        return
+
+
+@cli.command()
+@pass_context
+def configure(context: Context) -> None:
+    """
+    Configure Splight Hub.\n
+    """
+    try:
+        # Precondition: Config file already exists
+        # It is created when a command is run
+
+        with open(CONFIG_FILE, 'r') as file:
+            config_manager = ConfigManager(file)
+            config = config_manager.load_config()
+            SPLIGHT_ACCESS_ID, SPLIGHT_SECRET_KEY = config.get('SPLIGHT_ACCESS_ID'), config.get('SPLIGHT_SECRET_KEY')
+
+        access_id_hint = ' [' + SPLIGHT_ACCESS_ID.replace(SPLIGHT_ACCESS_ID[:-3], "*"*(len(SPLIGHT_ACCESS_ID)-3)) + ']' if SPLIGHT_ACCESS_ID else ''
+        secret_key_hint = ' [' + SPLIGHT_SECRET_KEY.replace(SPLIGHT_SECRET_KEY[:-3], "*"*(len(SPLIGHT_SECRET_KEY)-3)) + ']' if SPLIGHT_SECRET_KEY else ''
+        new_splight_access_id = click.prompt(click.style(f"SPLIGHT_ACCESS_ID{access_id_hint}", fg="yellow"), type=str)
+        new_splight_secret_key = click.prompt(click.style(f"SPLIGHT_SECRET_KEY{secret_key_hint}", fg="yellow"), type=str)
+        
+        assert new_splight_access_id != SPLIGHT_ACCESS_ID or new_splight_secret_key != SPLIGHT_SECRET_KEY, "No changes made"
+        assert len(new_splight_access_id) > 5 , "SPLIGHT_ACCESS_ID is too short"
+        assert len(new_splight_secret_key) > 5 , "SPLIGHT_SECRET_KEY is too short"
+
+        values = {
+            "SPLIGHT_ACCESS_ID": new_splight_access_id,
+            "SPLIGHT_SECRET_KEY": new_splight_secret_key
+        }
+
+        with open(CONFIG_FILE, 'w+') as file:
+            config_manager = ConfigManager(file)
+            config_manager.write_config(values)
+        
+        click.secho(f"Configuration saved successfully", fg="green")
+
+    except Exception as e:
+        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
         return

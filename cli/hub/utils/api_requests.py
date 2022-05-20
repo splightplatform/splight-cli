@@ -8,6 +8,9 @@ def authentication_api_validation(response):
         detail = response.get("detail", None)
         if detail in ["Invalid token.", "Authentication credentials were not provided."]:
             raise Exception(f"{detail} Please check your SPLIGHT_HUB_TOKEN environment variable.")
+        error = response.get("error", None)
+        if error:
+            raise Exception(error)
         raise Exception(f"An unknown error ocurred while trying to reach Splight Hub API: {json.dumps(response)}")
     return response
 
