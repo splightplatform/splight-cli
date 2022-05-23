@@ -16,12 +16,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
-      - run: printf "[distutils]\n" >> ~/.pypirc
-      - run: printf "index-servers=splightlib\n" >> ~/.pypirc
-      - run: printf "[splightlib]\n" >> ~/.pypirc
-      - run: printf "repository:https://splight.jfrog.io/artifactory/api/pypi/splight-local\n" >> ~/.pypirc
-      - run: printf "username=$JFROG_USERNAME\n" >> ~/.pypirc
-      - run: printf "password=$JFROG_PASS" >> ~/.pypirc
+      - run: pip config set global.extra-index-url https://$JFROG_USERNAME:$JFROG_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
       - run: pip install -r requirements.txt
       - run: sudo python setup.py install
       - run: sudo pytest .
