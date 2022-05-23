@@ -17,6 +17,6 @@ jobs:
         env:
           JFROG_USERNAME: ${{secrets.JFROG_USERNAME}}
           JFROG_PASS: ${{secrets.JFROG_PASS}}
-      - pip install -r requirements.txt
-      - python setup.py install
-      - pytest .
+      - run: pip install -r requirements.txt
+      - run: python setup.py install
+      - run: pytest .
