@@ -18,5 +18,5 @@ jobs:
           JFROG_USERNAME: ${{secrets.JFROG_USERNAME}}
           JFROG_PASS: ${{secrets.JFROG_PASS}}
       - run: pip install -r requirements.txt
-      - run: python setup.py install
-      - run: pytest .
+      - run: sudo python setup.py install
+      - run: sudo pytest .
