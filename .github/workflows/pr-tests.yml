@@ -15,7 +15,10 @@ jobs:
       JFROG_PASS: ${{secrets.JFROG_PASS}}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
       - run: pip config set global.extra-index-url https://$JFROG_USERNAME:$JFROG_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
       - run: pip install -r requirements.txt
       - run: sudo python setup.py install
