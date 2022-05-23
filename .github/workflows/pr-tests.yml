@@ -1,0 +1,22 @@
+name: "Running Tests"
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - firstgha
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    name: running tests
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - run: pip config set global.extra-index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
+        env:
+          JFROG_USERNAME: ${{secrets.JFROG_USERNAME}}
+          JFROG_PASS: ${{secrets.JFROG_PASS}}
+      - pip install -r requirements.txt
+      - python setup.py install
+      - pytest .
