@@ -22,5 +22,5 @@ jobs:
           python-version: '3.8'
       - run: pip config set global.extra-index-url https://$JFROG_USERNAME:$JFROG_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
       - run: pip install -r requirements.txt
-      - run: sudo python setup.py install
-      - run: sudo pytest .
+      - run: python setup.py install
+      - run: pytest .
