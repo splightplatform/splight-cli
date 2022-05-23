@@ -10,13 +10,14 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     name: running tests
+    env:
+      JFROG_USERNAME: ${{secrets.JFROG_USERNAME}}
+      JFROG_PASS: ${{secrets.JFROG_PASS}}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
       - run: pip config set global.extra-index-url https://$JFROG_USERNAME:$JFROG_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
-        env:
-          JFROG_USERNAME: ${{secrets.JFROG_USERNAME}}
-          JFROG_PASS: ${{secrets.JFROG_PASS}}
+      - run: echo "$JFROG_USERNAME"
       - run: pip install -r requirements.txt
       - run: sudo python setup.py install
       - run: sudo pytest .
