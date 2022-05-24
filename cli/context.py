@@ -5,6 +5,13 @@ from .config import ConfigManager
 
 SPLIGHT_PATH = os.path.join(os.path.expanduser("~"), '.splight')
 CONFIG_FILE = os.path.join(SPLIGHT_PATH, 'hub.conf')
+
+HUB_CONFIGS = [
+    "SPLIGHT_ACCESS_ID",
+    "SPLIGHT_SECRET_KEY",
+    "SPLIGHT_HUB_API_HOST",
+]
+
 class PrivacyPolicy(Enum):
     PUBLIC = "public"
     PRIVATE = "private"
@@ -18,12 +25,14 @@ class Context:
             with open(CONFIG_FILE, 'r') as file:
                 config_manager = ConfigManager(file)
                 config = config_manager.load_config()
-                self.SPLIGHT_ACCESS_ID, self.SPLIGHT_SECRET_KEY = config.get('SPLIGHT_ACCESS_ID'), config.get('SPLIGHT_SECRET_KEY')
+                for config_key in HUB_CONFIGS:
+                    setattr(self, config_key, config.get(config_key))
         except FileNotFoundError:
             if not os.path.exists(SPLIGHT_PATH):
                 os.makedirs(SPLIGHT_PATH)
             open(CONFIG_FILE, 'a').close()
-            self.SPLIGHT_ACCESS_ID, self.SPLIGHT_SECRET_KEY = None, None
+            for config_key in HUB_CONFIGS:
+                setattr(self, config_key, None)
 
     def __repr__(self):
         return f"<Context>"

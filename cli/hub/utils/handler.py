@@ -38,7 +38,7 @@ class ComponentHandler:
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                 }
-                response = hub_api_post(f"{SPLIGHT_HUB_HOST}/{type}/upload/", files=files, data=data, headers=headers)
+                response = hub_api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/upload/", files=files, data=data, headers=headers)
 
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
@@ -56,7 +56,7 @@ class ComponentHandler:
                 'name': name,
                 'version': version,
             }
-            response = hub_api_post(f"{SPLIGHT_HUB_HOST}/{type}/download/", data=data, headers=headers)
+            response = hub_api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/download/", data=data, headers=headers)
 
             if response.status_code != 200:
                 if response.status_code == 404:
@@ -78,7 +78,7 @@ class ComponentHandler:
     def list_components(self, type):
         headers = self.authorization_header
         list = []
-        page = hub_api_get(f"{SPLIGHT_HUB_HOST}/{type}/", headers=headers)
+        page = hub_api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/", headers=headers)
         page = page.json()
         if page["results"]:
             list.extend(page["results"])
@@ -91,6 +91,6 @@ class ComponentHandler:
 
     def exists_in_hub(self, type, name, version):
         headers = self.authorization_header
-        response = hub_api_get(f"{SPLIGHT_HUB_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
+        response = hub_api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
         return response["count"] > 0

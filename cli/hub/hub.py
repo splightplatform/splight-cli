@@ -7,7 +7,7 @@ import traceback
 import logging
 from ..cli import cli
 from .utils import *
-from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy
+from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
 from ..config import ConfigManager
 from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
 
@@ -219,25 +219,28 @@ def configure(context: Context) -> None:
         with open(CONFIG_FILE, 'r') as file:
             config_manager = ConfigManager(file)
             config = config_manager.load_config()
-            SPLIGHT_ACCESS_ID, SPLIGHT_SECRET_KEY = config.get('SPLIGHT_ACCESS_ID'), config.get('SPLIGHT_SECRET_KEY')
 
-        access_id_hint = ' [' + SPLIGHT_ACCESS_ID.replace(SPLIGHT_ACCESS_ID[:-3], "*"*(len(SPLIGHT_ACCESS_ID)-3)) + ']' if SPLIGHT_ACCESS_ID else ''
-        secret_key_hint = ' [' + SPLIGHT_SECRET_KEY.replace(SPLIGHT_SECRET_KEY[:-3], "*"*(len(SPLIGHT_SECRET_KEY)-3)) + ']' if SPLIGHT_SECRET_KEY else ''
-        new_splight_access_id = click.prompt(click.style(f"SPLIGHT_ACCESS_ID{access_id_hint}", fg="yellow"), type=str)
-        new_splight_secret_key = click.prompt(click.style(f"SPLIGHT_SECRET_KEY{secret_key_hint}", fg="yellow"), type=str)
-        
-        assert new_splight_access_id != SPLIGHT_ACCESS_ID or new_splight_secret_key != SPLIGHT_SECRET_KEY, "No changes made"
-        assert len(new_splight_access_id) > 5 , "SPLIGHT_ACCESS_ID is too short"
-        assert len(new_splight_secret_key) > 5 , "SPLIGHT_SECRET_KEY is too short"
+        for config_var in HUB_CONFIGS:
+            old_value = config.get(config_var)
+            hint = ' [' + old_value.replace(old_value[:-3], "*"*(len(old_value)-3)) + ']' if old_value is not None else ''
 
-        values = {
-            "SPLIGHT_ACCESS_ID": new_splight_access_id,
-            "SPLIGHT_SECRET_KEY": new_splight_secret_key
-        }
+            if config_var == "SPLIGHT_HUB_API_HOST":
+                if old_value is not None:
+                    hint = f" [{old_value}]"
+                else:
+                    hint = f" [{SPLIGHT_HUB_API_HOST}]"
+                    
+            value = click.prompt(click.style(f"{config_var}{hint}", fg="yellow"), type=str, default="", show_default=False)
+            if value != "":
+                assert len(value) > 5 , f"{config_var} is too short"
+                config[config_var] = value
+            else:
+                if config_var == "SPLIGHT_HUB_API_HOST" and old_value is None:
+                    config[config_var] = SPLIGHT_HUB_API_HOST
 
         with open(CONFIG_FILE, 'w+') as file:
             config_manager = ConfigManager(file)
-            config_manager.write_config(values)
+            config_manager.write_config(config)
         
         click.secho(f"Configuration saved successfully", fg="green")
 
