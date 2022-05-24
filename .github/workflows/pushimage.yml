@@ -1,4 +1,4 @@
-name: Upload library
+name: Push ECR image
 on:
   push:
     branches:
