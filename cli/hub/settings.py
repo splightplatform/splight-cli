@@ -4,8 +4,7 @@ from uuid import UUID
 
 TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "templates")
 
-SPLIGHT_HUB_API_HOST = os.getenv("SPLIGHT_HUB_HOST", "http://localhost:8000")#"https://hub.splight-ae.com/")
-#SPLIGHT_HUB_TOKEN = os.getenv("SPLIGHT_HUB_TOKEN", None)
+SPLIGHT_HUB_API_HOST = os.getenv("SPLIGHT_HUB_HOST", "https://hub.splight-ae.com/")
 COMPRESSION_TYPE = "7z"
 
 COMPONENT_FILE = "__init__.py"
