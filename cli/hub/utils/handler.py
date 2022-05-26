@@ -42,6 +42,8 @@ class ComponentHandler:
 
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
+            except Exception as e:
+                print(str(e))
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
