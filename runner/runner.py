@@ -22,6 +22,9 @@ if __name__ == '__main__':
     hub_descriptor = run_spec["version"]
     hub_name, hub_version = hub_descriptor.split("-")
 
+    if not os.path.exists(SPLIGHT_PATH):
+        os.makedirs(SPLIGHT_PATH)
+        
     with open(CONFIG_FILE, 'w+') as hub_config:
         hub_config.write(f"SPLIGHT_ACCESS_ID={os.getenv('BOT_HUB_ACCESS_ID')}")
         hub_config.write(f"\nSPLIGHT_SECRET_KEY={os.getenv('BOT_HUB_SECRET_KEY')}")
