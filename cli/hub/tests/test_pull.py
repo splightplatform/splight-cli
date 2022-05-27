@@ -14,17 +14,17 @@ class TestPull(SplightHubTest):
         self.original_component_path = self.path
         self.path = os.path.dirname(os.path.abspath(__file__))
         self.extracted_component_path = os.path.join(self.path, f"{self.name}-{self.version}")
-        self.component = Component(self.path)
+        self.component = Component(self.path, self.context)
 
     def test_pull(self):
-        with patch.object(self.component, "exists_in_hub", return_value=True) as exists_in_hub:
+        with patch.object(ComponentHandler, "exists_in_hub", return_value=True) as exists_in_hub:
             with patch.object(ComponentHandler, "download_component") as downloader:
                 self.component.pull(self.name, self.type, self.version)
                 exists_in_hub.assert_called_with(self.type, self.name, self.version)
                 downloader.assert_called_with(self.type, self.name, self.version, self.path)
     
     def test_pull_already_not_exists_in_hub(self):
-        with patch.object(self.component, "exists_in_hub", return_value=False) as exists_in_hub:
+        with patch.object(ComponentHandler, "exists_in_hub", return_value=False) as exists_in_hub:
             with patch.object(ComponentHandler, "download_component") as downloader:
                 with self.assertRaises(Exception):
                     self.component.pull(self.name, self.type, self.version)
@@ -41,14 +41,14 @@ class TestPull(SplightHubTest):
     def test_component_download(self):
         try:
             headers = {
-                'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
+                'Authorization': f"Splight {self.access_id} {self.secret_key}"
             }
             data = {
                 'type': self.type,
                 'name': self.name,
                 'version': self.version,
             }
-            with patch.object(self.component, "exists_in_hub", return_value=True):
+            with patch.object(ComponentHandler, "exists_in_hub", return_value=True):
                 compressed_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
                 file = None
                 with open(os.path.join(self.original_component_path, compressed_filename), "rb") as f:
@@ -60,9 +60,9 @@ class TestPull(SplightHubTest):
                     os.chdir(self.path)
                     self.component.pull(self.name, self.type, self.version)
                     _, args, kwargs = post.mock_calls[0]
-                    self.assertEqual(args[0], f"{SPLIGHT_HUB_HOST}/{self.type}/download/")
-                    self.assertEqual(kwargs["data"], data)
-                    self.assertEqual(kwargs["headers"], headers)
+                    self.assertEqual(args[0], f"{self.hub_api_host}/{self.type}/download/")
+                    self.assertDictContainsSubset(kwargs["data"], data)
+                    self.assertDictContainsSubset(kwargs["headers"], headers)
 
                     self.assertTrue(os.path.exists(self.extracted_component_path))
         finally:

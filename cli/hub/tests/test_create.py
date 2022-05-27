@@ -10,7 +10,7 @@ class TestCreate(SplightHubTest):
     def test_create(self):
         self.path = os.path.join(os.path.dirname(__file__), "test")
         os.mkdir(self.path)
-        self.component = Component(self.path)
+        self.component = Component(self.path, self.context)
         self.component.create(self.name, self.type, self.version)
         component_path = os.path.join(self.path, f"{self.name}-{self.version}")
         for (dirname, _, filenames) in os.walk(component_path):
@@ -22,7 +22,7 @@ class TestCreate(SplightHubTest):
         self.path = os.path.join(os.path.dirname(__file__), "test")
         os.mkdir(self.path)
         os.mkdir(os.path.join(self.path, f"{self.name}-{self.version}"))
-        self.component = Component(self.path)
+        self.component = Component(self.path, self.context)
         with self.assertRaises(Exception):
             self.component.create(self.name, self.type, self.version)
         shutil.rmtree(self.path)

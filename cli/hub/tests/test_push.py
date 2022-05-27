@@ -12,17 +12,17 @@ class TestPush(SplightHubTest):
 
     def setUp(self):
         super().setUp()
-        self.component = Component(self.path)
+        self.component = Component(self.path, self.context)
 
     def test_push(self):
-        with patch.object(self.component, "exists_in_hub", return_value=False) as exists_in_hub:
+        with patch.object(ComponentHandler, "exists_in_hub", return_value=False) as exists_in_hub:
             with patch.object(ComponentHandler, "upload_component") as uploader:
                 self.component.push(self.type, force=False, no_import=False)
                 exists_in_hub.assert_called_with(self.type, self.name, self.version)
                 uploader.assert_called_with(self.type, self.name, self.version, self.parameters, self.path)
     
     def test_push_already_exists(self):
-        with patch.object(self.component, "exists_in_hub", return_value=True) as exists_in_hub:
+        with patch.object(ComponentHandler, "exists_in_hub", return_value=True) as exists_in_hub:
             with patch.object(ComponentHandler, "upload_component") as uploader:
                 with self.assertRaises(ComponentAlreadyExistsException):
                     self.component.push(self.type, force=False, no_import=False)
@@ -35,16 +35,17 @@ class TestPush(SplightHubTest):
         
     def test_component_upload(self):
         headers = {
-            'Authorization': f"Token {SPLIGHT_HUB_TOKEN}"
+            'Authorization': f"Splight {self.access_id} {self.secret_key}"
         }
         data = {
             'type': self.type,
             'name': self.name,
             'version': self.version,
+            'privacy_policy': self.privacy_policy,
             'parameters': json.dumps(self.parameters),
         }
 
-        with patch.object(self.component, "exists_in_hub", return_value=False):
+        with patch.object(ComponentHandler, "exists_in_hub", return_value=False):
             response = requests.Response()
             response.status_code = 201
             with patch.object(requests, "post", return_value=response) as post:
@@ -55,8 +56,8 @@ class TestPush(SplightHubTest):
 
                     compressed_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
                     _, args, kwargs = post.mock_calls[0]
-                    self.assertEqual(args[0], f"{SPLIGHT_HUB_HOST}/{self.type}/upload/")
+                    self.assertEqual(args[0], f"{self.hub_api_host}/{self.type}/upload/")
                     self.assertEqual(kwargs["files"]["file"].name, compressed_filename)
                     self.assertEqual(kwargs["files"]["readme"].name, os.path.join(self.path, README_FILE))
-                    self.assertEqual(kwargs["data"], data)
-                    self.assertEqual(kwargs["headers"], headers)
+                    self.assertDictContainsSubset(kwargs["data"], data)
+                    self.assertDictContainsSubset(kwargs["headers"], headers)

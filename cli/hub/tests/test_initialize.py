@@ -8,7 +8,7 @@ import subprocess
 class TestInitialize(SplightHubTest):
     
     def test_initialize(self):
-        self.component = Component(self.path)
+        self.component = Component(self.path, self.context)
         initialization_file_path = os.path.join(self.path, INIT_FILE)
         lines = []
 

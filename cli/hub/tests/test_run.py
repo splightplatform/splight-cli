@@ -8,7 +8,7 @@ class TestRun(SplightHubTest):
 
     @patch('sys.stdout', new_callable = StringIO)
     def test_run(self, stdout):
-        self.component = Component(self.path)
+        self.component = Component(self.path, self.context)
         run_version = f"{self.name}-{self.version}"
         external_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = "default"
