@@ -9,8 +9,4 @@ RUN pip install splight-hub==0.1.1
 
 WORKDIR /code
 RUN mkdir /code/.config; cp -R /root/.config/pip /code/.config/pip
-RUN mkdir /code/.splight
-RUN echo "${{ secrets.INTEGRATION_BOT_HUB_ACCESS_ID }}" >> /code/.splight/hub.conf
-RUN echo "${{ secrets.INTEGRATION_BOT_HUB_SECRET_KEY }}" >> /code/.splight/hub.conf
-RUN echo "https://integrationhub.splight-ae.com" >> /code/.splight/hub.conf
 COPY runner.py  /code
