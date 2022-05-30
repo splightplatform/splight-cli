@@ -4,3 +4,4 @@ splight-lib>=0.3.8
 py7zr==0.18.5
 colorama==0.4.4
 requests==2.27.1
+PyYAML==6.0

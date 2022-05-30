@@ -180,8 +180,9 @@ def test(context: Context, type: str, path: str) -> None:
         component = Component(path, context)
         click.secho(f"Running component...", fg="green")
         component.test(type)
-
+    
     except Exception as e:
+        raise
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 

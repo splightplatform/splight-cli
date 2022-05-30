@@ -1,3 +1,4 @@
+import enum
 import os, sys
 import importlib
 import subprocess
@@ -41,7 +42,8 @@ class Parameter(BaseModel):
                 try:
                     v = VALID_PARAMETER_VALUES[type_](v)
                 except Exception:
-                    raise ValueError(f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}")
+                    if v is not None or values["required"]:
+                        raise ValueError(f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}")
             else:
                 if not isinstance(v, list):
                     raise ValueError(f"value must be a list")
@@ -154,6 +156,21 @@ class Component:
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
     
+    def _load_vars_from_file(self):
+        vars_file = os.path.join(self.path, VARS_FILE)
+        if not os.path.isfile(vars_file):
+            return
+        vars = get_yaml_from_file(vars_file)
+        for i, param in enumerate(self.spec["parameters"]):
+            name = param["name"]
+            if name in vars:
+                self.spec["parameters"][i]["value"] = vars[name]
+
+    def _prompt_null_parameters(self):
+        for i, param in enumerate(self.spec["parameters"]):
+            if param["value"] is None or param["value"] == []:
+                self.spec["parameters"][i]["value"] = input_multiple(param) if param["multiple"] else input_single(param)
+    
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
         lines: List[str] = []
@@ -265,6 +282,8 @@ class Component:
         self._validate_component_structure()
         #self.initialize()
         self._load_component_in_push(no_import=False)
+        self._load_vars_from_file()
+        self._prompt_null_parameters()
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = 'default'
