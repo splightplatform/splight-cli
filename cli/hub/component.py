@@ -280,10 +280,10 @@ class Component:
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
         self._validate_component_structure()
-        #self.initialize()
+        # self.initialize()
         self._load_component_in_push(no_import=False)
         self._load_vars_from_file()
-        self._prompt_null_parameters()
+        # self._prompt_null_parameters()
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = 'default'

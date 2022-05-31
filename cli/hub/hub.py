@@ -9,6 +9,7 @@ from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
 from ..config import ConfigManager
+from .settings import *
 from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
 
 
@@ -18,14 +19,6 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def needs_credentials(f):
-    @pass_context
-    def run(ctx, *args, **kwargs):
-        if ctx.SPLIGHT_ACCESS_ID is None or ctx.SPLIGHT_SECRET_KEY is None:
-            click.secho(f"Please set your Splight credentials. Use \"splighthub configure\"", fg='red')
-            exit(1)
-        return f(ctx, *args, **kwargs)
-    return update_wrapper(run, f)
 
 logger = logging.getLogger()
 NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
@@ -182,9 +175,7 @@ def test(context: Context, type: str, path: str) -> None:
         component.test(type)
     
     except Exception as e:
-        raise
-        click.secho(f"Error running component: {str(e)}", fg="red")
-        return
+        content = {}
 
 @cli.command()
 @click.argument("type", nargs=1, type=str)
@@ -225,19 +216,20 @@ def configure(context: Context) -> None:
             old_value = config.get(config_var)
             hint = ' [' + old_value.replace(old_value[:-3], "*"*(len(old_value)-3)) + ']' if old_value is not None else ''
 
-            if config_var == "SPLIGHT_HUB_API_HOST":
+            if config_var in ["SPLIGHT_HUB_API_HOST", "SPLIGHT_PLATFORM_API_HOST"]:
                 if old_value is not None:
                     hint = f" [{old_value}]"
                 else:
-                    hint = f" [{SPLIGHT_HUB_API_HOST}]"
+                    hint = eval(config_var)
+                    hint = f" [{hint}]"
                     
             value = click.prompt(click.style(f"{config_var}{hint}", fg="yellow"), type=str, default="", show_default=False)
             if value != "":
                 assert len(value) > 5 , f"{config_var} is too short"
                 config[config_var] = value
             else:
-                if config_var == "SPLIGHT_HUB_API_HOST" and old_value is None:
-                    config[config_var] = SPLIGHT_HUB_API_HOST
+                if config_var in ["SPLIGHT_HUB_API_HOST", "SPLIGHT_PLATFORM_API_HOST"] and old_value is None:
+                    config[config_var] = eval(config_var)
 
         with open(CONFIG_FILE, 'w+') as file:
             config_manager = ConfigManager(file)

@@ -80,12 +80,12 @@ class ComponentHandler:
     def list_components(self, type):
         headers = self.authorization_header
         list = []
-        page = hub_api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/", headers=headers)
+        page = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/", headers=headers)
         page = page.json()
         if page["results"]:
             list.extend(page["results"])
         while page["next"] is not None:
-            page = hub_api_get(page["next"], headers=headers)
+            page = api_get(page["next"], headers=headers)
             page = page.json()
             if page["results"]:
                 list.extend(page["results"])
@@ -93,6 +93,33 @@ class ComponentHandler:
 
     def exists_in_hub(self, type, name, version):
         headers = self.authorization_header
-        response = hub_api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
+        response = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
         return response["count"] > 0
+
+class ResourceHandler:
+
+    def __init__(self, context):
+        self.context = context
+
+    @property
+    def authorization_header(self):
+        return {
+            'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
+        }
+    
+    def list_resource(self, type):
+        headers = self.authorization_header
+        list = []
+        page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/{type}/source/", headers=headers)
+        page = page.json()
+        if page["results"]:
+            list.extend(l['source'] for l in page["results"])
+        while page["next"] is not None:
+            page = api_get(page["next"], headers=headers)
+            page = page.json()
+            if page["results"]:
+                list.extend(l['source'] for l in page["results"])
+        return list
+
+    

@@ -10,6 +10,7 @@ HUB_CONFIGS = [
     "SPLIGHT_ACCESS_ID",
     "SPLIGHT_SECRET_KEY",
     "SPLIGHT_HUB_API_HOST",
+    "SPLIGHT_PLATFORM_API_HOST",
 ]
 
 class PrivacyPolicy(Enum):

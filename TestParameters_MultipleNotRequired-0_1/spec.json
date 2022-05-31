@@ -1,0 +1,90 @@
+{
+    "name": "TestParameters_MultipleNotRequired",
+    "version": "0_1",
+    "parameters": [
+        {
+            "name": "int",
+            "type": "int",
+            "required": false,
+            "multiple": true,
+            "value": []
+        },
+        {
+            "name": "int2",
+            "type": "int",
+            "required": false,
+            "multiple": false,
+            "value": null
+        },
+        {
+            "name": "string",
+            "type": "str",
+            "required": false,
+            "multiple": true,
+            "value": [
+                "default1",
+                "default2"
+            ]
+        },
+        {
+            "name": "bool",
+            "type": "bool",
+            "required": false,
+            "multiple": true,
+            "value": [
+                false
+            ]
+        },
+        {
+            "name": "float",
+            "type": "float",
+            "required": false,
+            "multiple": true,
+            "value": [
+                1.0
+            ]
+        },
+        {
+            "name": "file",
+            "type": "file",
+            "required": false,
+            "multiple": true,
+            "value": null
+        },
+        {
+            "name": "asset",
+            "type": "Asset",
+            "required": false,
+            "multiple": true,
+            "value": null
+        },
+        {
+            "name": "attribute",
+            "type": "Attribute",
+            "required": false,
+            "multiple": true,
+            "value": null
+        },
+        {
+            "name": "network",
+            "type": "Network",
+            "required": false,
+            "multiple": true,
+            "value": null
+        },
+        {
+            "name": "algorithm",
+            "type": "Algorithm",
+            "required": false,
+            "multiple": true,
+            "value": null
+        },
+        {
+            "name": "connector",
+            "type": "Connector",
+            "required": false,
+            "multiple": true,
+            "value": null
+        }
+    ]
+}
