@@ -1,6 +1,7 @@
 import json
 import os
 import py7zr
+from functools import cached_property
 from ..settings import *
 import requests
 from .loader import Loader
@@ -38,7 +39,7 @@ class ComponentHandler:
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                 }
-                response = hub_api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/upload/", files=files, data=data, headers=headers)
+                response = api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/upload/", files=files, data=data, headers=headers)
 
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
@@ -58,7 +59,7 @@ class ComponentHandler:
                 'name': name,
                 'version': version,
             }
-            response = hub_api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/download/", data=data, headers=headers)
+            response = api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/download/", data=data, headers=headers)
 
             if response.status_code != 200:
                 if response.status_code == 404:
@@ -97,10 +98,11 @@ class ComponentHandler:
         response = response.json()
         return response["count"] > 0
 
-class ResourceHandler:
+class DatalakeHandler:
 
-    def __init__(self, context):
+    def __init__(self, context, client_class):
         self.context = context
+        self.client = client_class(self.user_namespace)
 
     @property
     def authorization_header(self):
@@ -108,7 +110,14 @@ class ResourceHandler:
             'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
         }
     
-    def list_resource(self, type):
+    @cached_property
+    def user_namespace(self):
+        headers = self.authorization_header
+        response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
+        response = response.json()
+        return response["organization_id"]
+
+    def list_source(self, type):
         headers = self.authorization_header
         list = []
         page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/{type}/source/", headers=headers)
@@ -121,5 +130,9 @@ class ResourceHandler:
             if page["results"]:
                 list.extend(l['source'] for l in page["results"])
         return list
+
+    def dump(self):
+        return self.client.list_collection_names()
+
 
     

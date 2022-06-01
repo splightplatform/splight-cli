@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import logging
 from splight_lib.database import DatabaseClient
-from splight_lib.datalake import FakeDatalakeClient
+from splight_lib.datalake import DatalakeClient, FakeDatalakeClient
 from splight_lib.storage import StorageClient
 import splight_models as models
 from ..cli import cli
@@ -16,9 +16,15 @@ VALID_CLIENTS = [
     # "storage"
 ]
 
-CLASS_MAP = {
+FAKE_CLASS_MAP = {
     # "database": DatabaseClient,
     "datalake": FakeDatalakeClient,
+    # "storage": StorageClient
+}
+
+CLASS_MAP = {
+    # "database": DatabaseClient,
+    "datalake": DatalakeClient,
     # "storage": StorageClient
 }
 
@@ -39,7 +45,7 @@ def load(context: Context, resource: str, collection: str, path: str) -> None:
         path: The data to be loaded.
     """
     try:
-        client = CLASS_MAP[resource]('splight')
+        client = FAKE_CLASS_MAP[resource]('splight')
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
@@ -51,12 +57,13 @@ def load(context: Context, resource: str, collection: str, path: str) -> None:
         click.echo(f"Error loading data: {str(e)}")
         return
 
+#TODO: currently only working for datalake
 @cli.command()
-@click.argument("target", type=click.Choice(VALID_CLIENTS, case_sensitive=False))
-@click.argument("type", nargs=1, type=str)
+@click.argument("resource", type=click.Choice(VALID_CLIENTS, case_sensitive=False))
+@click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @pass_context
-def dump_data(context: Context, source: str, type: str, path: str) -> None:
+def dump(context: Context, resource: str, collection: str, path: str) -> None:
     """
     Dump data from Splight.\n
     Args:\n
@@ -65,14 +72,15 @@ def dump_data(context: Context, source: str, type: str, path: str) -> None:
         path: The path where the data will be saved.
     """
     try:
-        client = CLASS_MAP[source](context.namespace)
-        type = getattr(models, type)
+        
+        handler = DatalakeHandler(context, CLASS_MAP[resource])
         if not os.path.isdir(path):
             raise Exception("Directory not found")
 
         #TODO: Support this for database or things that are not Variables
-        data = client.get_dataframe()
-        data.to_csv(path)
+        # data = client.get_dataframe()
+        # data.to_csv(path)
+        print(handler.dump())
 
     except Exception as e:
         click.echo(f"Error dumping data: {str(e)}")
@@ -92,9 +100,9 @@ def show(context: Context, resource_type: str) -> None:
     }
     try:
         logger.setLevel(logging.WARNING)
-        handler = ResourceHandler(context)
+        handler = DatalakeHandler(context, None)
         content = {}
-        content[resource_content[resource_type]] = handler.list_resource(resource_type)
+        content[resource_content[resource_type]] = handler.list_source(resource_type)
         click.echo(json.dumps(content, indent=4))
         return list
 
@@ -112,11 +120,7 @@ def show(context: Context, resource_type: str) -> None:
 #     Pull a component from the hub.\n
 #     Args:\n
 #         type: The type of the component.\n
-#         name: The name of the component.\n
-#         version: The version of the component.\n
-#         path: The path where the component will be created.\n
-#     """
-#     try:
+# @cli.command()
 #         path = os.path.abspath(".")
 #         component = Component(path, context)
 #         component.pull(name, type, version)
