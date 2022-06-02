@@ -73,14 +73,8 @@ def dump(context: Context, resource: str, collection: str, path: str) -> None:
     """
     try:
         
-        handler = DatalakeHandler(context, CLASS_MAP[resource])
-        if not os.path.isdir(path):
-            raise Exception("Directory not found")
-
-        #TODO: Support this for database or things that are not Variables
-        # data = client.get_dataframe()
-        # data.to_csv(path)
-        print(handler.dump())
+        handler = DatalakeHandler(context)
+        handler.dump(collection, path)
 
     except Exception as e:
         click.echo(f"Error dumping data: {str(e)}")
@@ -100,10 +94,11 @@ def show(context: Context, resource_type: str) -> None:
     }
     try:
         logger.setLevel(logging.WARNING)
-        handler = DatalakeHandler(context, None)
+        handler = DatalakeHandler(context)
         content = {}
-        content[resource_content[resource_type]] = handler.list_source(resource_type)
-        click.echo(json.dumps(content, indent=4))
+        click.secho("{:<50} {:<10}".format('COLLECTION','ALGORITHM'))
+        for collection in handler.list_source():
+            click.secho("{:<50} {:<10}".format(collection['source'], collection['algo']))
         return list
 
     except Exception as e:

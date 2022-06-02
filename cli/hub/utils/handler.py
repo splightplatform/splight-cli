@@ -6,6 +6,7 @@ from ..settings import *
 import requests
 from .loader import Loader
 from .api_requests import *
+from .uuid import is_valid_uuid
 
 class ComponentHandler:
 
@@ -80,29 +81,27 @@ class ComponentHandler:
 
     def list_components(self, type):
         headers = self.authorization_header
-        list = []
+        list_ = []
         page = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/", headers=headers)
         page = page.json()
         if page["results"]:
-            list.extend(page["results"])
+            list_.extend(page["results"])
         while page["next"] is not None:
             page = api_get(page["next"], headers=headers)
             page = page.json()
             if page["results"]:
-                list.extend(page["results"])
-        return list
+                list_.extend(page["results"])
+        return list_
 
     def exists_in_hub(self, type, name, version):
         headers = self.authorization_header
         response = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
-        return response["count"] > 0
 
 class DatalakeHandler:
 
-    def __init__(self, context, client_class):
+    def __init__(self, context):
         self.context = context
-        self.client = client_class(self.user_namespace)
 
     @property
     def authorization_header(self):
@@ -117,22 +116,41 @@ class DatalakeHandler:
         response = response.json()
         return response["organization_id"]
 
-    def list_source(self, type):
+    def list_source(self):
+        list_ = []
+        list_with_algo = []
         headers = self.authorization_header
-        list = []
-        page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/{type}/source/", headers=headers)
+        page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/source/", headers=headers) #TODO: check trailing slash
         page = page.json()
         if page["results"]:
-            list.extend(l['source'] for l in page["results"])
+            list_.extend(l['source'] for l in page["results"])
         while page["next"] is not None:
             page = api_get(page["next"], headers=headers)
             page = page.json()
             if page["results"]:
-                list.extend(l['source'] for l in page["results"])
-        return list
+                list_.extend(l['source'] for l in page["results"])
 
-    def dump(self):
-        return self.client.list_collection_names()
+        id_in_str = ""
+        for source in list_:
+            id_in_str += f"{source}," if is_valid_uuid(source) else ""
+        if id_in_str[-1] == ',':
+            id_in_str = id_in_str[:-1]
+
+        algos = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/algorithm/", params={'id__in': id_in_str}, headers=headers)
+        for source in list_:
+            filtered = list(filter(lambda algo: algo['id'] == source, algos.json()['results']))
+            if filtered:
+                list_with_algo.append({'source': source, 'algo': filtered[0].get('name')})
+            else:
+                list_with_algo.append({'source': source, 'algo': "-"})
+        return list_with_algo
+            
+
+    def dump(self, source, path):
+        headers = self.authorization_header
+        file_data = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/dumpdata/", params={'source': source}, headers=headers)
+        with open(path, "wb+") as f:
+            f.write(file_data.content)
 
 
     
