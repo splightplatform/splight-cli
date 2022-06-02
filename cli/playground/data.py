@@ -62,6 +62,7 @@ def load(context: Context, resource: str, collection: str, path: str) -> None:
 @click.argument("resource", type=click.Choice(VALID_CLIENTS, case_sensitive=False))
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
+@click.option('--example', '-e', is_flag=True, help="Dump template data")
 @pass_context
 def dump(context: Context, resource: str, collection: str, path: str) -> None:
     """
