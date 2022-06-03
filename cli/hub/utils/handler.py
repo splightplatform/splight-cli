@@ -97,6 +97,7 @@ class ComponentHandler:
         headers = self.authorization_header
         response = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
+        return response["count"] > 0
 
 class RemoteDatalakeHandler:
 
