@@ -29,3 +29,4 @@ VALID_PARAMETER_VALUES = {
     "Rule": None, #UUID,
 }
 VARS_FILE = os.getenv("SPLIGHT_HUB_VARS", "vars.svars.yaml")
+BASE_DIR = Path(__file__).resolve().parent.parent

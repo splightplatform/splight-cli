@@ -98,7 +98,7 @@ class ComponentHandler:
         response = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
 
-class DatalakeHandler:
+class RemoteDatalakeHandler:
 
     def __init__(self, context):
         self.context = context
@@ -146,9 +146,9 @@ class DatalakeHandler:
         return list_with_algo
             
 
-    def dump(self, source, path):
+    def dump(self, path, params):
         headers = self.authorization_header
-        file_data = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/dumpdata/", params={'source': source}, headers=headers)
+        file_data = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/dumpdata/", params=params, headers=headers)
         with open(path, "wb+") as f:
             f.write(file_data.content)
 
