@@ -17,7 +17,7 @@ class ComponentHandler:
             'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
         }
 
-    def upload_component(self, type, name, version, parameters, local_path):
+    def upload_component(self, type, name, version, size, parameters, local_path):
         """
         Save the component to the hub.
         """
@@ -31,6 +31,7 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
+                    'size': size,
                     'privacy_policy': self.context.privacy_policy.value,
                     'parameters': json.dumps(parameters),
                 }
@@ -42,8 +43,6 @@ class ComponentHandler:
 
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
-            except Exception as e:
-                print(str(e))
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)

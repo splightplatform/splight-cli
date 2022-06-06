@@ -5,7 +5,7 @@ import logging
 from pydantic import BaseModel, validator
 from functools import cached_property
 from tempfile import NamedTemporaryFile
-from typing import Type, List, Union
+from typing import Type, List, Union, Optional
 from .utils import *
 from .settings import *
 
@@ -58,6 +58,7 @@ class Parameter(BaseModel):
 class Spec(BaseModel):
     name: str
     version: str
+    size: Optional[str] = None
     parameters: List[Parameter]
 
     @validator("name")
@@ -78,6 +79,14 @@ class Spec(BaseModel):
         if any(x in version for x in invalid_characters):
             raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
         return version
+
+
+    @validator("size")
+    def validate_size(cls, size):
+        if size is not None:
+            if size not in VALID_SIZE_VALUES:
+                raise ValueError(f"size must be one of: {VALID_SIZE_VALUES}")
+        return size
 
     @validator("parameters")
     def validate_parameters(cls, parameters):
@@ -153,6 +162,7 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
+        self.size = self.spec.get("size", None)
     
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
@@ -220,12 +230,12 @@ class Component:
         self.type = self._validate_type(type)
         self._validate_component_structure()
         self._load_component_in_push(no_import)
-        
+
         handler = ComponentHandler(self.context)
         if not force and handler.exists_in_hub(self.type, self.name, self.version):
             raise ComponentAlreadyExistsException
 
-        handler.upload_component(self.type, self.name, self.version, self.parameters, self.path)
+        handler.upload_component(self.type, self.name, self.version, self.size, self.parameters, self.path)
 
     def pull(self, name, type, version):
         self._validate_type(type)
