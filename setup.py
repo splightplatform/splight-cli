@@ -16,7 +16,7 @@ setup(
     author='Splight',
     author_email='factory@splight-ae.com',
     description='Splight developer CLI tool. Splight.',
-    py_modules=['splighthub'],
+    py_modules=['splightcli'],
     install_requires=install_requires,
     packages=find_packages(),
     package_data={'cli': ['hub/templates/*']},
@@ -24,7 +24,7 @@ setup(
     dependency_links=dependency_links,
     entry_points={
         'console_scripts': [
-            'splighthub = cli:cli',
+            'splightcli = cli:cli',
         ],
     },
 )

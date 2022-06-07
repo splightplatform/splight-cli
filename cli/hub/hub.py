@@ -5,7 +5,7 @@ import signal
 import sys
 import traceback
 import logging
-from ..cli import cli
+from ..cli import component, datalake
 from .utils import *
 from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
 from ..config import ConfigManager
@@ -23,7 +23,7 @@ signal.signal(signal.SIGINT, signal_handler)
 logger = logging.getLogger()
 NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
 
-@cli.command()
+@component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
@@ -48,7 +48,7 @@ def create(context: Context, name: str, type: str, version: str) -> None:
         return
 
 
-@cli.command()
+@component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
@@ -89,7 +89,7 @@ def push(context: Context, type: str, path: str, force: bool, public: bool, no_i
         return
 
 
-@cli.command()
+@component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
@@ -114,7 +114,7 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
         return
 
 
-@cli.command()
+@component.command()
 @click.argument("component_type", nargs=1, type=str)
 #@click.argument("token", nargs=1, type=str)
 @needs_credentials
@@ -136,7 +136,7 @@ def list(context: Context, component_type: str) -> None:
         return
 
 
-@cli.command()
+@component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
@@ -158,7 +158,7 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
-@cli.command()
+@component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @needs_credentials
@@ -178,7 +178,7 @@ def test(context: Context, type: str, path: str) -> None:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
-@cli.command()
+@component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @needs_credentials
@@ -199,7 +199,7 @@ def install_requirements(context: Context, type: str, path: str) -> None:
         return
 
 
-@cli.command()
+@component.command()
 @pass_context
 def configure(context: Context) -> None:
     """
@@ -241,3 +241,8 @@ def configure(context: Context) -> None:
     except Exception as e:
         click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
         return
+
+@datalake.command()
+@needs_credentials
+def list(context: Context) -> None:
+    print("ohla")

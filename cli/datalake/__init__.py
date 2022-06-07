@@ -6,50 +6,31 @@ from splight_lib.database import DatabaseClient
 from splight_lib.datalake import DatalakeClient, FakeDatalakeClient
 from splight_lib.storage import StorageClient
 import splight_models as models
-from ..cli import cli
+from ..cli import datalake
 from ..hub.utils import *
 from ..context import Context, pass_context
 
-VALID_CLIENTS = [
-    # "database",
-    "datalake",
-    # "storage"
-]
-
-FAKE_CLASS_MAP = {
-    # "database": DatabaseClient,
-    "datalake": FakeDatalakeClient,
-    # "storage": StorageClient
-}
-
-CLASS_MAP = {
-    # "database": DatabaseClient,
-    "datalake": DatalakeClient,
-    # "storage": StorageClient
-}
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
 #TODO: currently only working for datalake
-@cli.command()
-@click.argument("resource", type=click.Choice(VALID_CLIENTS, case_sensitive=False))
+@datalake.command()
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @pass_context
-def load(context: Context, resource: str, collection: str, path: str, namespace: str=None) -> None:
+def load(context: Context, collection: str, path: str, namespace: str=None) -> None:
     """
     Load data into Splight.\n
     Args:\n
-        resource: The resource where the data will be loaded. (currently only datalake supported)\n
         collection: Name of the datalake collection.\n
         path: Path to csv containing data to be loaded.\n
     """
     try:
         if not namespace:
             namespace = 'splight'
-        client = CLASS_MAP[resource](namespace)
+        client = DatalakeClient(namespace)
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
@@ -62,19 +43,17 @@ def load(context: Context, resource: str, collection: str, path: str, namespace:
         return
 
 #TODO: currently only working for datalake
-@cli.command()
-@click.argument("resource", type=click.Choice(VALID_CLIENTS, case_sensitive=False))
+@datalake.command()
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
 @click.option('--filter', '-f', multiple=True, help="Filters (should be in the form of key=value)")
 @pass_context
-def dump(context: Context, resource: str, collection: str, path: str, namespace: str=None, example: bool = False, filter: list=None) -> None:
+def dump(context: Context, collection: str, path: str, namespace: str=None, example: bool = False, filter: list=None) -> None:
     """
     Dump data from Splight.\n
     Args:\n
-        resource: The resource where the data will be dumped. (currently only datalake supported)\n
         collection: Name of the datalake collection.\n
         path: Path to csv where dump data will be stored.\n
     """
@@ -95,7 +74,7 @@ def dump(context: Context, resource: str, collection: str, path: str, namespace:
         if not namespace:
             namespace = 'splight'
         
-        client = CLASS_MAP[resource](namespace)
+        client = DatalakeClient(namespace)
         filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
         # TODO: Support this for things different than Variables
         client.get_dataframe(resource_type=models.Variable,
@@ -107,16 +86,13 @@ def dump(context: Context, resource: str, collection: str, path: str, namespace:
         click.secho(f"Error dumping data: {str(e)}", fg="red")
         return
 
-@cli.command()
-@click.argument("resource_type", nargs=1, type=str)
+@datalake.command()
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @click.option('--remote', '-r', is_flag=True, help="Show collections in remote datalake")
 @needs_credentials
-def show(context: Context, resource_type: str, namespace: str=None, remote: bool=None) -> None:
+def list(context: Context, namespace: str=None, remote: bool=None) -> None:
     """
-    List resource of a given type.\n
-    Args:\n
-        resource_type: Resource to be listed. (currently only datalake supported)\n
+    List datalake collections \n
     """
     resource_content = {
         'datalake': "collections"
@@ -126,7 +102,7 @@ def show(context: Context, resource_type: str, namespace: str=None, remote: bool
         namespace = 'splight'
     try:
         logger.setLevel(logging.WARNING)
-        client = CLASS_MAP[resource_type](namespace)
+        client = DatalakeClient(namespace)
         if remote:
             handler = RemoteDatalakeHandler(context)
             collections = handler.list_source()
@@ -139,11 +115,10 @@ def show(context: Context, resource_type: str, namespace: str=None, remote: bool
         return list
 
     except Exception as e:
-        click.secho(f"Error listing component of type {resource_type}: {str(e)}", fg="red")
+        click.secho(f"Error listing datalake: {str(e)}", fg="red")
         return
 
-@cli.command()
-@click.argument("resource", type=click.Choice(VALID_CLIENTS, case_sensitive=False))
+@datalake.command()
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option('--filter', '-f', multiple=True, help="Filters")
@@ -152,7 +127,6 @@ def downloaddata(context: Context, resource: str, collection: str, path: str, fi
     """
     Download data from Splight remote.\n
     Args:\n
-        resource: The resource where the data will be dumped. (currently only datalake supported)\n
         collection: Name of the datalake collection.\n
         path: Path to csv where dump data will be stored.\n
     """

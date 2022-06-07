@@ -5,3 +5,14 @@ from .context import Context
 @click.pass_context
 def cli(ctx):
     ctx.obj = Context()
+
+
+@cli.group()
+@click.pass_context
+def component(ctx):
+    ctx.obj = Context()
+
+@cli.group()
+@click.pass_context
+def datalake(ctx):
+    ctx.obj = Context()
