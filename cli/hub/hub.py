@@ -5,7 +5,7 @@ import signal
 import sys
 import traceback
 import logging
-from ..cli import cli, cli2
+from ..cli import cli
 from .utils import *
 from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
 from ..config import ConfigManager
@@ -241,8 +241,3 @@ def configure(context: Context) -> None:
     except Exception as e:
         click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
         return
-
-@cli2.command()
-@needs_credentials
-def list(context: Context) -> None:
-    print("ohla")
