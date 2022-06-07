@@ -18,7 +18,7 @@ class TestPush(SplightHubTest):
         self.component = Component(self.path, self.context)
         output = None
         try:
-            output = subprocess.check_output("splighthub push algorithm TestHub", shell=True, cwd=self.current_dir)
+            output = subprocess.check_output("splightcli component push algorithm TestHub", shell=True, cwd=self.current_dir)
         except subprocess.CalledProcessError as e:
             output = e.output
         self.assertEqual(output, b"Please set your Splight credentials. Use \"splighthub configure\"\n")
