@@ -29,6 +29,7 @@ CLASS_MAP = {
 }
 
 logger = logging.getLogger()
+logger.setLevel(logging.WARNING)
 
 #TODO: currently only working for datalake
 @cli.command()
@@ -78,8 +79,11 @@ def dump(context: Context, resource: str, collection: str, path: str, namespace:
         path: Path to csv where dump data will be stored.\n
     """
     try:
-        if not path.endswith(".csv"):
+        if os.path.isdir(path):
+            path = os.path.join(path, 'splight_dump.csv')
+        elif not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
+
         if example and namespace:
             raise Exception("Cannot specify namespace when dumping example data")
         if example:
@@ -153,7 +157,9 @@ def downloaddata(context: Context, resource: str, collection: str, path: str, fi
         path: Path to csv where dump data will be stored.\n
     """
     try:
-        if not path.endswith(".csv"):
+        if os.path.isdir(path):
+            path = os.path.join(path, 'splight_dump.csv')
+        elif not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
 
         handler = RemoteDatalakeHandler(context)

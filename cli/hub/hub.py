@@ -5,7 +5,7 @@ import signal
 import sys
 import traceback
 import logging
-from ..cli import cli
+from ..cli import cli, cli2
 from .utils import *
 from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
 from ..config import ConfigManager
@@ -175,7 +175,8 @@ def test(context: Context, type: str, path: str) -> None:
         component.test(type)
     
     except Exception as e:
-        content = {}
+        click.secho(f"Error running component: {str(e)}", fg="red")
+        return
 
 @cli.command()
 @click.argument("type", nargs=1, type=str)
@@ -240,3 +241,8 @@ def configure(context: Context) -> None:
     except Exception as e:
         click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
         return
+
+@cli2.command()
+@needs_credentials
+def list(context: Context) -> None:
+    print("ohla")
