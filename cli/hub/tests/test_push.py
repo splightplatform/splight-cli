@@ -19,7 +19,7 @@ class TestPush(SplightHubTest):
             with patch.object(ComponentHandler, "upload_component") as uploader:
                 self.component.push(self.type, force=False, no_import=False)
                 exists_in_hub.assert_called_with(self.type, self.name, self.version)
-                uploader.assert_called_with(self.type, self.name, self.version, self.size, self.parameters, self.path)
+                uploader.assert_called_with(self.type, self.name, self.version, self.impact, self.parameters, self.path)
     
     def test_push_already_exists(self):
         with patch.object(ComponentHandler, "exists_in_hub", return_value=True) as exists_in_hub:
@@ -31,22 +31,22 @@ class TestPush(SplightHubTest):
     def test_push_forced(self):
         with patch.object(ComponentHandler, "upload_component") as uploader:
             self.component.push(self.type, force=True, no_import=False)
-            uploader.assert_called_with(self.type, self.name, self.version, self.size, self.parameters, self.path)
+            uploader.assert_called_with(self.type, self.name, self.version, self.impact, self.parameters, self.path)
 
-    def test_push_bad_size(self):
+    def test_push_bad_impact(self):
         with patch.object(ComponentHandler, "exists_in_hub", return_value=False):
             with patch.object(ComponentHandler, "upload_component") as uploader:
                 mocked_json = {
                     "name": "TestHub",
                     "version": "0_1",
-                    "size": "XXXXXXXXLLLLLL",
+                    "impact": 7,
                     "parameters": []
                 }
                 with patch.object(self.component, "spec", return_value=mocked_json):
                     with self.assertRaises(ValueError):
                         self.component.push(self.type, force=False, no_import=False)
                 uploader.assert_not_called()
-        
+
     def test_component_upload(self):
         headers = {
             'Authorization': f"Splight {self.access_id} {self.secret_key}"
@@ -55,7 +55,7 @@ class TestPush(SplightHubTest):
             'type': self.type,
             'name': self.name,
             'version': self.version,
-            'size': self.size,
+            'impact': self.impact,
             'privacy_policy': self.privacy_policy,
             'parameters': json.dumps(self.parameters),
         }
@@ -76,4 +76,4 @@ class TestPush(SplightHubTest):
                     self.assertEqual(kwargs["files"]["readme"].name, os.path.join(self.path, README_FILE))
                     self.assertDictContainsSubset(kwargs["data"], data)
                     self.assertDictContainsSubset(kwargs["headers"], headers)
-                    self.assertEqual(kwargs["data"]["size"], None)
+                    self.assertEqual(kwargs["data"]["impact"], None)

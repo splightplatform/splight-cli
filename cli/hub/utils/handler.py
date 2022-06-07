@@ -17,7 +17,7 @@ class ComponentHandler:
             'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
         }
 
-    def upload_component(self, type, name, version, size, parameters, local_path):
+    def upload_component(self, type, name, version, impact, parameters, local_path):
         """
         Save the component to the hub.
         """
@@ -31,7 +31,7 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
-                    'size': size,
+                    'impact': impact,
                     'privacy_policy': self.context.privacy_policy.value,
                     'parameters': json.dumps(parameters),
                 }

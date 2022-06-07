@@ -58,7 +58,7 @@ class Parameter(BaseModel):
 class Spec(BaseModel):
     name: str
     version: str
-    size: Optional[str] = None
+    impact: Optional[str] = None
     parameters: List[Parameter]
 
     @validator("name")
@@ -81,12 +81,12 @@ class Spec(BaseModel):
         return version
 
 
-    @validator("size")
-    def validate_size(cls, size):
-        if size is not None:
-            if size not in VALID_SIZE_VALUES:
-                raise ValueError(f"size must be one of: {VALID_SIZE_VALUES}")
-        return size
+    @validator("impact")
+    def validate_impact(cls, impact):
+        if impact is not None:
+            if impact not in VALID_IMPACT_VALUES:
+                raise ValueError(f"impact must be one of: {VALID_IMPACT_VALUES}")
+        return impact
 
     @validator("parameters")
     def validate_parameters(cls, parameters):
@@ -162,7 +162,7 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
-        self.size = self.spec.get("size", None)
+        self.impact = self.spec.get("impact", None)
     
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
@@ -235,7 +235,7 @@ class Component:
         if not force and handler.exists_in_hub(self.type, self.name, self.version):
             raise ComponentAlreadyExistsException
 
-        handler.upload_component(self.type, self.name, self.version, self.size, self.parameters, self.path)
+        handler.upload_component(self.type, self.name, self.version, self.impact, self.parameters, self.path)
 
     def pull(self, name, type, version):
         self._validate_type(type)

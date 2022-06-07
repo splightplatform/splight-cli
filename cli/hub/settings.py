@@ -14,7 +14,7 @@ README_FILE = "README"
 REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
 MAIN_CLASS_NAME = "Main"
 VALID_TYPES = ["algorithm", "connector", "network"]
-VALID_SIZE_VALUES = ["S", "M", "L", "XL", "XXL"]
+VALID_IMPACT_VALUES = list(range(1,6))
 VALID_PARAMETER_VALUES = {
     "int": int,
     "bool": bool,

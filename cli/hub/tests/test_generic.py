@@ -12,7 +12,7 @@ class SplightHubTest(TestCase):
         self.type = "algorithm"
         self.name = self.component_json['name']
         self.version = self.component_json['version']
-        self.size = self.component_json.get('size')
+        self.impact = self.component_json.get('impact')
         self.parameters = self.component_json['parameters']
         self.privacy_policy = "private"
         self.access_id = "access_id"
