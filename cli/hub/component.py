@@ -83,9 +83,8 @@ class Spec(BaseModel):
 
     @validator("impact")
     def validate_impact(cls, impact):
-        if impact is not None:
-            if impact not in VALID_IMPACT_VALUES:
-                raise ValueError(f"impact must be one of: {VALID_IMPACT_VALUES}")
+        if impact is not None and impact not in VALID_IMPACT_VALUES:
+            raise ValueError(f"impact must be one of: {VALID_IMPACT_VALUES}")
         return impact
 
     @validator("parameters")
