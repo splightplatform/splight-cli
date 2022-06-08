@@ -29,7 +29,7 @@ def load(context: Context, collection: str, path: str, namespace: str=None) -> N
     """
     try:
         if not namespace:
-            namespace = 'splight'
+            namespace = 'default'
         client = DatalakeClient(namespace)
         if not os.path.isfile(path):
             raise Exception("File not found")
@@ -46,11 +46,12 @@ def load(context: Context, collection: str, path: str, namespace: str=None) -> N
 @datalake.command()
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
+@click.option('--filter', '-f', multiple=True, default=[], help="Filters (should be in the form of key=value)")
 @click.option('--namespace', '-n', help="Namespace of the resource")
+@click.option('--remote', '-r', is_flag=True, help="Dump from remote datalake")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
-@click.option('--filter', '-f', multiple=True, help="Filters (should be in the form of key=value)")
 @pass_context
-def dump(context: Context, collection: str, path: str, namespace: str=None, example: bool = False, filter: list=None) -> None:
+def dump(context: Context, collection: str,filter: list, path: str, namespace: str=None, remote: bool=None, example: bool = False) -> None:
     """
     Dump data from Splight.\n
     Args:\n
@@ -72,14 +73,20 @@ def dump(context: Context, collection: str, path: str, namespace: str=None, exam
                 ff.close()
                 return
         if not namespace:
-            namespace = 'splight'
+            namespace = 'dafault'
         
-        client = DatalakeClient(namespace)
         filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
         # TODO: Support this for things different than Variables
-        client.get_dataframe(resource_type=models.Variable,
+        if 'limit_' not in filters:
+            filters['limit_'] = 0
+        if remote:
+            filters['source'] = collection
+            handler = RemoteDatalakeHandler(context)
+            handler.dump(path, filters)   
+        else:
+            client = DatalakeClient(namespace)
+            client.get_dataframe(resource_type=models.Variable,
                              collection=collection,
-                             limit_=0,
                              **filters).to_csv(path)
 
     except Exception as e:
@@ -99,7 +106,7 @@ def list(context: Context, namespace: str=None, remote: bool=None) -> None:
     }
 
     if not namespace:
-        namespace = 'splight'
+        namespace = 'default'
     try:
         logger.setLevel(logging.WARNING)
         client = DatalakeClient(namespace)
@@ -116,34 +123,4 @@ def list(context: Context, namespace: str=None, remote: bool=None) -> None:
 
     except Exception as e:
         click.secho(f"Error listing datalake: {str(e)}", fg="red")
-        return
-
-@datalake.command()
-@click.argument("collection", nargs=1, type=str)
-@click.argument("path", nargs=1, type=str)
-@click.option('--filter', '-f', multiple=True, help="Filters")
-@pass_context
-def downloaddata(context: Context, resource: str, collection: str, path: str, filter: list=None) -> None:
-    """
-    Download data from Splight remote.\n
-    Args:\n
-        collection: Name of the datalake collection.\n
-        path: Path to csv where dump data will be stored.\n
-    """
-    try:
-        if os.path.isdir(path):
-            path = os.path.join(path, 'splight_dump.csv')
-        elif not path.endswith(".csv"):
-            raise Exception("Only CSV files are supported")
-
-        handler = RemoteDatalakeHandler(context)
-        filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
-        filters['source'] = collection
-        if 'limit_' not in filters:
-            filters['limit_'] = 0
-
-        handler.dump(path, filters)   
-
-    except Exception as e:
-        click.secho(f"Error dumping data: {str(e)}", fg="red")
         return
