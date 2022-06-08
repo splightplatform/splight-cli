@@ -28,8 +28,11 @@ def load(context: Context, collection: str, path: str, namespace: str=None) -> N
         path: Path to csv containing data to be loaded.\n
     """
     try:
+        user_handler = UserHandler(context)
+
         if not namespace:
-            namespace = 'default'
+            namespace = user_handler.user_namespace
+
         client = DatalakeClient(namespace)
         if not os.path.isfile(path):
             raise Exception("File not found")
@@ -59,6 +62,8 @@ def dump(context: Context, collection: str,filter: list, path: str, namespace: s
         path: Path to csv where dump data will be stored.\n
     """
     try:
+        user_handler = UserHandler(context)
+
         if os.path.isdir(path):
             path = os.path.join(path, 'splight_dump.csv')
         elif not path.endswith(".csv"):
@@ -73,7 +78,7 @@ def dump(context: Context, collection: str,filter: list, path: str, namespace: s
                 ff.close()
                 return
         if not namespace:
-            namespace = 'dafault'
+            namespace = user_handler.user_namespace
         
         filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
         # TODO: Support this for things different than Variables
@@ -101,15 +106,13 @@ def list(context: Context, namespace: str=None, remote: bool=None) -> None:
     """
     List datalake collections \n
     """
-    resource_content = {
-        'datalake': "collections"
-    }
-
-    if not namespace:
-        namespace = 'default'
     try:
-        logger.setLevel(logging.WARNING)
+        user_handler = UserHandler(context)
+
+        if not namespace:
+            namespace = user_handler.user_namespace
         client = DatalakeClient(namespace)
+        
         if remote:
             handler = RemoteDatalakeHandler(context)
             collections = handler.list_source()
@@ -122,5 +125,6 @@ def list(context: Context, namespace: str=None, remote: bool=None) -> None:
         return list
 
     except Exception as e:
+        raise
         click.secho(f"Error listing datalake: {str(e)}", fg="red")
         return

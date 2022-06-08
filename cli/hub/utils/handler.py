@@ -8,16 +8,29 @@ from .loader import Loader
 from .api_requests import *
 from .uuid import is_valid_uuid
 
-class ComponentHandler:
-
+class UserHandler:
+    
     def __init__(self, context):
         self.context = context
-
+    
     @property
     def authorization_header(self):
         return {
             'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
         }
+
+    @cached_property
+    def user_namespace(self):
+        headers = self.authorization_header
+        response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
+        response = response.json()
+        return response["organization_id"]
+
+class ComponentHandler:
+
+    def __init__(self, context):
+        self.context = context
+        self.user_handler = UserHandler(context)
 
     def upload_component(self, type, name, version, parameters, local_path):
         """
@@ -29,7 +42,7 @@ class ComponentHandler:
             try:
                 with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
                     archive.writeall(local_path, versioned_name)
-                headers = self.authorization_header
+                headers = self.user_handler.authorization_header
                 data = {
                     'name': name,
                     'version': version,
@@ -55,7 +68,7 @@ class ComponentHandler:
         Download the component from the hub.
         """
         with Loader("Pulling component from Splight Hub..."):
-            headers = self.authorization_header
+            headers = self.user_handler.authorization_header
             data = {
                 'name': name,
                 'version': version,
@@ -80,7 +93,7 @@ class ComponentHandler:
                     os.remove(compressed_filename)
 
     def list_components(self, type):
-        headers = self.authorization_header
+        headers = self.user_handler.authorization_header
         list_ = []
         page = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/", headers=headers)
         page = page.json()
@@ -94,7 +107,7 @@ class ComponentHandler:
         return list_
 
     def exists_in_hub(self, type, name, version):
-        headers = self.authorization_header
+        headers = self.user_handler.authorization_header
         response = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
         return response["count"] > 0
@@ -103,24 +116,12 @@ class RemoteDatalakeHandler:
 
     def __init__(self, context):
         self.context = context
-
-    @property
-    def authorization_header(self):
-        return {
-            'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
-        }
-    
-    @cached_property
-    def user_namespace(self):
-        headers = self.authorization_header
-        response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
-        response = response.json()
-        return response["organization_id"]
+        self.user_handler = UserHandler(context)
 
     def list_source(self):
         list_ = []
         list_with_algo = []
-        headers = self.authorization_header
+        headers = self.user_handler.authorization_header
         page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/source/", headers=headers) #TODO: check trailing slash
         page = page.json()
         if page["results"]:
@@ -148,7 +149,7 @@ class RemoteDatalakeHandler:
             
 
     def dump(self, path, params):
-        headers = self.authorization_header
+        headers = self.user_handler.authorization_header
         file_data = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/dumpdata/", params=params, headers=headers)
         with open(path, "wb+") as f:
             f.write(file_data.content)
