@@ -1,10 +1,10 @@
 import os
 import subprocess
-from cli.hub.component import Component
-from cli.hub.hub import configure
+from cli.component.component import Component
+from cli.cli import configure
 from cli.context import CONFIG_FILE
 from .test_generic import SplightHubTest
-from ..settings import *
+from ...settings import *
 
 class TestPush(SplightHubTest):
 

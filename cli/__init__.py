@@ -1,6 +1,6 @@
 from .cli import cli
 from .context import *
-from .hub import *
+from .component import *
 from .datalake import *
 
 __all__ = [

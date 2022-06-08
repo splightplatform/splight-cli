@@ -7,8 +7,8 @@ from pydantic import BaseModel, validator
 from functools import cached_property
 from tempfile import NamedTemporaryFile
 from typing import Type, List, Union
-from .utils import *
-from .settings import *
+from ..utils import *
+from cli.settings import *
 
 logger = logging.getLogger()
 

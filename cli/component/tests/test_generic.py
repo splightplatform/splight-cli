@@ -1,8 +1,8 @@
 import os
 from unittest import TestCase
-from cli.hub.settings import SPEC_FILE
+from cli.settings import SPEC_FILE
 from cli.context import Context, CONFIG_FILE 
-from cli.hub.utils import get_json_from_file
+from cli.utils import get_json_from_file
 
 class SplightHubTest(TestCase):
 

@@ -7,7 +7,7 @@ from splight_lib.datalake import DatalakeClient, FakeDatalakeClient
 from splight_lib.storage import StorageClient
 import splight_models as models
 from ..cli import datalake
-from ..hub.utils import *
+from ..utils import *
 from ..context import Context, pass_context
 
 
@@ -112,7 +112,7 @@ def list(context: Context, namespace: str=None, remote: bool=None) -> None:
         if not namespace:
             namespace = user_handler.user_namespace
         client = DatalakeClient(namespace)
-        
+
         if remote:
             handler = RemoteDatalakeHandler(context)
             collections = handler.list_source()
