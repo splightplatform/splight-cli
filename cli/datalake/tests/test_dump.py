@@ -13,6 +13,7 @@ class TestDump(TestCase):
         self.namespace = 'default'
         self.collection = 'qw298nCUIS38b2DUMP'
         self.path = os.path.join(os.path.dirname(__file__), "dump_data.csv")
+        self.datalake_path = os.path.expanduser(f"~/.splight/datalake")
         self.collection_path = os.path.expanduser(f"~/.splight/datalake/{self.collection}")
         self.dump_example_path = f"{BASE_DIR}/cli/datalake/dump_example.csv"
         self.write_data = [
@@ -31,6 +32,7 @@ class TestDump(TestCase):
             },
         ]
         self.expected_dump = "path,asset_id,attribute_id,timestamp,f,p,q,r,s\n2/10,052fb43e-21f3-4503-a7da-fe9455d89b03,2,2020-10-10,0,1,2,3,4\n"
+        os.makedirs(self.datalake_path, exist_ok=True)
         with open(self.collection_path, 'w+') as f:
             json.dump(self.write_data, f)
         
