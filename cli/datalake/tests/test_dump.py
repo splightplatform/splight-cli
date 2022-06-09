@@ -31,7 +31,7 @@ class TestDump(TestCase):
             },
         ]
         self.expected_dump = "path,asset_id,attribute_id,timestamp,f,p,q,r,s\n2/10,052fb43e-21f3-4503-a7da-fe9455d89b03,2,2020-10-10,0,1,2,3,4\n"
-        with open(self.collection_path, 'w') as f:
+        with open(self.collection_path, 'w+') as f:
             json.dump(self.write_data, f)
         
     def test_dump(self):
