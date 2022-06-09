@@ -41,14 +41,14 @@ def load(context: Context, collection: str, path: str, namespace: str=None) -> N
         return
 
 @datalake_cli.command()
-@click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
+@click.argument("collection", nargs=1, type=str, required=False)
 @click.option('--filter', '-f', multiple=True, default=[], help="Filters (should be in the form of key=value)")
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @click.option('--remote', '-r', is_flag=True, help="Dump from remote datalake")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
 @pass_context
-def dump(context: Context, collection: str, filter: list, path: str, namespace: str=None, remote: bool=None, example: bool = False) -> None:
+def dump(context: Context, path: str, collection: str, filter: list, namespace: str=None, remote: bool=None, example: bool = False) -> None:
     """
     Dump data from Splight.\n
     Args:\n
@@ -56,12 +56,14 @@ def dump(context: Context, collection: str, filter: list, path: str, namespace: 
         path: Path to csv where dump data will be stored.\n
     """
     try:
+        if not example:
+            if collection is None:
+                raise Exception("missing argument COLLECTION")
         user_handler = UserHandler(context)
         if example and namespace:
             raise Exception("Cannot specify namespace when dumping example data")
         if not namespace:
             namespace = user_handler.user_namespace
-
         datalake = Datalake(context, namespace)
         datalake.dump(collection, path, filter, remote, example)
 

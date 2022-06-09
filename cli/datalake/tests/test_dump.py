@@ -38,8 +38,8 @@ class TestDump(TestCase):
         
     def test_dump(self):
         d = Datalake(self.context, self.namespace)
-        d.dump(collection=self.collection, 
-               path=self.path,
+        d.dump(path=self.path,
+               collection=self.collection,
                filter=[],
                remote=False,
                example=False)
@@ -50,8 +50,8 @@ class TestDump(TestCase):
 
     def test_dump_example(self):
         d = Datalake(self.context, self.namespace)
-        d.dump(collection=self.collection, 
-               path=self.path,
+        d.dump(path=self.path,
+               collection=self.collection, 
                filter=[],
                remote=False,
                example=True)

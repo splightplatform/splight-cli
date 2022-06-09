@@ -34,7 +34,6 @@ class Datalake():
                 ff.write(f.read())
                 ff.close()
                 return
-        
         filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
 
         if 'limit_' not in filters:
