@@ -59,7 +59,7 @@ def dump(context: Context, path: str, collection: str, filter: list, namespace: 
     """
     try:
         if not example:
-            if collection is not None:
+            if collection is None:
                 raise Exception("missing argument COLLECTION")
         user_handler = UserHandler(context)
         if example and namespace:
