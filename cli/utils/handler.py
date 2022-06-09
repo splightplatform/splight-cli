@@ -122,7 +122,7 @@ class RemoteDatalakeHandler:
         list_ = []
         list_with_algo = []
         headers = self.user_handler.authorization_header
-        page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/source/", headers=headers) #TODO: check trailing slash
+        page = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/source/", headers=headers)
         page = page.json()
         if page["results"]:
             list_.extend(l['source'] for l in page["results"])

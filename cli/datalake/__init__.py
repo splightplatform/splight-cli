@@ -15,7 +15,6 @@ from ..context import Context, pass_context
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
-#TODO: currently only working for datalake
 @datalake_cli.command()
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
@@ -41,7 +40,6 @@ def load(context: Context, collection: str, path: str, namespace: str=None) -> N
         click.echo(f"Error loading data: {str(e)}")
         return
 
-#TODO: currently only working for datalake
 @datalake_cli.command()
 @click.argument("collection", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)

@@ -112,5 +112,4 @@ class Datalake():
                     pass
 
             parsed_filters[key] = value
-        print(parsed_filters)
         return parsed_filters
