@@ -31,7 +31,7 @@ class TestLoad(TestCase):
 
     def test_load(self):
         d = Datalake(self.context, self.namespace)
-        d.load(collection=self.collection, path=self.path)
+        d.load(collection=self.collection, path=self.path, example=False)
         with open(self.collection_path) as f:
             self.assertEqual(json.loads(f.read()), self.expected_output)
         os.remove(self.collection_path)

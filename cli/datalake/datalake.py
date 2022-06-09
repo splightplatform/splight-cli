@@ -47,7 +47,9 @@ class Datalake():
                              collection=collection,
                              **self._get_filters(filters)).to_csv(path, index=False)
 
-    def load(self, collection, path):
+    def load(self, collection, path, example):
+        if example:
+            path = f"{BASE_DIR}/cli/datalake/dump_example.csv"
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
