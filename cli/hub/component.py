@@ -58,7 +58,7 @@ class Parameter(BaseModel):
 class Spec(BaseModel):
     name: str
     version: str
-    impact: Optional[str] = None
+    impact: Optional[int] = None
     parameters: List[Parameter]
 
     @validator("name")
