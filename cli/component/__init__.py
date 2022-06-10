@@ -5,10 +5,11 @@ import signal
 import sys
 import traceback
 import logging
-from ..cli import cli
-from .utils import *
+from ..cli import component as cli_component
+from ..utils import *
 from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
 from ..config import ConfigManager
+from ..settings import *
 from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
 
 
@@ -18,19 +19,11 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-def needs_credentials(f):
-    @pass_context
-    def run(ctx, *args, **kwargs):
-        if ctx.SPLIGHT_ACCESS_ID is None or ctx.SPLIGHT_SECRET_KEY is None:
-            click.secho(f"Please set your Splight credentials. Use \"splighthub configure\"", fg='red')
-            exit(1)
-        return f(ctx, *args, **kwargs)
-    return update_wrapper(run, f)
 
 logger = logging.getLogger()
 NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
 
-@cli.command()
+@cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
@@ -55,7 +48,7 @@ def create(context: Context, name: str, type: str, version: str) -> None:
         return
 
 
-@cli.command()
+@cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
@@ -96,7 +89,7 @@ def push(context: Context, type: str, path: str, force: bool, public: bool, no_i
         return
 
 
-@cli.command()
+@cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("name", nargs=1, type=str)
 @click.argument("version", nargs=1, type=str)
@@ -121,7 +114,7 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
         return
 
 
-@cli.command()
+@cli_component.command()
 @click.argument("component_type", nargs=1, type=str)
 #@click.argument("token", nargs=1, type=str)
 @needs_credentials
@@ -143,7 +136,7 @@ def list(context: Context, component_type: str) -> None:
         return
 
 
-@cli.command()
+@cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
@@ -165,7 +158,7 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
-@cli.command()
+@cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @needs_credentials
@@ -180,12 +173,12 @@ def test(context: Context, type: str, path: str) -> None:
         component = Component(path, context)
         click.secho(f"Running component...", fg="green")
         component.test(type)
-
+    
     except Exception as e:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
-@cli.command()
+@cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @needs_credentials
@@ -203,47 +196,4 @@ def install_requirements(context: Context, type: str, path: str) -> None:
 
     except Exception as e:
         click.secho(f"Error installing component requirements: {str(e)}", fg="red")
-        return
-
-
-@cli.command()
-@pass_context
-def configure(context: Context) -> None:
-    """
-    Configure Splight Hub.\n
-    """
-    try:
-        # Precondition: Config file already exists
-        # It is created when a command is run
-
-        with open(CONFIG_FILE, 'r') as file:
-            config_manager = ConfigManager(file)
-            config = config_manager.load_config()
-
-        for config_var in HUB_CONFIGS:
-            old_value = config.get(config_var)
-            hint = ' [' + old_value.replace(old_value[:-3], "*"*(len(old_value)-3)) + ']' if old_value is not None else ''
-
-            if config_var == "SPLIGHT_HUB_API_HOST":
-                if old_value is not None:
-                    hint = f" [{old_value}]"
-                else:
-                    hint = f" [{SPLIGHT_HUB_API_HOST}]"
-                    
-            value = click.prompt(click.style(f"{config_var}{hint}", fg="yellow"), type=str, default="", show_default=False)
-            if value != "":
-                assert len(value) > 5 , f"{config_var} is too short"
-                config[config_var] = value
-            else:
-                if config_var == "SPLIGHT_HUB_API_HOST" and old_value is None:
-                    config[config_var] = SPLIGHT_HUB_API_HOST
-
-        with open(CONFIG_FILE, 'w+') as file:
-            config_manager = ConfigManager(file)
-            config_manager.write_config(config)
-        
-        click.secho(f"Configuration saved successfully", fg="green")
-
-    except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
         return

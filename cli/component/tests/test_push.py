@@ -3,10 +3,10 @@ import requests
 import py7zr
 import json
 from unittest.mock import patch
-from cli.hub.component import Component, ComponentAlreadyExistsException
-from cli.hub.utils import ComponentHandler
+from cli.component.component import Component, ComponentAlreadyExistsException
+from cli.utils import ComponentHandler
 from .test_generic import SplightHubTest
-from ..settings import *
+from ...settings import *
 
 class TestPush(SplightHubTest):
 

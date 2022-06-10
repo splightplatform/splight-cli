@@ -23,9 +23,9 @@ def http_request_validation(func):
     return wrapper
 
 @http_request_validation
-def hub_api_get(*args, **kwargs):
+def api_get(*args, **kwargs):
     return requests.get(*args, **kwargs)
 
 @http_request_validation
-def hub_api_post(*args, **kwargs):
+def api_post(*args, **kwargs):
     return requests.post(*args, **kwargs)

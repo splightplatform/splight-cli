@@ -2,10 +2,10 @@ import os
 import requests
 import shutil
 from unittest.mock import patch
-from cli.hub.component import Component
-from cli.hub.utils import ComponentHandler
+from cli.component.component import Component
+from cli.utils import ComponentHandler
 from .test_generic import SplightHubTest
-from ..settings import *
+from ...settings import *
 
 class TestPull(SplightHubTest):
 

@@ -2,9 +2,10 @@ import os
 from pathlib import Path
 from uuid import UUID
 
-TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "templates")
+TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "component", "templates")
 
 SPLIGHT_HUB_API_HOST = os.getenv("SPLIGHT_HUB_HOST", "https://hub.splight-ae.com/")
+SPLIGHT_PLATFORM_API_HOST = os.getenv("SPLIGHT_API_HOST", "https://api.splight-ae.com/")
 COMPRESSION_TYPE = "7z"
 
 COMPONENT_FILE = "__init__.py"
@@ -27,3 +28,5 @@ VALID_PARAMETER_VALUES = {
     "Connector": None, #UUID,
     "Rule": None, #UUID,
 }
+VARS_FILE = os.getenv("SPLIGHT_HUB_VARS", "vars.svars.yaml")
+BASE_DIR = Path(__file__).resolve().parent.parent
