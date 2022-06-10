@@ -30,6 +30,6 @@ if __name__ == '__main__':
         hub_config.write(f"\nSPLIGHT_SECRET_KEY={os.getenv('BOT_HUB_SECRET_KEY')}")
         hub_config.write(f"\nSPLIGHT_HUB_API_HOST={os.getenv('SPLIGHT_HUB_HOST')}")
     
-    subprocess.run(["splighthub", "pull", hub_type, hub_name, hub_version], check=True)
-    subprocess.run(["splighthub", "install-requirements", hub_type, hub_descriptor], check=True)
-    subprocess.run(["splighthub", "run", hub_type, hub_descriptor, json.dumps(run_spec)], check=True)
+    subprocess.run(["splightcli", "pull", hub_type, hub_name, hub_version], check=True)
+    subprocess.run(["splightcli", "install-requirements", hub_type, hub_descriptor], check=True)
+    subprocess.run(["splightcli", "run", hub_type, hub_descriptor, json.dumps(run_spec)], check=True)
