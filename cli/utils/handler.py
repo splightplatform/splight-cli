@@ -1,12 +1,14 @@
 import json
 import os
 import py7zr
+import logging
 from functools import cached_property
 from ..settings import *
-import requests
 from .loader import Loader
 from .api_requests import *
 from .uuid import is_valid_uuid
+
+logger = logging.getLogger()
 
 class UserHandler:
     
@@ -58,7 +60,7 @@ class ComponentHandler:
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
-                print(str(e))
+                logger.exception(e)
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
@@ -147,12 +149,16 @@ class RemoteDatalakeHandler:
                 list_with_algo.append({'source': source, 'algo': "-"})
         return list_with_algo
             
-
     def dump(self, path, params):
         headers = self.user_handler.authorization_header
         file_data = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/dumpdata/", params=params, headers=headers)
         with open(path, "wb+") as f:
             f.write(file_data.content)
 
-
-    
+    def load(self, path, collection):
+        headers = self.user_handler.authorization_header
+        data = {"source": collection}
+        files = {"file": open(path, 'rb')}
+        response = api_post(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/loaddata/", json=data, files=files, headers=headers)
+        if response.status_code != 200:
+            raise Exception(f"Failed to push data to datalake: {response.text}")

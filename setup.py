@@ -11,7 +11,7 @@ dependency_links = [
 os.system("cat ~/.pypirc")
 
 setup(
-    name='splight-hub',
+    name='splight-cli',
     version='0.1.2',
     author='Splight',
     author_email='factory@splight-ae.com',

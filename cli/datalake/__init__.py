@@ -19,9 +19,10 @@ logger.setLevel(logging.WARNING)
 @click.argument("collection", nargs=1, type=str)
 @click.option("--path", '-p', nargs=1, type=str, help="Path to csv file to be loaded")
 @click.option('--namespace', '-n', help="Namespace of the resource")
+@click.option('--remote', '-r', is_flag=True, help="Load to remote datalake")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
 @pass_context
-def load(context: Context, collection: str, path: str=None, namespace: str=None, example: bool=None) -> None:
+def load(context: Context, collection: str, path: str=None, namespace: str=None, example: bool=None, remote: bool=None) -> None:
     """
     Load data into Splight.\n
     Args:\n
@@ -40,7 +41,7 @@ def load(context: Context, collection: str, path: str=None, namespace: str=None,
             namespace = user_handler.user_namespace
 
         datalake = Datalake(context, namespace)
-        datalake.load(collection, path, example)
+        datalake.load(collection, path, example, remote)
 
     except Exception as e:
         click.echo(f"Error loading data: {str(e)}")

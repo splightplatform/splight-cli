@@ -14,12 +14,12 @@ def http_request_validation(func):
                 detail = response.get("detail", None)
 
                 if detail in ["Invalid token.", "Authentication credentials were not provided.", "Incorrect authentication credentials."]:
-                    raise Exception(f"{detail} Please check your Splight credentials. Use 'splighthub configure'")
+                    raise Exception(f"{detail} Please check your Splight credentials. Use 'splightcli configure'")
 
                 raise Exception(f"An unknown error ocurred while trying to reach Splight Hub API: {json.dumps(response)}")
             return response
         except ConnectionError:
-            raise Exception(f"Splight Hub API is unreachable: Check out your configuration for Splight Hub API host. Use 'splighthub configure'")
+            raise Exception(f"Splight Hub API is unreachable: Check out your configuration for Splight Hub API host. Use 'splightcli configure'")
     return wrapper
 
 @http_request_validation
