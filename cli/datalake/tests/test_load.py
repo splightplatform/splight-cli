@@ -5,6 +5,7 @@ from ...settings import *
 from cli.datalake.datalake import Datalake
 import json
 
+
 class TestLoad(TestCase):
 
     def setUp(self):
@@ -50,7 +51,7 @@ class TestLoad(TestCase):
 
     def test_load(self):
         d = Datalake(self.context, self.namespace)
-        d.load(collection=self.collection_load, path=self.path, example=False)
+        d.load(collection=self.collection_load, path=self.path, example=False, remote=False)
         with open(self.collection_path_load) as f:
             read = json.loads(f.read())
         os.remove(self.collection_path_load)
@@ -58,7 +59,7 @@ class TestLoad(TestCase):
     
     def test_load_example(self):
         d = Datalake(self.context, self.namespace)
-        d.load(collection=self.collection_example, path=None, example=True)
+        d.load(collection=self.collection_example, path=None, example=True, remote=False)
         with open(self.collection_path_example) as f:
             read = json.loads(f.read())
         os.remove(self.collection_path_example)
