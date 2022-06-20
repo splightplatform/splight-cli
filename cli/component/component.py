@@ -279,7 +279,7 @@ class Component:
     def test(self, type):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
-        type = type.capitalize()
+        #type = type.capitalize()
         self._validate_component_structure()
         # self.initialize()
         self._load_component_in_push(no_import=False)
