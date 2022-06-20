@@ -23,6 +23,8 @@ class Datalake():
             click.secho("{:<50} {:<15}".format(collection['source'], collection['algo']))
 
     def dump(self, collection, path, filter, remote, example):
+        if os.path.exists(path):
+            raise Exception(f"File {path} already exists")
         if os.path.isdir(path):
             path = os.path.join(path, 'splight_dump.csv')
         elif not path.endswith(".csv"):
@@ -44,17 +46,22 @@ class Datalake():
         else:
             client = DatalakeClient(self.namespace)
             client.get_dataframe(resource_type=models.Variable,
-                             collection=collection,
-                             **self._get_filters(filters)).to_csv(path, index=False)
+                                 collection=collection,
+                                 **self._get_filters(filters)).to_csv(path, index=False)
+        click.secho(f"Succesfully dumpped {collection} in {path}", fg="green")
 
-    def load(self, collection, path, example):
+    def load(self, collection, path, example, remote):
         if example:
             path = f"{BASE_DIR}/cli/datalake/dump_example.csv"
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
-        self.datalake_client.save_dataframe(pd.read_csv(path), collection=collection)
+        if remote:
+            self.remote_datalake_handler.load(path=path, collection=collection)
+        else:
+            self.datalake_client.save_dataframe(pd.read_csv(path), collection=collection)
+        click.secho(f"Succesfully loaded {path} in {collection}", fg="green")
 
     @staticmethod
     def _to_list(key: str, elem: str):
