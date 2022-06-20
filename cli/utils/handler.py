@@ -159,6 +159,6 @@ class RemoteDatalakeHandler:
         headers = self.user_handler.authorization_header
         data = {"source": collection}
         files = {"file": open(path, 'rb')}
-        response = api_post(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/loaddata/", json=data, files=files, headers=headers)
+        response = api_post(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/loaddata/", data=data, files=files, headers=headers)
         if response.status_code != 200:
             raise Exception(f"Failed to push data to datalake: {response.text}")
