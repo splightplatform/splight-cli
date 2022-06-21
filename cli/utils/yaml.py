@@ -10,3 +10,7 @@ def get_yaml_from_file(file_path: str):
             return data if data is not None else {}
         except yaml.YAMLError as e:
             raise Exception("File is not a valid YAML")
+
+def save_yaml_to_file(payload: str, file_path: str):
+    with open(file_path, 'w+') as f:
+        yaml.dump(payload, f)
