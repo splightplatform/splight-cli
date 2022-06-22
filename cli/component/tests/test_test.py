@@ -1,24 +1,34 @@
-import json
-from unittest.mock import patch
-from cli.component.component import Component
+import os
+from click.testing import CliRunner
+from cli.component import test
 from .test_generic import SplightHubTest
-from io import StringIO
+
 
 class TestTest(SplightHubTest):
-    
-    @patch('sys.stdout', new_callable = StringIO)
-    def test_test(self, stdout):
-        self.component = Component(self.path, self.context)
-        run_version = f"{self.name}-{self.version}"
-        external_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
-        namespace = "default"
-        expected_output = {
-            "name": self.name,
-            "type": self.type,
-            "version": run_version,
-            "parameters": self.parameters,
-            "external_id" : external_id,
-            "namespace" : namespace
-        }
-        self.component.run(self.type, json.dumps(expected_output))
-        self.assertEqual(stdout.getvalue(), json.dumps(expected_output)+"\n")
+    def setUp(self):
+        self.runner = CliRunner()
+        return super().setUp()
+
+    def tearDown(self) -> None:
+        for file in [os.path.join(self.path, 'vars.svars'), 'vars.svars']:
+            if os.path.exists(file):
+                os.remove(file)
+        return super().tearDown()
+
+    def test_test(self):
+        # parameters input for values just enter for defaults
+        _input = "\n".join(["","","","","1","1","1","1","1","1"])
+        result = self.runner.invoke(
+            test,
+            [self.type, self.path],
+            input=_input,
+            obj=self.context
+        )
+        self.assertEqual(result.exit_code, 0)
+        self.assertIn("Running component...", result.output)
+        self.assertIn("File: 1", result.output)
+        self.assertIn("Asset: 1", result.output)
+        self.assertIn("Attribute: 1", result.output)
+        self.assertIn("Network: 1", result.output)
+        self.assertIn("Algorithm: 1", result.output)
+        self.assertIn("Connector: 1", result.output)

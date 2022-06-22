@@ -170,8 +170,8 @@ def test(context: Context, type: str, path: str) -> None:
         path: The path where the component is in local machine.\n
     """
     try:
-        component = Component(path, context)
         click.secho(f"Running component...", fg="green")
+        component = Component(path, context)
         component.test(type)
     
     except Exception as e:
