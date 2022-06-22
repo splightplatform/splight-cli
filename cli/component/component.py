@@ -1,8 +1,8 @@
-import enum
 import os, sys
 import importlib
 import subprocess
 import logging
+from pathlib import Path
 from pydantic import BaseModel, validator
 from functools import cached_property
 from tempfile import NamedTemporaryFile
@@ -100,6 +100,8 @@ class Component:
     def __init__(self, path, context):
         logger.setLevel(logging.WARNING)
         self.path = validate_path_isdir(os.path.abspath(path))
+        self.vars_file = os.path.join(self.path, VARS_FILE)
+        Path(self.vars_file).touch()
         self.context = context
     
     @cached_property
@@ -157,19 +159,15 @@ class Component:
         self.parameters = self.spec["parameters"]
     
     def _prompt_null_parameters(self):
-        vars_file = os.path.join(self.path, VARS_FILE)
-        vars = get_yaml_from_file(vars_file)
+        vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
             if name not in vars:
                 vars[name] = input_single(param).split(',') if param.get("multiple", False) else input_single(param)
-        save_yaml_to_file(payload=vars, file_path=vars_file)
+        save_yaml_to_file(payload=vars, file_path=self.vars_file)
 
     def _load_vars_from_file(self):
-        vars_file = os.path.join(self.path, VARS_FILE)
-        if not os.path.isfile(vars_file):
-            return
-        vars = get_yaml_from_file(vars_file)
+        vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
             if name in vars:
