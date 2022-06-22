@@ -1,8 +1,8 @@
-import enum
 import os, sys
 import importlib
 import subprocess
 import logging
+from pathlib import Path
 from pydantic import BaseModel, validator
 from functools import cached_property
 from tempfile import NamedTemporaryFile
@@ -100,6 +100,8 @@ class Component:
     def __init__(self, path, context):
         logger.setLevel(logging.WARNING)
         self.path = validate_path_isdir(os.path.abspath(path))
+        self.vars_file = os.path.join(self.path, VARS_FILE)
+        Path(self.vars_file).touch()
         self.context = context
     
     @cached_property
@@ -156,21 +158,21 @@ class Component:
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
     
+    def _prompt_null_parameters(self):
+        vars = get_yaml_from_file(self.vars_file)
+        for i, param in enumerate(self.spec["parameters"]):
+            name = param["name"]
+            if name not in vars:
+                vars[name] = input_single(param).split(',') if param.get("multiple", False) else input_single(param)
+        save_yaml_to_file(payload=vars, file_path=self.vars_file)
+
     def _load_vars_from_file(self):
-        vars_file = os.path.join(self.path, VARS_FILE)
-        if not os.path.isfile(vars_file):
-            return
-        vars = get_yaml_from_file(vars_file)
+        vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
             if name in vars:
                 self.spec["parameters"][i]["value"] = vars[name]
 
-    def _prompt_null_parameters(self):
-        for i, param in enumerate(self.spec["parameters"]):
-            if param["value"] is None or param["value"] == []:
-                self.spec["parameters"][i]["value"] = input_multiple(param) if param["multiple"] else input_single(param)
-    
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
         lines: List[str] = []
@@ -283,8 +285,8 @@ class Component:
         self._validate_component_structure()
         # self.initialize()
         self._load_component_in_push(no_import=False)
+        self._prompt_null_parameters()
         self._load_vars_from_file()
-        # self._prompt_null_parameters()
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         namespace = 'default'

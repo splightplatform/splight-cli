@@ -14,10 +14,12 @@ def cli(ctx):
 def component(ctx):
     ctx.obj = Context()
 
+
 @cli.group()
 @click.pass_context
 def datalake(ctx):
     ctx.obj = Context()
+
 
 @cli.command()
 @pass_context

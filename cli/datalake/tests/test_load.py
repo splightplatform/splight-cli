@@ -15,7 +15,7 @@ class TestLoad(TestCase):
         self.collection_example = 'qw298nCUIS38b2LOAD2'
         self.collection_path_load = os.path.expanduser(f"~/.splight/datalake/{self.collection_load}")
         self.collection_path_example = os.path.expanduser(f"~/.splight/datalake/{self.collection_example}")
-        self.path = os.path.join(os.path.dirname(__file__), "load_example.csv")
+        self.path = os.path.join(BASE_DIR, "cli", "datalake", "load_example.csv")
         self.expected_output = [
             {
                 "args": {
@@ -27,6 +27,8 @@ class TestLoad(TestCase):
                 },
                 "asset_id": "052fb43e-21f3-4503-a7da-fe9455d89b03",
                 "attribute_id": "2",
+                "instance_id": None,
+                "instance_type": None,
                 "path": "2/10",
                 "timestamp": "2020-10-10 00:00:00"
             }
@@ -42,12 +44,13 @@ class TestLoad(TestCase):
                 },
                 "asset_id": "052fb43e-21f3-4503-a7da-fe9455d89b03",
                 "attribute_id": "h80fb43e-21f3-4503-a7da-fe9455d89b03",
+                "instance_id": None,
+                "instance_type": None,
                 "path": "2/10",
                 "timestamp": "2020-10-10 00:00:00"
             } 
             for i in range(5)
         ]
-
 
     def test_load(self):
         d = Datalake(self.context, self.namespace)

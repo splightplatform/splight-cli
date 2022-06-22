@@ -27,15 +27,24 @@ class TestDump(TestCase):
                 },
                 "asset_id": "052fb43e-21f3-4503-a7da-fe9455d89b03",
                 "attribute_id": "2",
+                "instance_id": None,
+                "instance_type": None,
                 "path": "2/10",
                 "timestamp": "2020-10-10 00:00:00"
             },
         ]
-        self.expected_dump = "path,asset_id,attribute_id,timestamp,f,p,q,r,s\n2/10,052fb43e-21f3-4503-a7da-fe9455d89b03,2,2020-10-10,0,1,2,3,4\n"
+        self.expected_dump = "path,asset_id,attribute_id,instance_id,instance_type,timestamp,f,p,q,r,s\n2/10,052fb43e-21f3-4503-a7da-fe9455d89b03,2,,,2020-10-10,0,1,2,3,4\n"
         os.makedirs(self.datalake_path, exist_ok=True)
         with open(self.collection_path, 'w+') as f:
             json.dump(self.write_data, f)
-        
+
+    def tearDown(self) -> None:
+        if os.path.exists(self.path):
+            os.remove(self.path)
+        if os.path.exists(self.collection_path):
+            os.remove(self.collection_path)
+        return super().tearDown()
+
     def test_dump(self):
         d = Datalake(self.context, self.namespace)
         d.dump(path=self.path,
@@ -45,8 +54,6 @@ class TestDump(TestCase):
                example=False)
         with open(self.path) as f:
             self.assertEqual(f.read(), self.expected_dump)
-        os.remove(self.path)
-        os.remove(self.collection_path)
 
     def test_dump_example(self):
         d = Datalake(self.context, self.namespace)
@@ -59,5 +66,3 @@ class TestDump(TestCase):
             ff = open(self.dump_example_path, 'r')
             self.assertEqual(f.read(), ff.read())
             ff.close()
-        os.remove(self.path)
-        os.remove(self.collection_path)
