@@ -27,43 +27,28 @@ def storage(ctx):
     ctx.obj = Context()
 
 
+@cli.group()
+@click.pass_context
+def workspace(ctx):
+    ctx.obj = Context()
+
+
 @cli.command()
 @pass_context
 def configure(context: Context) -> None:
-    """
-    Configure Splight Hub.\n
-    """
     try:
-        # Precondition: Config file already exists
-        # It is created when a command is run
-
-        with open(CONFIG_FILE, 'r') as file:
-            config_manager = ConfigManager(file)
-            config = config_manager.load_config()
-
-        for config_var in HUB_CONFIGS:
-            old_value = config.get(config_var)
-            hint = ' [' + old_value.replace(old_value[:-3], "*"*(len(old_value)-3)) + ']' if old_value is not None else ''
-
-            if config_var in ["SPLIGHT_HUB_API_HOST", "SPLIGHT_PLATFORM_API_HOST"]:
-                if old_value is not None:
-                    hint = f" [{old_value}]"
-                else:
-                    hint = eval(config_var)
-                    hint = f" [{hint}]"
-                    
-            value = click.prompt(click.style(f"{config_var}{hint}", fg="yellow"), type=str, default="", show_default=False)
-            if value != "":
-                assert len(value) > 5 , f"{config_var} is too short"
-                config[config_var] = value
-            else:
-                if config_var in ["SPLIGHT_HUB_API_HOST", "SPLIGHT_PLATFORM_API_HOST"] and old_value is None:
-                    config[config_var] = eval(config_var)
-
-        with open(CONFIG_FILE, 'w+') as file:
-            config_manager = ConfigManager(file)
-            config_manager.write_config(config)
-        
+        for config_var, config_var_attrs in CONFIG_VARS.items():
+            default = getattr(context, config_var, None)
+            # sanitize default if needed
+            public_default = default
+            if default and config_var_attrs.get('private', False):
+                public_default = f'****{default[-3:]}'
+            value = click.prompt(click.style(config_var, fg='yellow'), type=str, default=public_default, show_default=True)
+            # revert sanitization if needed
+            if value == public_default and config_var_attrs.get('private', False):
+                value = default
+            setattr(context, config_var, value)
+        context.save_workspace()
         click.secho(f"Configuration saved successfully", fg="green")
 
     except Exception as e:

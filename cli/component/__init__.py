@@ -1,16 +1,14 @@
 import click
-from functools import update_wrapper
 import hashlib
 import signal
 import sys
-import traceback
 import logging
 from ..cli import component as cli_component
 from ..utils import *
-from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
-from ..config import ConfigManager
+from ..auth import *
+from ..context import Context, PrivacyPolicy
 from ..settings import *
-from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
+from .component import Component, ComponentAlreadyExistsException
 
 
 def signal_handler(sig, frame):
@@ -116,7 +114,6 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 
 @cli_component.command()
 @click.argument("component_type", nargs=1, type=str)
-#@click.argument("token", nargs=1, type=str)
 @needs_credentials
 def list(context: Context, component_type: str) -> None:
     """
@@ -140,7 +137,7 @@ def list(context: Context, component_type: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
-@needs_credentials
+@pass_context
 def run(context: Context, type: str, path: str, run_spec: str) -> None:
     """
     Run a component from the hub.\n
@@ -164,7 +161,7 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
 @click.argument("path", nargs=1, type=str)
 @click.option('--namespace', '-n', help="Namespace of execution")
 @click.option('--reset-input', '-i', is_flag=True, help="Set or Reset input parameters")
-@needs_credentials
+@pass_context
 def test(context: Context, type: str, path: str, namespace: str = None, reset_input: str = None) -> None:
     """
     Run a component from the hub.\n
@@ -186,7 +183,7 @@ def test(context: Context, type: str, path: str, namespace: str = None, reset_in
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
-@needs_credentials
+@pass_context
 def install_requirements(context: Context, type: str, path: str) -> None:
     """
     Run a component from the hub.\n

@@ -1,7 +1,6 @@
 import click
 from functools import update_wrapper
-from ..context import pass_context
-
+from .context import pass_context
 
 
 def needs_credentials(f):

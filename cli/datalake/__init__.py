@@ -3,6 +3,7 @@ import logging
 from ..cli import datalake as datalake_cli
 from .datalake import Datalake
 from ..utils import *
+from ..auth import needs_credentials
 from ..context import Context, pass_context
 
 

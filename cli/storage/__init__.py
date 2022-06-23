@@ -1,11 +1,9 @@
-from unittest import result
 import click
 import logging
 from ..cli import storage as storage_cli
 from .storage import Storage
 from ..utils import *
-from ..context import Context
-
+from ..context import Context, pass_context
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
@@ -19,7 +17,7 @@ def __print_results(headers, items):
 
 @storage_cli.command()
 @click.option('--namespace', '-n', help="Namespace of the resource")
-@needs_credentials
+@pass_context
 def list(context: Context, namespace: str=None) -> None:
     """
     List storage items \n
@@ -42,7 +40,7 @@ def list(context: Context, namespace: str=None) -> None:
 @storage_cli.command()
 @click.argument("file", nargs=1, type=str)
 @click.option('--namespace', '-n', help="Namespace of the resource")
-@needs_credentials
+@pass_context
 def load(context: Context, file: str, namespace: str=None) -> None:
     """
     Load storage item \n
@@ -63,7 +61,7 @@ def load(context: Context, file: str, namespace: str=None) -> None:
 @storage_cli.command()
 @click.argument("file", nargs=1, type=str)
 @click.option('--namespace', '-n', help="Namespace of the resource")
-@needs_credentials
+@pass_context
 def delete(context: Context, file: str, namespace: str=None) -> None:
     """
     Delete storage item \n
