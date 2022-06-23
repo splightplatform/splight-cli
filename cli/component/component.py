@@ -158,11 +158,12 @@ class Component:
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
     
-    def _prompt_null_parameters(self):
+    def _prompt_parameters(self, reset_input):
         vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
-            if name not in vars:
+            if reset_input or name not in vars:
+                param['value'] = vars.get(name, param['value'])
                 vars[name] = input_single(param).split(',') if param.get("multiple", False) else input_single(param)
         save_yaml_to_file(payload=vars, file_path=self.vars_file)
 
@@ -278,24 +279,21 @@ class Component:
             run_spec=run_spec
         )
 
-    def test(self, type):
+    def test(self, type, namespace, reset_input):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
-        #type = type.capitalize()
         self._validate_component_structure()
-        # self.initialize()
         self._load_component_in_push(no_import=False)
-        self._prompt_null_parameters()
+        self._prompt_parameters(reset_input=reset_input)
         self._load_vars_from_file()
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
-        namespace = 'default'
         self.spec['type'] = type
         self.spec['external_id'] = instance_id
         self.spec['namespace'] = namespace
         run_spec_str: str = json.dumps(self.spec)
         component_class(
             instance_id=instance_id, # Why we need this if we are overriding it?
-            namespace=namespace, # Why we need this?
+            namespace=namespace,
             run_spec=run_spec_str
         )

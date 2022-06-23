@@ -23,10 +23,15 @@ class UserHandler:
 
     @cached_property
     def user_namespace(self):
-        headers = self.authorization_header
-        response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
-        response = response.json()
-        return response["organization_id"]
+        org_id = 'default'
+        try:
+            headers = self.authorization_header
+            response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
+            response = response.json()
+            org_id = response.get("organization_id")
+        except Exception:
+            logger.warning("Could not check org_id remotely using default namespace")
+        return org_id
 
 class ComponentHandler:
 

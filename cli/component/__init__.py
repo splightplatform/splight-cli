@@ -158,23 +158,28 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
+
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
+@click.option('--namespace', '-n', help="Namespace of execution")
+@click.option('--reset-input', '-i', is_flag=True, help="Set or Reset input parameters")
 @needs_credentials
-def test(context: Context, type: str, path: str) -> None:
+def test(context: Context, type: str, path: str, namespace: str = None, reset_input: str = None) -> None:
     """
     Run a component from the hub.\n
-    Args:\n
-        type: The type of the component.\n
-        path: The path where the component is in local machine.\n
     """
     try:
         click.secho(f"Running component...", fg="green")
+        user_handler = UserHandler(context)
+        if not namespace:
+            namespace = user_handler.user_namespace
+
         component = Component(path, context)
-        component.test(type)
+        component.test(type, namespace, reset_input)
     
     except Exception as e:
+        logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 

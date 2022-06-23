@@ -15,5 +15,14 @@ from pydoc import locate
 #     return value
 
 def input_single(param: dict):
-    val = click.prompt(f"{param['name']}", type=locate(param['type']), default=param['value'], show_default=True)
+    default = 'None' if param['value'] is None and not param['required'] else param['value']
+    name = f"{param['name']}{'*' if param['required'] else ''}"
+    val = click.prompt(
+        name,
+        type=locate(param['type']),
+        default=default,
+        show_default=True
+    )
+    if val == 'None':
+        val = None
     return val

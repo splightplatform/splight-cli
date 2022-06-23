@@ -21,6 +21,12 @@ def datalake(ctx):
     ctx.obj = Context()
 
 
+@cli.group()
+@click.pass_context
+def storage(ctx):
+    ctx.obj = Context()
+
+
 @cli.command()
 @pass_context
 def configure(context: Context) -> None:
