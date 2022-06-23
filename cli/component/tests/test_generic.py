@@ -17,6 +17,6 @@ class SplightHubTest(TestCase):
         self.access_id = "access_id"
         self.secret_key = "secret_key"
         self.hub_api_host = "https://fakehub.splight-ae.com"
-        with open(CONFIG_FILE, "w") as f:
-            f.write(f"SPLIGHT_ACCESS_ID={self.access_id}\nSPLIGHT_SECRET_KEY={self.secret_key}\nSPLIGHT_HUB_API_HOST={self.hub_api_host}")
+        # with open(CONFIG_FILE, "w") as f:
+        #     f.write(f"SPLIGHT_ACCESS_ID={self.access_id}\nSPLIGHT_SECRET_KEY={self.secret_key}\nSPLIGHT_HUB_API_HOST={self.hub_api_host}")
         self.context = Context()

@@ -1,7 +1,6 @@
 import os
 import subprocess
 from cli.component.component import Component
-from cli.cli import configure
 from cli.context import CONFIG_FILE
 from .test_generic import SplightHubTest
 from ...settings import *
@@ -12,7 +11,7 @@ class TestPush(SplightHubTest):
         super().setUp()
         self.component = Component(self.path, self.context)
         self.current_dir = os.path.dirname(__file__)
-        os.remove(CONFIG_FILE)
+        # os.remove(CONFIG_FILE) # WTF?
 
     def test_no_configuration(self):
         self.component = Component(self.path, self.context)

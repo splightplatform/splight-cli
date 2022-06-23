@@ -35,15 +35,21 @@ def workspace(ctx):
 
 @cli.command()
 @pass_context
-def configure(context: Context) -> None:
+@click.option("-j", "--from-json", help="Configuration by json instaed of prompt.")
+def configure(context: Context, from_json=False) -> None:
     try:
+        if from_json:
+            from_json = json.loads(from_json)
         for config_var, config_var_attrs in CONFIG_VARS.items():
             default = getattr(context, config_var, None)
             # sanitize default if needed
             public_default = default
             if default and config_var_attrs.get('private', False):
                 public_default = f'****{default[-3:]}'
-            value = click.prompt(click.style(config_var, fg='yellow'), type=str, default=public_default, show_default=True)
+            if not from_json:
+                value = click.prompt(click.style(config_var, fg='yellow'), type=str, default=public_default, show_default=True)
+            else:
+                value = from_json.get(config_var, None)
             # revert sanitization if needed
             if value == public_default and config_var_attrs.get('private', False):
                 value = default
