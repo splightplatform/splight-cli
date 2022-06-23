@@ -1,26 +1,23 @@
 import os
-import subprocess
 from cli.component.component import Component
-from cli.context import CONFIG_FILE
+from cli.component import push
+from cli.context import Context, FakeContext
 from .test_generic import SplightHubTest
 from ...settings import *
 
 class TestPush(SplightHubTest):
 
-    def setUp(self):
-        super().setUp()
-        self.component = Component(self.path, self.context)
-        self.current_dir = os.path.dirname(__file__)
-        # by default we dont have the credentials
-
     def test_no_configuration(self):
         self.component = Component(self.path, self.context)
-        output = None
-        try:
-            output = subprocess.check_output("splightcli component push algorithm TestHub", shell=True, cwd=self.current_dir)
-        except subprocess.CalledProcessError as e:
-            output = e.output
-        self.assertEqual(output, b"Please set your Splight credentials. Use \"splightcli configure\"\n")
+        self.context = FakeContext()
+        result = self.runner.invoke(
+            push,
+            [self.type, self.path],
+            input="asd", # WHY?
+            obj=self.context
+        )
+        self.assertNotEqual(result.exit_code, 0)
+        self.assertIn("Please set your Splight credentials. Use \"splightcli configure\"\n", result.output)
 
 
 

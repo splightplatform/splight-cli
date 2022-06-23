@@ -1,3 +1,5 @@
+from collections import defaultdict
+from email.policy import default
 import os
 import click
 from enum import Enum
@@ -22,8 +24,24 @@ class PrivacyPolicy(Enum):
     PUBLIC = "public"
     PRIVATE = "private"
 
+class _Context:
+    pass
 
-class Context:
+
+class FakeContext(_Context):
+    def __init__(self, **kwargs):
+        self.SPLIGHT_ACCESS_ID = None
+        self.SPLIGHT_SECRET_KEY = None
+        self.SPLIGHT_HUB_API_HOST = 'https://integrationhub.splight-ae.com'
+        self.SPLIGHT_PLATFORM_API_HOST = 'https://integrationapi.splight-ae.com'
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def __repr__(self):
+        return f"<Context {self.__manager.current_workspace}>"
+
+
+class Context(_Context):
     def __init__(self):
         self._check_config_file()
         self.__manager = ConfigManager(CONFIG_FILE)
@@ -35,6 +53,10 @@ class Context:
         if not os.path.exists(CONFIG_FILE):
             os.makedirs(SPLIGHT_PATH, exist_ok=True)
         Path(CONFIG_FILE).touch()
+
+    @property
+    def current_workspace(self):
+        return self.__manager.current_workspace
 
     def list_workspaces(self):
         return self.__manager.workspaces
@@ -61,4 +83,4 @@ class Context:
         return f"<Context {self.__manager.current_workspace}>"
 
 
-pass_context = click.make_pass_decorator(Context)
+pass_context = click.make_pass_decorator(_Context)

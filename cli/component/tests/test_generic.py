@@ -1,8 +1,15 @@
 import os
+import logging
 from unittest import TestCase
+from click.testing import CliRunner
 from cli.settings import SPEC_FILE
 from cli.context import Context 
 from cli.utils import get_json_from_file
+from cli.workspace import create, delete, select
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.WARNING)
 
 class SplightHubTest(TestCase):
 
@@ -18,3 +25,8 @@ class SplightHubTest(TestCase):
         self.secret_key = "secret_key"
         self.hub_api_host = "https://integrationhub.splight-ae.com"
         self.context = Context()
+        self.runner = CliRunner()
+        
+
+    def tearDown(self) -> None:
+        return super().tearDown()
