@@ -20,6 +20,7 @@ class ConfigManager:
         # Default values
         config['workspaces'] = config.get('workspaces', self.DEFAULT_WORKSPACES)
         config['current_workspace'] = config.get('current_workspace', self.DEFAULT_CURRENT_WORKSPACE)
+        save_yaml_to_file(config, self.config_file)
         return config
 
     @property
@@ -51,7 +52,7 @@ class ConfigManager:
     def delete_workspace(self, workspace_name):
         if workspace_name not in self._config['workspaces']:
             raise Exception('Not a valid namespace name')
-        del self._config['workspaces']
+        del self._config['workspaces'][workspace_name]
         save_yaml_to_file(self._config, self.config_file)
 
     def create_workspace(self, workspace_name):
