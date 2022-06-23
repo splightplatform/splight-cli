@@ -11,7 +11,7 @@ class TestPush(SplightHubTest):
         super().setUp()
         self.component = Component(self.path, self.context)
         self.current_dir = os.path.dirname(__file__)
-        # os.remove(CONFIG_FILE) # WTF?
+        # by default we dont have the credentials
 
     def test_no_configuration(self):
         self.component = Component(self.path, self.context)

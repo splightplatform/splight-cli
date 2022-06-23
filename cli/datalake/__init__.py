@@ -16,7 +16,7 @@ logger.setLevel(logging.WARNING)
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @click.option('--remote', '-r', is_flag=True, help="Load to remote datalake")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
-@pass_context
+@needs_credentials
 def load(context: Context, collection: str=None, path: str=None, namespace: str=None, example: bool=None, remote: bool=None) -> None:
     """
     Load data into Splight.\n
@@ -53,7 +53,7 @@ def load(context: Context, collection: str=None, path: str=None, namespace: str=
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @click.option('--remote', '-r', is_flag=True, help="Dump from remote datalake")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
-@pass_context
+@needs_credentials
 def dump(context: Context, collection: str, path: str, filter: list, namespace: str=None, remote: bool=None, example: bool = False) -> None:
     """
     Dump data from Splight.\n
