@@ -17,7 +17,7 @@ class TestTest(SplightHubTest):
 
     def test_test(self):
         # parameters input for values just enter for defaults
-        _input = "\n".join(["","","","","1","1","1","1","1","1"])
+        _input = "\n".join(["","","","","1","1","1","","1","1","1"])
         result = self.runner.invoke(
             test,
             [self.type, self.path],
@@ -26,9 +26,18 @@ class TestTest(SplightHubTest):
         )
         self.assertEqual(result.exit_code, 0)
         self.assertIn("Running component...", result.output)
-        self.assertIn("File: 1", result.output)
-        self.assertIn("Asset: 1", result.output)
-        self.assertIn("Attribute: 1", result.output)
-        self.assertIn("Network: 1", result.output)
-        self.assertIn("Algorithm: 1", result.output)
-        self.assertIn("Connector: 1", result.output)
+        # Params required with default
+        self.assertIn("Int* [1]: ", result.output)
+        self.assertIn("String* [default]: ", result.output)
+        self.assertIn("Bool* [True]: ", result.output)
+        self.assertIn("Float* [1.0]: ", result.output)
+        # Params required without default
+        self.assertIn("File*: 1", result.output)
+        self.assertIn("Asset*: 1", result.output)
+        self.assertIn("Attribute*: 1", result.output)
+        self.assertIn("Network*: ", result.output)
+        ## Retry if value not provided
+        self.assertIn("Network*: 1", result.output)
+        # Params non required without default
+        self.assertIn("Algorithm [None]: 1", result.output)
+        self.assertIn("Connector [None]: 1", result.output)

@@ -53,13 +53,13 @@
         {
             "name": "Algorithm",
             "type": "Algorithm",
-            "required": true,
+            "required": false,
             "value": null
         },
         {
             "name": "Connector",
             "type": "Connector",
-            "required": true,
+            "required": false,
             "value": null
         }
     ]
