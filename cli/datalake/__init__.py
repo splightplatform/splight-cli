@@ -53,7 +53,7 @@ def load(context: Context, collection: str=None, path: str=None, namespace: str=
 @click.option('--remote', '-r', is_flag=True, help="Dump from remote datalake")
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
 @pass_context
-def dump(context: Context, path: str, filter: list, namespace: str=None, remote: bool=None, example: bool = False) -> None:
+def dump(context: Context, collection: str, path: str, filter: list, namespace: str=None, remote: bool=None, example: bool = False) -> None:
     """
     Dump data from Splight.\n
     Args:\n
