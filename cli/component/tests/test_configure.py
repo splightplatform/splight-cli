@@ -1,11 +1,9 @@
-import requests
-import json
 from mock import patch
 from cli.component.component import Component
 from cli.component import push
-from cli.context import Context, FakeContext
+from cli.context import FakeContext
 from cli.utils.handler import ComponentHandler
-from .test_generic import SplightHubTest
+from cli.tests.test_generic import SplightHubTest
 from ...settings import *
 
 

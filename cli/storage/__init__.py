@@ -1,38 +1,23 @@
 import click
 import logging
-from ..cli import storage as storage_cli
+from cli.utils import *
+from cli.cli import storage as storage_cli
+from cli.context import Context, pass_context
 from .storage import Storage
-from ..utils import *
-from ..context import Context, pass_context
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
-
-
-def __print_results(headers, items):
-    click.secho('\t'.join([h.upper() for h in headers]))
-    for item in items:
-        click.secho('\t'.join([getattr(item, key) for key in headers]))
 
 
 @storage_cli.command()
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @pass_context
 def list(context: Context, namespace: str=None) -> None:
-    """
-    List storage items \n
-    """
     try:
-        user_handler = UserHandler(context)
-        if not namespace:
-            namespace = user_handler.user_namespace
-
         storage = Storage(context, namespace)
-        
-        results = storage.get()
-        __print_results(headers=["id"], items=results)
-
-
+        results = [r.dict() for r in storage.get()]
+        Printer.print_dict(items=results, headers=["id"])
     except Exception as e:
         click.secho(f"Error listing storage: {str(e)}", fg="red")
 
@@ -40,18 +25,12 @@ def list(context: Context, namespace: str=None) -> None:
 @storage_cli.command()
 @click.argument("file", nargs=1, type=str)
 @click.option('--namespace', '-n', help="Namespace of the resource")
+@click.option('--prefix', '-p', help="Prefix where to place it inside your space")
 @pass_context
-def load(context: Context, file: str, namespace: str=None) -> None:
-    """
-    Load storage item \n
-    """
+def load(context: Context, file: str, namespace: str=None, prefix: str = None) -> None:
     try:
-        user_handler = UserHandler(context)
-        if not namespace:
-            namespace = user_handler.user_namespace
-
         storage = Storage(context, namespace)
-        storage.save(file)
+        storage.save(file, prefix)
 
     except Exception as e:
         logger.exception(e)
@@ -63,14 +42,7 @@ def load(context: Context, file: str, namespace: str=None) -> None:
 @click.option('--namespace', '-n', help="Namespace of the resource")
 @pass_context
 def delete(context: Context, file: str, namespace: str=None) -> None:
-    """
-    Delete storage item \n
-    """
     try:
-        user_handler = UserHandler(context)
-        if not namespace:
-            namespace = user_handler.user_namespace
-
         storage = Storage(context, namespace)
         storage.delete(file)
 

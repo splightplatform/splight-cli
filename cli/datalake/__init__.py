@@ -4,7 +4,7 @@ from ..cli import datalake as datalake_cli
 from .datalake import Datalake
 from ..utils import *
 from ..auth import needs_credentials
-from ..context import Context, pass_context
+from ..context import Context
 
 
 logger = logging.getLogger()
@@ -18,21 +18,9 @@ logger.setLevel(logging.WARNING)
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
 @needs_credentials
 def load(context: Context, collection: str=None, path: str=None, namespace: str=None, example: bool=None, remote: bool=None) -> None:
-    """
-    Load data into Splight.\n
-    Args:\n
-        collection: Name of the datalake collection.\n
-    """
     try:
         user_handler = UserHandler(context)
-        if example and namespace:
-            raise Exception("Cannot specify namespace when dumping example data")
-        if example and path:
-            raise Exception("Cannot specify path when dumping example data")
-        if not example and not path:
-            raise Exception("Must specify path to csv file when not dumping example data")
-
-        if not namespace:
+        if not namespace and remote:
             namespace = user_handler.user_namespace
 
         if not collection:
@@ -55,15 +43,9 @@ def load(context: Context, collection: str=None, path: str=None, namespace: str=
 @click.option('--example', '-e', is_flag=True, help="Dump template data")
 @needs_credentials
 def dump(context: Context, collection: str, path: str, filter: list, namespace: str=None, remote: bool=None, example: bool = False) -> None:
-    """
-    Dump data from Splight.\n
-    Args:\n
-        collection: Name of the datalake collection.\n
-        path: Path to csv where dump data will be stored.\n
-    """
     try:
         user_handler = UserHandler(context)
-        if not namespace:
+        if not namespace and remote:
             namespace = user_handler.user_namespace
         if not collection:
             collection = 'default'
@@ -80,18 +62,14 @@ def dump(context: Context, collection: str, path: str, filter: list, namespace: 
 @click.option('--remote', '-r', is_flag=True, help="Show collections in remote datalake")
 @needs_credentials
 def list(context: Context, namespace: str=None, remote: bool=None) -> None:
-    """
-    List datalake collections \n
-    """
     try:
         user_handler = UserHandler(context)
-        if not namespace:
+        if not namespace and remote:
             namespace = user_handler.user_namespace
 
         datalake = Datalake(context, namespace)
-        datalake.list(remote)
-
-        return list
+        collections = datalake.list(remote)
+        Printer.print_dict(items=collections, headers=['collection', 'algorithm'])
 
     except Exception as e:
         click.secho(f"Error listing datalake: {str(e)}", fg="red")

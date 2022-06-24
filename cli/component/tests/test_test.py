@@ -1,14 +1,9 @@
 import os
-from click.testing import CliRunner
 from cli.component import test
-from .test_generic import SplightHubTest
+from cli.tests.test_generic import SplightHubTest
 
 
 class TestTest(SplightHubTest):
-    def setUp(self):
-        self.runner = CliRunner()
-        return super().setUp()
-
     def tearDown(self) -> None:
         for file in [os.path.join(self.path, 'vars.svars'), 'vars.svars']:
             if os.path.exists(file):

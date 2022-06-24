@@ -7,14 +7,14 @@ class Storage():
 
     def __init__(self, context, namespace):
         self.context = context
-        self.namespace = namespace
-        self.client = StorageClient(namespace)
+        self.namespace = namespace if namespace is not None else 'default'
+        self.client = StorageClient(self.namespace)
 
     def get(self):
         return self.client.get(StorageFile)
 
-    def save(self, file):
-        return self.client.save(StorageFile(file=file))
+    def save(self, file, prefix):
+        return self.client.save(StorageFile(file=file), prefix=prefix)
     
     def delete(self, file):
         return self.client.delete(StorageFile, id=file)

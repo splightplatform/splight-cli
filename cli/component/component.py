@@ -278,7 +278,7 @@ class Component:
             run_spec=run_spec
         )
 
-    def test(self, type, namespace, reset_input):
+    def test(self, type, namespace, instance_id, reset_input):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
         self._validate_component_structure()
@@ -286,13 +286,12 @@ class Component:
         self._prompt_parameters(reset_input=reset_input)
         self._load_vars_from_file()
         component_class = getattr(self.component, MAIN_CLASS_NAME)
-        instance_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         self.spec['type'] = type
-        self.spec['external_id'] = instance_id
-        self.spec['namespace'] = namespace
+        self.spec['external_id'] = instance_id if instance_id else "db530a08-5973-4c65-92e8-cbc1d645ebb4"
+        self.spec['namespace'] = namespace if namespace is not None else 'default'
         run_spec_str: str = json.dumps(self.spec)
         component_class(
-            instance_id=instance_id, # Why we need this if we are overriding it?
-            namespace=namespace,
+            instance_id=self.spec['external_id'], # Why we need this if we are overriding it?
+            namespace=self.spec['namespace'],
             run_spec=run_spec_str
         )

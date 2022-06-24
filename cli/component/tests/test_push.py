@@ -5,8 +5,8 @@ import json
 from unittest.mock import patch
 from cli.component.component import Component, ComponentAlreadyExistsException
 from cli.utils import ComponentHandler
-from .test_generic import SplightHubTest
-from ...settings import *
+from cli.tests.test_generic import SplightHubTest
+from cli.settings import *
 
 class TestPush(SplightHubTest):
 

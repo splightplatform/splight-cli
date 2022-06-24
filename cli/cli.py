@@ -23,6 +23,12 @@ def datalake(ctx):
 
 @cli.group()
 @click.pass_context
+def database(ctx):
+    ctx.obj = Context()
+
+
+@cli.group()
+@click.pass_context
 def storage(ctx):
     ctx.obj = Context()
 

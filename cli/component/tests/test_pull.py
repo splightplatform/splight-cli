@@ -4,8 +4,8 @@ import shutil
 from unittest.mock import patch
 from cli.component.component import Component
 from cli.utils import ComponentHandler
-from .test_generic import SplightHubTest
-from ...settings import *
+from cli.tests.test_generic import SplightHubTest
+from cli.settings import *
 
 class TestPull(SplightHubTest):
 

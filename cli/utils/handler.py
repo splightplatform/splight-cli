@@ -149,9 +149,9 @@ class RemoteDatalakeHandler:
         for source in list_:
             filtered = list(filter(lambda algo: algo['id'] == source, algos.json()['results']))
             if filtered:
-                list_with_algo.append({'source': source, 'algo': filtered[0].get('name')})
+                list_with_algo.append({'source': source, 'algorithm': filtered[0].get('name')})
             else:
-                list_with_algo.append({'source': source, 'algo': "-"})
+                list_with_algo.append({'source': source, 'algorithm': "-"})
         return list_with_algo
             
     def dump(self, path, params):

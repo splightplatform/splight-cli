@@ -3,7 +3,7 @@ import logging
 from unittest import TestCase
 from click.testing import CliRunner
 from cli.settings import SPEC_FILE
-from cli.context import Context, FakeContext, PrivacyPolicy 
+from cli.context import FakeContext, PrivacyPolicy 
 from cli.utils import get_json_from_file
 
 
