@@ -26,18 +26,14 @@ class TestConfigure(SplightHubTest):
         self.component = Component(self.path, self.context)
         self.context = FakeContext()
         self.set_fake_credentials()
-        response = requests.Response()
-        response.status_code = 201
         with patch.object(ComponentHandler, "exists_in_hub", return_value=False):
-            with patch('requests.post', return_value=response) as post:
-                result = self.runner.invoke(
-                    push,
-                    [self.type, self.path],
-                    obj=self.context
-                )
+            result = self.runner.invoke(
+                push,
+                [self.type, self.path],
+                obj=self.context
+            )
         self.assertEqual(result.exit_code, 0)
         self.assertNotIn("Use \'splightcli configure\'\n", result.output)
-        self.assertIn("Component pushed successfully to Splight Hub", result.output)
 
 
 
