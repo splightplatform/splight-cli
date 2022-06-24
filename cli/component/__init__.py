@@ -60,7 +60,6 @@ def push(context: Context, type: str, path: str, force: bool, public: bool, no_i
         type: The type of the component.\n
         path: The path where the component is in local machine.\n
     """
-
     try:
         if public:
             context.privacy_policy = PrivacyPolicy.PUBLIC

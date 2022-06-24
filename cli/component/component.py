@@ -244,7 +244,6 @@ class Component:
         handler = ComponentHandler(self.context)
         if not force and handler.exists_in_hub(self.type, self.name, self.version):
             raise ComponentAlreadyExistsException
-
         handler.upload_component(self.type, self.name, self.version, self.parameters, self.path)
 
     def pull(self, name, type, version):

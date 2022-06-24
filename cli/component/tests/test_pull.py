@@ -41,7 +41,7 @@ class TestPull(SplightHubTest):
     def test_component_download(self):
         try:
             headers = {
-                'Authorization': f"Splight {self.access_id} {self.secret_key}"
+                'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
             }
             data = {
                 'type': self.type,
@@ -60,7 +60,7 @@ class TestPull(SplightHubTest):
                     os.chdir(self.path)
                     self.component.pull(self.name, self.type, self.version)
                     _, args, kwargs = post.mock_calls[0]
-                    self.assertEqual(args[0], f"{self.hub_api_host}/{self.type}/download/")
+                    self.assertEqual(args[0], f"{self.context.SPLIGHT_HUB_API_HOST}/{self.type}/download/")
                     self.assertDictContainsSubset(kwargs["data"], data)
                     self.assertDictContainsSubset(kwargs["headers"], headers)
 

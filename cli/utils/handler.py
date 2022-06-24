@@ -61,14 +61,14 @@ class ComponentHandler:
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                 }
                 response = api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/upload/", files=files, data=data, headers=headers)
-
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
-                logger.exception(e)
+                raise e
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
+                
 
     def download_component(self, type, name, version, local_path):
         """

@@ -32,8 +32,12 @@ class FakeContext(_Context):
     def __init__(self, **kwargs):
         self.SPLIGHT_ACCESS_ID = None
         self.SPLIGHT_SECRET_KEY = None
-        self.SPLIGHT_HUB_API_HOST = 'https://integrationhub.splight-ae.com'
-        self.SPLIGHT_PLATFORM_API_HOST = 'https://integrationapi.splight-ae.com'
+        self.SPLIGHT_HUB_API_HOST = 'shttps://integrationhub.splight-ae.com'
+        self.SPLIGHT_PLATFORM_API_HOST = 'shttps://integrationapi.splight-ae.com'
+        self.privacy_policy = PrivacyPolicy.PRIVATE
+        self.set(**kwargs)
+
+    def set(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
 

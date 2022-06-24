@@ -35,13 +35,13 @@ class TestPush(SplightHubTest):
         
     def test_component_upload(self):
         headers = {
-            'Authorization': f"Splight {self.access_id} {self.secret_key}"
+            'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
         }
         data = {
             'type': self.type,
             'name': self.name,
             'version': self.version,
-            'privacy_policy': self.privacy_policy,
+            'privacy_policy': self.privacy_policy.value,
             'parameters': json.dumps(self.parameters),
         }
 
@@ -56,7 +56,7 @@ class TestPush(SplightHubTest):
 
                     compressed_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
                     _, args, kwargs = post.mock_calls[0]
-                    self.assertEqual(args[0], f"{self.hub_api_host}/{self.type}/upload/")
+                    self.assertEqual(args[0], f"{self.context.SPLIGHT_HUB_API_HOST}/{self.type}/upload/")
                     self.assertEqual(kwargs["files"]["file"].name, compressed_filename)
                     self.assertEqual(kwargs["files"]["readme"].name, os.path.join(self.path, README_FILE))
                     self.assertDictContainsSubset(kwargs["data"], data)
