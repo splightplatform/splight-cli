@@ -10,11 +10,12 @@ from .uuid import is_valid_uuid
 
 logger = logging.getLogger()
 
+
 class UserHandler:
-    
+
     def __init__(self, context):
         self.context = context
-    
+
     @property
     def authorization_header(self):
         return {
@@ -27,6 +28,7 @@ class UserHandler:
         response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
         response = response.json()
         return response["organization_id"]
+
 
 class ComponentHandler:
 
@@ -54,9 +56,9 @@ class ComponentHandler:
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
+                    'picture': open(os.path.join(local_path, PICTURE_FILE), 'rb'),
                 }
                 response = api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/upload/", files=files, data=data, headers=headers)
-
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
@@ -81,7 +83,7 @@ class ComponentHandler:
                 if response.status_code == 404:
                     raise Exception(f"Component not found")
                 raise Exception(f"Failed to pull the component from splight hub")
-                
+
             versioned_name = f"{name}-{version}"
             compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
             try:
@@ -113,7 +115,8 @@ class ComponentHandler:
         response = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/mine/?name={name}&version={version}", headers=headers)
         response = response.json()
         return response["count"] > 0
-        
+
+
 class RemoteDatalakeHandler:
 
     def __init__(self, context):
@@ -148,7 +151,7 @@ class RemoteDatalakeHandler:
             else:
                 list_with_algo.append({'source': source, 'algo': "-"})
         return list_with_algo
-            
+
     def dump(self, path, params):
         headers = self.user_handler.authorization_header
         file_data = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/datalake/dumpdata/", params=params, headers=headers)

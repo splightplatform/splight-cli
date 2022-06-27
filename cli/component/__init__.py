@@ -17,11 +17,13 @@ def signal_handler(sig, frame):
     #print('You pressed Ctrl+C!')
     sys.exit(0)
 
+
 signal.signal(signal.SIGINT, signal_handler)
 
 
 logger = logging.getLogger()
 NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
+
 
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
@@ -44,6 +46,7 @@ def create(context: Context, name: str, type: str, version: str) -> None:
         click.secho(f"Component {name} created successfully in {path}", fg="green")
 
     except Exception as e:
+        raise
         click.secho(f"Error creating component of type {type}: {str(e)}", fg="red")
         return
 
@@ -116,7 +119,7 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 
 @cli_component.command()
 @click.argument("component_type", nargs=1, type=str)
-#@click.argument("token", nargs=1, type=str)
+# @click.argument("token", nargs=1, type=sporque sitr)
 @needs_credentials
 def list(context: Context, component_type: str) -> None:
     """
@@ -158,6 +161,7 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
+
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
@@ -173,10 +177,11 @@ def test(context: Context, type: str, path: str) -> None:
         click.secho(f"Running component...", fg="green")
         component = Component(path, context)
         component.test(type)
-    
+
     except Exception as e:
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
+
 
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
