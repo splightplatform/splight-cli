@@ -35,6 +35,12 @@ def storage(ctx):
 
 @cli.group()
 @click.pass_context
+def history(ctx):
+    ctx.obj = Context()
+
+
+@cli.group()
+@click.pass_context
 def workspace(ctx):
     ctx.obj = Context()
 

@@ -10,6 +10,7 @@ from ..context import Context
 logger = logging.getLogger()
 logger.setLevel(logging.WARNING)
 
+
 @datalake_cli.command()
 @click.option("--collection", '-c', nargs=1, type=str, help="Collection where to load data")
 @click.option("--path", '-p', nargs=1, type=str, help="Path to csv file to be loaded")
