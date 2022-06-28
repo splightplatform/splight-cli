@@ -1,8 +1,8 @@
 import json
 from unittest.mock import patch, call
 from cli.component.component import Component
-from .test_generic import SplightHubTest
-from ...settings import *
+from cli.tests.test_generic import SplightHubTest
+from cli.settings import *
 import subprocess
 
 class TestInitialize(SplightHubTest):

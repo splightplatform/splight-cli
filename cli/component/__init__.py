@@ -1,20 +1,17 @@
 import click
-from functools import update_wrapper
 import hashlib
 import signal
 import sys
-import traceback
 import logging
 from ..cli import component as cli_component
 from ..utils import *
-from ..context import pass_context, Context, CONFIG_FILE, PrivacyPolicy, HUB_CONFIGS
-from ..config import ConfigManager
+from ..auth import *
+from ..context import Context, PrivacyPolicy
 from ..settings import *
-from .component import Component, SPEC_FILE, ComponentAlreadyExistsException
+from .component import Component, ComponentAlreadyExistsException
 
 
 def signal_handler(sig, frame):
-    #print('You pressed Ctrl+C!')
     sys.exit(0)
 
 
@@ -31,14 +28,6 @@ NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48
 @click.argument("version", nargs=1, type=str)
 @needs_credentials
 def create(context: Context, name: str, type: str, version: str) -> None:
-    """
-    Create a component structure in path.\n
-    Args:\n
-        name: The name of the component.\n
-        type: The type of the component.\n
-        version: The version of the component.\n
-        path: The path where the component will be created.
-    """
     try:
         path = os.path.abspath(".")
         component = Component(path, context)
@@ -59,13 +48,6 @@ def create(context: Context, name: str, type: str, version: str) -> None:
 @click.option("-ni", "--no-import", is_flag=True, default=False, help="Do not import component before pushing")
 @needs_credentials
 def push(context: Context, type: str, path: str, force: bool, public: bool, no_import: bool) -> None:
-    """
-    Push a component to the hub.\n
-    Args:\n
-        type: The type of the component.\n
-        path: The path where the component is in local machine.\n
-    """
-
     try:
         if public:
             context.privacy_policy = PrivacyPolicy.PUBLIC
@@ -98,14 +80,6 @@ def push(context: Context, type: str, path: str, force: bool, public: bool, no_i
 @click.argument("version", nargs=1, type=str)
 @needs_credentials
 def pull(context: Context, type: str, name: str, version: str) -> None:
-    """
-    Pull a component from the hub.\n
-    Args:\n
-        type: The type of the component.\n
-        name: The name of the component.\n
-        version: The version of the component.\n
-        path: The path where the component will be created.\n
-    """
     try:
         path = os.path.abspath(".")
         component = Component(path, context)
@@ -118,24 +92,23 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 
 
 @cli_component.command()
+<<<<<<< HEAD
 @click.argument("component_type", nargs=1, type=str)
 # @click.argument("token", nargs=1, type=sporque sitr)
+=======
+@click.argument("type", nargs=1, type=str)
+>>>>>>> master
 @needs_credentials
-def list(context: Context, component_type: str) -> None:
-    """
-    List components of a given type.\n
-    Args:\n
-        component_type: The type of the component.\n
-    """
+def list(context: Context, type: str) -> None:
     try:
         logger.setLevel(logging.WARNING)
         handler = ComponentHandler(context)
-        list = handler.list_components(component_type)
-        click.echo(json.dumps(list, indent=4))
+        results = handler.list_components(type)
+        Printer.print_dict(items=results, headers=['name', 'version'])
         return list
 
     except Exception as e:
-        click.secho(f"Error listing component of type {component_type}: {str(e)}", fg="red")
+        click.secho(f"Error listing component of type {type}: {str(e)}", fg="red")
         return
 
 
@@ -143,15 +116,8 @@ def list(context: Context, component_type: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.argument("run_spec", nargs=1, type=str)
-@needs_credentials
+@pass_context
 def run(context: Context, type: str, path: str, run_spec: str) -> None:
-    """
-    Run a component from the hub.\n
-    Args:\n
-        type: The type of the component.\n
-        path: The path where the component is in local machine.\n
-        run_spec: The run spec of the component.
-    """
     try:
         component = Component(path, context)
         click.secho(f"Running component...", fg="green")
@@ -165,20 +131,23 @@ def run(context: Context, type: str, path: str, run_spec: str) -> None:
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
-@needs_credentials
-def test(context: Context, type: str, path: str) -> None:
-    """
-    Run a component from the hub.\n
-    Args:\n
-        type: The type of the component.\n
-        path: The path where the component is in local machine.\n
-    """
+@click.option('--namespace', '-n', help="Namespace of execution")
+@click.option('--instance-id', '-i', help="ID of the running component.")
+@click.option('--reset-input', '-r', is_flag=True, help="Set or Reset input parameters")
+@pass_context
+def test(context: Context, type: str, path: str, namespace: str = None, instance_id: str = None, reset_input: str = None) -> None:
     try:
         click.secho(f"Running component...", fg="green")
         component = Component(path, context)
+<<<<<<< HEAD
         component.test(type)
 
+=======
+        component.test(type, namespace, instance_id, reset_input)
+    
+>>>>>>> master
     except Exception as e:
+        logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
 
@@ -186,14 +155,8 @@ def test(context: Context, type: str, path: str) -> None:
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
-@needs_credentials
+@pass_context
 def install_requirements(context: Context, type: str, path: str) -> None:
-    """
-    Run a component from the hub.\n
-    Args:\n
-        type: The type of the component.\n
-        path: The path where the component is in local machine.\n
-    """
     try:
         component = Component(path, context)
         click.secho(f"Installing component requirements...", fg="green")

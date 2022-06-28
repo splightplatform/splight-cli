@@ -1,5 +1,5 @@
 import os
-from cli.context import CONFIG_FILE, Context
+from cli.context import Context
 from unittest import TestCase
 from ...settings import *
 from cli.datalake.datalake import Datalake

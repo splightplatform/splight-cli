@@ -1,7 +1,7 @@
 import json
 from unittest.mock import patch
 from cli.component.component import Component
-from .test_generic import SplightHubTest
+from cli.tests.test_generic import SplightHubTest
 from io import StringIO
 
 class TestRun(SplightHubTest):

@@ -1,28 +1,37 @@
-import os
-import subprocess
+from mock import patch
 from cli.component.component import Component
-from cli.cli import configure
-from cli.context import CONFIG_FILE
-from .test_generic import SplightHubTest
+from cli.component import push
+from cli.context import FakeContext
+from cli.utils.handler import ComponentHandler
+from cli.tests.test_generic import SplightHubTest
 from ...settings import *
 
-class TestPush(SplightHubTest):
 
-    def setUp(self):
-        super().setUp()
+class TestConfigure(SplightHubTest):
+
+    def test_configure_requested(self):
         self.component = Component(self.path, self.context)
-        self.current_dir = os.path.dirname(__file__)
-        os.remove(CONFIG_FILE)
+        self.context = FakeContext()
+        result = self.runner.invoke(
+            push,
+            [self.type, self.path],
+            obj=self.context
+        )
+        self.assertNotEqual(result.exit_code, 0)
+        self.assertIn("Please set your Splight credentials. Use \"splightcli configure\"\n", result.output)
 
-    def test_no_configuration(self):
+    def test_configure_not_requested(self):
         self.component = Component(self.path, self.context)
-        output = None
-        try:
-            output = subprocess.check_output("splightcli component push algorithm TestHub", shell=True, cwd=self.current_dir)
-        except subprocess.CalledProcessError as e:
-            output = e.output
-        self.assertEqual(output, b"Please set your Splight credentials. Use \"splightcli configure\"\n")
-
+        self.context = FakeContext()
+        self.set_fake_credentials()
+        with patch.object(ComponentHandler, "exists_in_hub", return_value=False):
+            result = self.runner.invoke(
+                push,
+                [self.type, self.path],
+                obj=self.context
+            )
+        self.assertEqual(result.exit_code, 0)
+        self.assertNotIn("Use \'splightcli configure\'\n", result.output)
 
 
 

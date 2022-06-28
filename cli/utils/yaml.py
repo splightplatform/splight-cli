@@ -13,4 +13,5 @@ def get_yaml_from_file(file_path: str):
 
 def save_yaml_to_file(payload: str, file_path: str):
     with open(file_path, 'w+') as f:
+        yaml.Dumper.ignore_aliases = lambda *args : True # TOO RISKY to add refs on repetitions
         yaml.dump(payload, f)
