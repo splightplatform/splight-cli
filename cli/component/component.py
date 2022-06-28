@@ -161,7 +161,7 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
-    
+
     def _prompt_parameters(self, reset_input):
         vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
@@ -198,6 +198,12 @@ class Component:
         except subprocess.CalledProcessError as e:
             raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
 
+    def _get_random_picture(self, path):
+        user_handler = UserHandler(self.context)
+        file_data = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/random_picture/", headers=user_handler.authorization_header)
+        with open(path, "wb+") as f:
+            f.write(file_data.content)
+
     def initialize(self):
         health_file = NamedTemporaryFile(prefix="healthy_")
         logger.debug(f"Created healthy file")
@@ -230,10 +236,7 @@ class Component:
             template_name = file_name
             file_path = os.path.join(self.path, file_name)
             if file_name == PICTURE_FILE:
-                user_handler = UserHandler(self.context)
-                file_data = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/random_picture/", headers=user_handler.authorization_header)
-                with open(file_path, "wb+") as f:
-                    f.write(file_data.content)
+                self._get_random_picture(file_path)
                 continue
             if file_name == COMPONENT_FILE:
                 template_name = f"{type}.py"
@@ -300,7 +303,7 @@ class Component:
         self.spec['namespace'] = namespace if namespace is not None else 'default'
         run_spec_str: str = json.dumps(self.spec)
         component_class(
-            instance_id=self.spec['external_id'], # Why we need this if we are overriding it?
+            instance_id=self.spec['external_id'],  # Why we need this if we are overriding it?
             namespace=self.spec['namespace'],
             run_spec=run_spec_str
         )
