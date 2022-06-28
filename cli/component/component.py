@@ -164,7 +164,9 @@ class Component:
             name = param["name"]
             if reset_input or name not in vars:
                 param['value'] = vars.get(name, param['value'])
-                vars[name] = input_single(param).split(',') if param.get("multiple", False) else input_single(param)
+                vars[name] = input_single(param)
+                if param.get("multiple", False) and vars[name]:
+                    vars[name] = vars[name].split(',')
         save_yaml_to_file(payload=vars, file_path=self.vars_file)
 
     def _load_vars_from_file(self):
