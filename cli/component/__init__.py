@@ -92,12 +92,7 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 
 
 @cli_component.command()
-<<<<<<< HEAD
-@click.argument("component_type", nargs=1, type=str)
-# @click.argument("token", nargs=1, type=sporque sitr)
-=======
 @click.argument("type", nargs=1, type=str)
->>>>>>> master
 @needs_credentials
 def list(context: Context, type: str) -> None:
     try:
@@ -139,13 +134,8 @@ def test(context: Context, type: str, path: str, namespace: str = None, instance
     try:
         click.secho(f"Running component...", fg="green")
         component = Component(path, context)
-<<<<<<< HEAD
-        component.test(type)
-
-=======
         component.test(type, namespace, instance_id, reset_input)
-    
->>>>>>> master
+
     except Exception as e:
         logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")

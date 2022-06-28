@@ -161,13 +161,8 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
-<<<<<<< HEAD
-
-    def _prompt_null_parameters(self):
-=======
     
     def _prompt_parameters(self, reset_input):
->>>>>>> master
         vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
@@ -305,12 +300,7 @@ class Component:
         self.spec['namespace'] = namespace if namespace is not None else 'default'
         run_spec_str: str = json.dumps(self.spec)
         component_class(
-<<<<<<< HEAD
-            instance_id=instance_id,  # Why we need this if we are overriding it?
-            namespace=namespace,  # Why we need this?
-=======
             instance_id=self.spec['external_id'], # Why we need this if we are overriding it?
             namespace=self.spec['namespace'],
->>>>>>> master
             run_spec=run_spec_str
         )
