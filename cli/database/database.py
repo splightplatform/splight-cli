@@ -32,6 +32,6 @@ class Database():
         if remote:
             items = self._list_remote(obj_class)
         else:
-            obj_class = getattr(splight_models, obj_class)
+            obj_class = getattr(splight_models, obj_class.title())
             items = [{"id": i.id, "name": i.name} for i in self.db_client.get(obj_class)]
         return items
