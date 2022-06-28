@@ -1,46 +1,42 @@
 from cli.context import Context
-from unittest import TestCase
-from ...settings import *
-from cli.datalake.datalake import Datalake
-from splight_lib.datalake import DatalakeClient
+from cli.settings import *
+from cli.datalake import list
 from cli.utils import RemoteDatalakeHandler
+from cli.tests.test_generic import SplightHubTest
+from splight_lib.datalake import DatalakeClient
 from unittest.mock import patch
-from io import StringIO
 
-class TestList(TestCase):
 
+class TestList(SplightHubTest):
     def setUp(self):
-        self.context = Context()
-        self.collection_names = ['default', 'default1']
-        self.list_remote_source = [
+        super().setUp()
+        self.local_collections = ['default', 'default1']
+        self.remote_collections = [
             {
                 'source': 'default',
-                'algo': '-'
+                'algorithm': '-'
             },
             {
                 'source': 'default1',
-                'algo': '-'
+                'algorithm': '-'
             }
         ]
-        self.namespace = 'default'
-        self.out_format = "{:<50} {:<15}\n"
+        self.set_fake_credentials()
 
-    @patch('sys.stdout', new_callable = StringIO)
-    def test_list(self, stdout):
-        with patch.object(DatalakeClient, "list_collection_names", return_value=self.collection_names) as col_names:
-            d = Datalake(self.context, self.namespace)
-            d.list(remote=False)
-            expected_output = self.out_format.format("COLLECTION", "ALGORITHM")
-            for col in self.collection_names:
-                expected_output += self.out_format.format(col, "-")
-            self.assertEqual(stdout.getvalue(), expected_output)
+    def test_list(self):
+        with patch.object(DatalakeClient, "list_collection_names", return_value=self.local_collections):
+            result = self.runner.invoke(list, obj=self.context)
+            _stdout = result.output
+        self.assertIn("COLLECTION", _stdout)
+        self.assertIn("ALGORITHM", _stdout)
+        self.assertIn("default", _stdout)
+        self.assertIn("default1", _stdout)
 
-    @patch('sys.stdout', new_callable = StringIO)
-    def test_list_remote(self, stdout):
-        with patch.object(RemoteDatalakeHandler, "list_source", return_value=self.list_remote_source) as col_names:
-            d = Datalake(self.context, self.namespace)
-            d.list(remote=True)
-            expected_output = self.out_format.format("COLLECTION", "ALGORITHM")
-            for col in self.list_remote_source:
-                expected_output += self.out_format.format(col['source'], col['algo'])
-            self.assertEqual(stdout.getvalue(), expected_output)
+    def test_list_remote(self):
+        with patch.object(RemoteDatalakeHandler, "list_source", return_value=self.remote_collections):
+            result = self.runner.invoke(list, ['--remote'], obj=self.context, catch_exceptions=False)
+            _stdout = result.output
+        self.assertIn("COLLECTION", _stdout)
+        self.assertIn("ALGORITHM", _stdout)
+        self.assertIn("default", _stdout)
+        self.assertIn("default1", _stdout)

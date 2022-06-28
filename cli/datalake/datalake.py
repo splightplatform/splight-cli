@@ -8,19 +8,16 @@ class Datalake():
 
     def __init__(self, context, namespace):
         self.context = context
-        self.namespace = namespace
-        self.datalake_client = DatalakeClient(namespace)
+        self.namespace = namespace if namespace is not None else 'default'
+        self.datalake_client = DatalakeClient(self.namespace)
         self.remote_datalake_handler = RemoteDatalakeHandler(self.context)
 
     def list(self, remote):
         if remote:
-            collections = self.remote_datalake_handler.list_source()
+            collections = [{"collection": col["source"], "algorithm": col["algorithm"]} for col in self.remote_datalake_handler.list_source()]
         else:
-            collections = [{"source": col, "algo": "-"} for col in self.datalake_client.list_collection_names()]
-
-        click.secho("{:<50} {:<15}".format('COLLECTION', 'ALGORITHM'))
-        for collection in collections:
-            click.secho("{:<50} {:<15}".format(collection['source'], collection['algo']))
+            collections = [{"collection": col, "algorithm": "-"} for col in self.datalake_client.list_collection_names()]
+        return collections
 
     def dump(self, collection, path, filter, remote, example):
         if os.path.exists(path):

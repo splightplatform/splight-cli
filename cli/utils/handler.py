@@ -23,10 +23,15 @@ class UserHandler:
 
     @cached_property
     def user_namespace(self):
-        headers = self.authorization_header
-        response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
-        response = response.json()
-        return response["organization_id"]
+        org_id = 'default'
+        try:
+            headers = self.authorization_header
+            response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
+            response = response.json()
+            org_id = response.get("organization_id")
+        except Exception:
+            logger.warning("Could not check org_id remotely using default namespace")
+        return org_id
 
 class ComponentHandler:
 
@@ -56,14 +61,14 @@ class ComponentHandler:
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                 }
                 response = api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/upload/", files=files, data=data, headers=headers)
-
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
-                logger.exception(e)
+                raise e
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
+                
 
     def download_component(self, type, name, version, local_path):
         """
@@ -144,9 +149,9 @@ class RemoteDatalakeHandler:
         for source in list_:
             filtered = list(filter(lambda algo: algo['id'] == source, algos.json()['results']))
             if filtered:
-                list_with_algo.append({'source': source, 'algo': filtered[0].get('name')})
+                list_with_algo.append({'source': source, 'algorithm': filtered[0].get('name')})
             else:
-                list_with_algo.append({'source': source, 'algo': "-"})
+                list_with_algo.append({'source': source, 'algorithm': "-"})
         return list_with_algo
             
     def dump(self, path, params):
