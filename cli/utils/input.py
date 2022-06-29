@@ -23,6 +23,8 @@ def input_single(param: dict):
         default=default,
         show_default=True
     )
+    if isinstance(val, str):
+        val = val.strip(" ")
     if val == 'None':
         val = None
     return val
