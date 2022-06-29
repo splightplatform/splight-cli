@@ -1,9 +1,6 @@
 import os
 from jinja2 import Template
-from ..settings import TEMPLATES_FOLDER, PICTURE_FILE, SPLIGHT_HUB_API_HOST
-from .api_requests import api_get
-from tempfile import NamedTemporaryFile
-from .handler import UserHandler
+from ..settings import TEMPLATES_FOLDER
 
 
 class MissingTemplate(Exception):

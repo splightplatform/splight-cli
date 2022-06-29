@@ -35,7 +35,6 @@ def create(context: Context, name: str, type: str, version: str) -> None:
         click.secho(f"Component {name} created successfully in {path}", fg="green")
 
     except Exception as e:
-        raise
         click.secho(f"Error creating component of type {type}: {str(e)}", fg="red")
         return
 
