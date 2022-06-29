@@ -14,6 +14,7 @@ from .component import Component, ComponentAlreadyExistsException
 def signal_handler(sig, frame):
     sys.exit(0)
 
+
 signal.signal(signal.SIGINT, signal_handler)
 
 
@@ -133,11 +134,12 @@ def test(context: Context, type: str, path: str, namespace: str = None, instance
         click.secho(f"Running component...", fg="green")
         component = Component(path, context)
         component.test(type, namespace, instance_id, reset_input)
-    
+
     except Exception as e:
         logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")
         return
+
 
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)

@@ -1,4 +1,5 @@
-import os, sys
+import os
+import sys
 import importlib
 import subprocess
 import logging
@@ -12,8 +13,10 @@ from cli.settings import *
 
 logger = logging.getLogger()
 
+
 class ComponentAlreadyExistsException(Exception):
     pass
+
 
 class Parameter(BaseModel):
     name: str
@@ -91,6 +94,7 @@ class Spec(BaseModel):
             parameters_names.add(parameter_name)
         return parameters
 
+
 class Component:
     name = None
     type = None
@@ -103,7 +107,7 @@ class Component:
         self.vars_file = os.path.join(self.path, VARS_FILE)
         Path(self.vars_file).touch()
         self.context = context
-    
+
     @cached_property
     def spec(self) -> dict:
         return get_json_from_file(os.path.join(self.path, SPEC_FILE))
@@ -157,7 +161,7 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
-    
+
     def _prompt_parameters(self, reset_input):
         vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
@@ -189,17 +193,23 @@ class Component:
         return lines
 
     def _command_run(self, command: List[str]) -> None:
-        command: str = " ".join(command) 
+        command: str = " ".join(command)
         logger.debug(f"Running initialization command: {command} ...")
         try:
             subprocess.run(command, check=True, cwd=self.path, shell=True)
         except subprocess.CalledProcessError as e:
             raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
 
+    def _get_random_picture(self, path):
+        user_handler = UserHandler(self.context)
+        file_data = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/random_picture/", headers=user_handler.authorization_header)
+        with open(path, "wb+") as f:
+            f.write(file_data.content)
+
     def initialize(self):
         health_file = NamedTemporaryFile(prefix="healthy_")
         logger.debug(f"Created healthy file")
-        command_prefixes_map =  {
+        command_prefixes_map = {
             "RUN": self. _command_run,
         }
 
@@ -226,6 +236,10 @@ class Component:
 
         for file_name in REQUIRED_FILES:
             template_name = file_name
+            file_path = os.path.join(self.path, file_name)
+            if file_name == PICTURE_FILE:
+                self._get_random_picture(file_path)
+                continue
             if file_name == COMPONENT_FILE:
                 template_name = f"{type}.py"
             template: Template = get_template(template_name)
@@ -234,7 +248,6 @@ class Component:
                 component_name=name,
                 version=version
             )
-            file_path = os.path.join(self.path, file_name)
             with open(file_path, "w+") as f:
                 f.write(file)
 
@@ -242,7 +255,7 @@ class Component:
         self.type = self._validate_type(type)
         self._validate_component_structure()
         self._load_component_in_push(no_import)
-        
+
         handler = ComponentHandler(self.context)
         if not force and handler.exists_in_hub(self.type, self.name, self.version):
             raise ComponentAlreadyExistsException
@@ -262,7 +275,6 @@ class Component:
             raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
 
         handler.download_component(type, name, version, self.path)
-            
 
     def run(self, type, run_spec):
         logger.setLevel(logging.DEBUG)
@@ -293,7 +305,7 @@ class Component:
         self.spec['namespace'] = namespace if namespace is not None else 'default'
         run_spec_str: str = json.dumps(self.spec)
         component_class(
-            instance_id=self.spec['external_id'], # Why we need this if we are overriding it?
+            instance_id=self.spec['external_id'],  # Why we need this if we are overriding it?
             namespace=self.spec['namespace'],
             run_spec=run_spec_str
         )
