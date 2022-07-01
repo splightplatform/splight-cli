@@ -95,6 +95,9 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 @needs_credentials
 def list(context: Context, type: str) -> None:
     try:
+        if type not in VALID_TYPES:
+            click.secho(f"Invalid type {type}. Valid types are {', '.join(VALID_TYPES)}", fg="red")
+            return
         logger.setLevel(logging.WARNING)
         handler = ComponentHandler(context)
         results = handler.list_components(type)
