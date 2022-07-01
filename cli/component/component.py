@@ -10,6 +10,7 @@ from tempfile import NamedTemporaryFile
 from typing import Type, List, Union
 from ..utils import *
 from cli.settings import *
+from splight_lib.component import AbstractComponent
 
 logger = logging.getLogger()
 
@@ -122,7 +123,11 @@ class Component:
         component_directory_name = self.path.split(os.sep)[-1]
         sys.path.append(os.path.dirname(self.path))
         try:
-            return importlib.import_module(component_directory_name)
+            component = importlib.import_module(component_directory_name)
+            main_class = getattr(component, MAIN_CLASS_NAME)
+            if not any([parent_class.__name__ == AbstractComponent.__name__ for parent_class in main_class.__mro__]):
+                raise Exception(f"Component class {MAIN_CLASS_NAME} must inherit from one of Splight's component classes")
+            return component
         except Exception as e:
             raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
 
