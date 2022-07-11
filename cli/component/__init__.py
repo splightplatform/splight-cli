@@ -44,21 +44,22 @@ def create(context: Context, name: str, type: str, version: str) -> None:
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
 @click.option("-p", "--public", is_flag=True, default=False, help="Create a public component.")
-@click.option("-ni", "--no-import", is_flag=True, default=False, help="Do not import component before pushing")
+@click.option("-ni", "--no-import", help="Do not import component before pushing")
 @needs_credentials
-def push(context: Context, type: str, path: str, force: bool, public: bool, no_import: bool) -> None:
+def push(context: Context, type: str, path: str, force: bool, public: bool, no_import: str) -> None:
     try:
+        no_import_flag = False
         if public:
             context.privacy_policy = PrivacyPolicy.PUBLIC
         if no_import:
-            password = click.prompt(click.style("Enter password to push without checking component", fg="yellow"), hide_input=True, type=str)
-            hash = hashlib.sha512(str(password).encode("utf-8")).hexdigest()
+            hash = hashlib.sha512(str(no_import).encode("utf-8")).hexdigest()
             if hash != NO_IMPORT_PWD_HASH:
                 click.secho(f"Wrong password", fg="red")
                 return
+            no_import_flag = True
         component = Component(path, context)
         try:
-            component.push(type, force, no_import)
+            component.push(type, force, no_import_flag)
             click.secho("Component pushed successfully to Splight Hub", fg="green")
         except ComponentAlreadyExistsException:
             value = click.prompt(click.style(f"This {type} already exists in Splight Hub (you can use -f to force pushing). Do you want to overwrite it? (y/n)", fg="yellow"), type=str)
