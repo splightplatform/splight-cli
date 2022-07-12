@@ -1,1 +1,1 @@
-RUN pip install splight-lib==0.3.27
+RUN pip install splight-lib==0.3.43

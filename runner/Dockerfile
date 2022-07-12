@@ -5,9 +5,10 @@ ARG JFROG_BOT_USERNAME
 ARG JFROG_BOT_PASS
 
 RUN pip config set global.index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
-RUN pip install splight-cli==0.1.5
-RUN pip install xgboost
+RUN pip install splight-cli==0.1.6
 
 WORKDIR /code
 RUN mkdir /code/.config; cp -R /root/.config/pip /code/.config/pip
 COPY runner.py  /code
+# TODO add this stuff in particular images
+RUN pip install xgboost
