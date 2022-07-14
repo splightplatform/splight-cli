@@ -25,7 +25,7 @@ VALID_PARAMETER_VALUES = {
     "Asset": None,  # UUID,
     "Attribute": None,  # UUID,
     "Network": None,  # UUID,
-    "Algorithm": None,  # UUID,
+    "Algorithm": UUID,
     "Connector": None,  # UUID,
     "Rule": None,  # UUID,
 }
