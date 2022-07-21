@@ -36,7 +36,7 @@ class Datalake():
         filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
 
         if 'limit_' not in filters:
-            filters['limit_'] = 0
+            filters['limit_'] = -1
         if remote:
             filters['source'] = collection
             self.remote_datalake_handler.dump(path, filters)   
