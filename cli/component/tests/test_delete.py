@@ -6,7 +6,7 @@ from cli.utils import ComponentHandler
 from cli.tests.test_generic import SplightHubTest
 from cli.settings import *
 
-class TestPull(SplightHubTest):
+class TestDelete(SplightHubTest):
 
     def setUp(self):
         super().setUp()
