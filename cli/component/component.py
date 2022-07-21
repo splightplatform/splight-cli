@@ -281,6 +281,17 @@ class Component:
 
         handler.download_component(type, name, version, self.path)
 
+    def delete(self, name, type, version):
+        self._validate_type(type)
+
+        versioned_name = f"{name}-{version}"
+
+        handler = ComponentHandler(self.context)
+        if not handler.exists_in_hub(type, name, version):
+            raise Exception(f"Component {versioned_name} does not exist in Splight Hub")
+
+        handler.delete_component(type, name, version)
+
     def run(self, type, run_spec):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)

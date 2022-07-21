@@ -90,6 +90,26 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
         click.secho(f"Error pulling component of type {type}: {str(e)}", fg="red")
         return
 
+@cli_component.command()
+@click.argument("type", nargs=1, type=str)
+@click.argument("name", nargs=1, type=str)
+@click.argument("version", nargs=1, type=str)
+@needs_credentials
+def delete(context: Context, type: str, name: str, version: str) -> None:
+    try:
+        response = click.prompt(click.style(f"Are you sure you want to delete {name}-{version}? This operation will delete the component from Splight Hub and it won't be recoverable. (y/n)", fg="yellow"), type=str, default="n", show_default=False)
+        if response not in ["y", "Y"]:
+            click.secho("Component not deleted", fg="blue")
+            return
+        path = os.path.abspath(".")
+        component = Component(path, context)
+        component.delete(name, type, version)
+        click.secho(f"Component {name}-{version} deleted successfully", fg="green")
+
+    except Exception as e:
+        click.secho(f"Error deleting component of type {type}: {str(e)}", fg="red")
+        return
+
 
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)

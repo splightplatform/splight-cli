@@ -72,7 +72,6 @@ class ComponentHandler:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
                 
-
     def download_component(self, type, name, version, local_path):
         """
         Download the component from the hub.
@@ -101,6 +100,23 @@ class ComponentHandler:
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
+
+    def delete_component(self, type, name, version):
+        """
+        Download the component from the hub.
+        """
+        with Loader("Deleting component from Splight Hub..."):
+            headers = self.user_handler.authorization_header
+            data = {
+                'name': name,
+                'version': version,
+            }
+            response = api_post(f"{self.context.SPLIGHT_HUB_API_HOST}/{type}/remove/", data=data, headers=headers)
+
+            if response.status_code != 201:
+                if response.status_code == 404:
+                    raise Exception(f"Component not found")
+                raise Exception(f"Failed to delete the component from splight hub")
 
     def list_components(self, type):
         headers = self.user_handler.authorization_header
