@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from functools import partial
+from datetime import datetime
 from uuid import UUID
 
 TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "component", "templates")
@@ -23,11 +25,14 @@ VALID_PARAMETER_VALUES = {
     "float": float,
     "file": None,  # UUID
     "Asset": None,  # UUID,
-    "Attribute": None,  # UUID,
-    "Network": None,  # UUID,
     "Algorithm": None,  # UUID,
+    "Attribute": None,  # UUID,
     "Connector": None,  # UUID,
+    "Date": partial(datetime.strptime, format="%Y-%m-%dT%H:%M:%S%z"),  # datetime.datetime,
+    "Graph": None,  # UUID,
+    "Network": None,  # UUID,
     "Rule": None,  # UUID,
 }
+
 VARS_FILE = os.getenv("SPLIGHT_HUB_VARS", "vars.svars")
 BASE_DIR = Path(__file__).resolve().parent.parent

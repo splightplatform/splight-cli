@@ -4,96 +4,19 @@ import importlib
 import subprocess
 import logging
 from pathlib import Path
-from pydantic import BaseModel, validator
 from functools import cached_property
 from tempfile import NamedTemporaryFile
-from typing import Type, List, Union
+from typing import Type, List, Union, Optional
 from ..utils import *
 from cli.settings import *
 from splight_lib.component import AbstractComponent
-
+from .description_spec import DescriptionSpec
+from .input_spec import InputSpecFactory
 logger = logging.getLogger()
 
 
 class ComponentAlreadyExistsException(Exception):
     pass
-
-
-class Parameter(BaseModel):
-    name: str
-    type: str
-    required: bool
-    multiple: bool = False
-    value: Union[str, int, float, bool, UUID, list, None]
-
-    @validator("type")
-    def validate_type(cls, type):
-        if type not in VALID_PARAMETER_VALUES:
-            raise ValueError(f"type must be one of: {list(VALID_PARAMETER_VALUES.keys())}")
-        return type
-
-    @validator("value")
-    def validate_value(cls, v, values, field):
-        if "type" not in values:
-            return values
-
-        type_ = values["type"]
-        if VALID_PARAMETER_VALUES[type_] is None:
-            if v is not None:
-                raise ValueError(f"value must be None")
-        else:
-            if not values["multiple"]:
-                try:
-                    v = VALID_PARAMETER_VALUES[type_](v)
-                except Exception:
-                    if v is not None or values["required"]:
-                        raise ValueError(f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}")
-            else:
-                if not isinstance(v, list):
-                    raise ValueError(f"value must be a list")
-                try:
-                    new_v = []
-                    for v_ in v:
-                        new_v.append(VALID_PARAMETER_VALUES[type_](v_))
-                    v = new_v
-                except Exception as e:
-                    raise ValueError(f"the value in the list must be of type {str(VALID_PARAMETER_VALUES[type_])}")
-        return v
-
-
-class Spec(BaseModel):
-    name: str
-    version: str
-    parameters: List[Parameter]
-
-    @validator("name")
-    def validate_name(cls, name):
-        invalid_characters = ["/", "-"]
-        if not name[0].isupper():
-            raise ValueError(f"value's first letter must be capitalized")
-        if any(x in name for x in invalid_characters):
-            raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
-        return name
-
-    @validator("version")
-    def validate_version(cls, version):
-        invalid_characters = ["/", "-"]
-        if len(version) > 20:
-            raise Exception(f"value must be 20 characters maximum")
-
-        if any(x in version for x in invalid_characters):
-            raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
-        return version
-
-    @validator("parameters")
-    def validate_parameters(cls, parameters):
-        parameters_names = set()
-        for parameter in parameters:
-            parameter_name = parameter.name
-            if parameter_name in parameters_names:
-                raise Exception(f"Parameter name {parameter_name} is not unique")
-            parameters_names.add(parameter_name)
-        return parameters
 
 
 class Component:
@@ -132,7 +55,7 @@ class Component:
             raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
 
     def _validate_component(self):
-        Spec(**self.spec)
+        DescriptionSpec(**self.spec)
         try:
             component_name = MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
@@ -158,7 +81,7 @@ class Component:
     def _load_component_in_push(self, no_import) -> None:
         if no_import:
             self.component = None
-            Spec(**self.spec)
+            DescriptionSpec(**self.spec)
         else:
             self.component = self._import_component()
             self._validate_component()
@@ -234,7 +157,7 @@ class Component:
     def create(self, name, type, version):
         self._validate_type(type)
 
-        Spec(name=name, version=version, parameters=[])
+        DescriptionSpec(name=name, version=version, parameters=[])
 
         self.path = os.path.join(self.path, f"{name}-{version}")
         os.mkdir(self.path)
@@ -295,6 +218,7 @@ class Component:
     def run(self, type, run_spec):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
+        expected_structure = DescriptionSpec(**self.spec)
         self.spec = json.loads(run_spec)
         self._validate_component_structure()
         self._load_component_in_run()
@@ -302,15 +226,19 @@ class Component:
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = self.spec['external_id']
         namespace = self.spec['namespace']
+
+        input_spec_factory = InputSpecFactory(expected_structure)
+
         component_class(
             instance_id=instance_id,
             namespace=namespace,
-            run_spec=run_spec
+            run_spec=input_spec_factory.get_input_spec(self.spec)
         )
 
     def test(self, type, namespace, instance_id, reset_input):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
+        expected_structure = DescriptionSpec(**self.spec)
         self._validate_component_structure()
         self._load_component_in_push(no_import=False)
         self._prompt_parameters(reset_input=reset_input)
@@ -319,9 +247,10 @@ class Component:
         self.spec['type'] = type
         self.spec['external_id'] = instance_id if instance_id else "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         self.spec['namespace'] = namespace if namespace is not None else 'default'
-        run_spec_str: str = json.dumps(self.spec)
+        input_spec_factory = InputSpecFactory(expected_structure)
+
         component_class(
             instance_id=self.spec['external_id'],  # Why we need this if we are overriding it?
             namespace=self.spec['namespace'],
-            run_spec=run_spec_str
+            run_spec=input_spec_factory.get_input_spec(self.spec)
         )
