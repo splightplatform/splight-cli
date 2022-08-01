@@ -11,8 +11,18 @@ from typing import List, Type, Union, Optional
 import click
 from jinja2 import Template
 from pydantic import BaseModel, validator
+from typing import Type, List, Union
+from cli.component.handler import ComponentHandler, UserHandler
+from cli.utils import *
+from cli.constants import *
+from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import Type, List, Union
+from ..utils import *
+from cli.settings import *
 from splight_lib.component import AbstractComponent
-
+from .description_spec import DescriptionSpec
+from splight_lib import logging
 from cli.component.exception import InvalidComponentType
 from cli.component.handler import ComponentHandler, UserHandler
 
@@ -168,6 +178,7 @@ class Component:
                 )
 
     def _validate_component(self):
+        DescriptionSpec(**self.spec)
         try:
             Spec.verify(self.spec)
             component_name = MAIN_CLASS_NAME
@@ -195,6 +206,16 @@ class Component:
     def _load_component(self) -> None:
         self.component = self._import_component()
         self._validate_component()
+        self.name, self.version = self.spec["version"].split("-")
+        self.parameters = self.spec["parameters"]
+
+    def _load_component_in_push(self, no_import) -> None:
+        if no_import:
+            self.component = None
+            DescriptionSpec(**self.spec)
+        else:
+            self.component = self._import_component()
+            self._validate_component()
 
     def _load_spec(self):
         self.spec = get_json_from_file(self.spec_file)
@@ -416,6 +437,3 @@ class Component:
             instance_id=self.run_spec["external_id"],
             namespace=self.run_spec["namespace"],
             run_spec=json.dumps(self.run_spec),
-        )
-        component.setup = self.context.workspace.settings.dict()
-        component.start()
