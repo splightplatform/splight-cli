@@ -10,5 +10,3 @@ RUN pip install splight-cli==0.1.7
 WORKDIR /code
 RUN mkdir /code/.config; cp -R /root/.config/pip /code/.config/pip
 COPY runner.py  /code
-# TODO add this stuff in particular images
-RUN pip install xgboost
