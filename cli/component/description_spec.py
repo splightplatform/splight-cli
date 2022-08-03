@@ -1,8 +1,8 @@
-from constantly import Values
 from pydantic import BaseModel, validator
-from typing import List, Union, Optional, Dict
+from typing import List, Union, Optional
 from ..utils import *
 from cli.settings import *
+from splight_models import Deployment
 
 
 class Parameter(BaseModel):
@@ -64,19 +64,18 @@ class CustomType(BaseModel):
             raise ValueError("fields must not be empty")
 
         field_names = [f.name for f in fields]
-        if len(field_names) != len(set(field_names)):
+        if len(fields) != len(set(field_names)):
             raise ValueError("fields must have unique names")
 
         return fields
 
 
-class DescriptionSpec(BaseModel):
-    name: str
-    version: str
-    custom_types: Optional[List[CustomType]] = None
+class SpecDeployment(Deployment):
+    custom_types: List[CustomType]
     parameters: List[Parameter]
+    name: str
 
-    @validator("name")
+    @validator("name", check_fields=False)
     def validate_name(cls, name):
         invalid_characters = ["/", "-"]
         if not name[0].isupper():
@@ -85,7 +84,7 @@ class DescriptionSpec(BaseModel):
             raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
         return name
 
-    @validator("version")
+    @validator("version", check_fields=False)
     def validate_version(cls, version):
         invalid_characters = ["/", "-"]
         if len(version) > 20:
@@ -95,7 +94,7 @@ class DescriptionSpec(BaseModel):
             raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
         return version
 
-    @validator("custom_types")
+    @validator("custom_types", check_fields=False)
     def validate_custom_types(cls, custom_types):
         if custom_types is None:
             return custom_types
@@ -114,7 +113,7 @@ class DescriptionSpec(BaseModel):
 
         return custom_types
 
-    @validator("parameters")
+    @validator("parameters", check_fields=False)
     def validate_parameters(cls, v, values, field):
         if "custom_types" not in values:
             return values

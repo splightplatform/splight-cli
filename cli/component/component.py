@@ -21,10 +21,10 @@ from typing import Type, List, Union
 from ..utils import *
 from cli.settings import *
 from splight_lib.component import AbstractComponent
-from .description_spec import DescriptionSpec
 from splight_lib import logging
 from cli.component.exception import InvalidComponentType
 from cli.component.handler import ComponentHandler, UserHandler
+
 
 from cli.constants import (
     COMPONENT_FILE,
@@ -178,7 +178,7 @@ class Component:
                 )
 
     def _validate_component(self):
-        DescriptionSpec(**self.spec)
+        #        SpecDeployment(**self.spec)
         try:
             Spec.verify(self.spec)
             component_name = MAIN_CLASS_NAME
@@ -212,7 +212,7 @@ class Component:
     def _load_component_in_push(self, no_import) -> None:
         if no_import:
             self.component = None
-            DescriptionSpec(**self.spec)
+#            SpecDeployment(**self.spec)
         else:
             self.component = self._import_component()
             self._validate_component()
@@ -433,7 +433,11 @@ class Component:
         self._load_component()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
-        component = component_class(
-            instance_id=self.run_spec["external_id"],
-            namespace=self.run_spec["namespace"],
-            run_spec=json.dumps(self.run_spec),
+        instance_id = self.spec['external_id']
+        namespace = self.spec['namespace']
+
+        component_class(
+            instance_id=instance_id,
+            namespace=namespace,
+            run_spec=self.spec
+        )
