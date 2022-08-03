@@ -10,8 +10,8 @@ from typing import Type, List, Union, Optional
 from ..utils import *
 from cli.settings import *
 from splight_lib.component import AbstractComponent
-from .description_spec import DescriptionSpec
-from .input_spec import InputSpecFactory
+from .description_spec import SpecDeployment
+from .input_spec import InputDeploymentFactory
 logger = logging.getLogger()
 
 
@@ -55,7 +55,7 @@ class Component:
             raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
 
     def _validate_component(self):
-        DescriptionSpec(**self.spec)
+        SpecDeployment(**self.spec)
         try:
             component_name = MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
@@ -81,7 +81,7 @@ class Component:
     def _load_component_in_push(self, no_import) -> None:
         if no_import:
             self.component = None
-            DescriptionSpec(**self.spec)
+            SpecDeployment(**self.spec)
         else:
             self.component = self._import_component()
             self._validate_component()
@@ -157,7 +157,7 @@ class Component:
     def create(self, name, type, version):
         self._validate_type(type)
 
-        DescriptionSpec(name=name, version=version, parameters=[])
+        SpecDeployment(name=name, version=version, parameters=[])
 
         self.path = os.path.join(self.path, f"{name}-{version}")
         os.mkdir(self.path)
@@ -218,7 +218,7 @@ class Component:
     def run(self, type, run_spec):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
-        expected_structure = DescriptionSpec(**self.spec)
+        expected_structure = SpecDeployment(**self.spec)
         self.spec = json.loads(run_spec)
         self._validate_component_structure()
         self._load_component_in_run()
@@ -227,7 +227,7 @@ class Component:
         instance_id = self.spec['external_id']
         namespace = self.spec['namespace']
 
-        input_spec_factory = InputSpecFactory(expected_structure)
+        input_spec_factory = InputDeploymentFactory(expected_structure)
 
         component_class(
             instance_id=instance_id,
@@ -238,7 +238,7 @@ class Component:
     def test(self, type, namespace, instance_id, reset_input):
         logger.setLevel(logging.DEBUG)
         self._validate_type(type)
-        expected_structure = DescriptionSpec(**self.spec)
+        expected_structure = SpecDeployment(**self.spec)
         self._validate_component_structure()
         self._load_component_in_push(no_import=False)
         self._prompt_parameters(reset_input=reset_input)
@@ -247,7 +247,7 @@ class Component:
         self.spec['type'] = type
         self.spec['external_id'] = instance_id if instance_id else "db530a08-5973-4c65-92e8-cbc1d645ebb4"
         self.spec['namespace'] = namespace if namespace is not None else 'default'
-        input_spec_factory = InputSpecFactory(expected_structure)
+        input_spec_factory = InputDeploymentFactory(expected_structure)
 
         component_class(
             instance_id=self.spec['external_id'],  # Why we need this if we are overriding it?

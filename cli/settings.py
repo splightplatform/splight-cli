@@ -3,6 +3,7 @@ from pathlib import Path
 from functools import partial
 from datetime import datetime
 from uuid import UUID
+from splight_models import *
 
 TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "component", "templates")
 
@@ -33,6 +34,21 @@ VALID_PARAMETER_VALUES = {
     "Network": None,  # UUID,
     "Rule": None,  # UUID,
 }
+
+DATABASE_TYPES = {
+    "Asset": Asset,
+    "Algorithm": Algorithm,
+    "Attribute": Attribute,
+    "Connector": Connector,
+    "Graph": Graph,
+    "Network": Network,
+    "Rule": MappingRule,
+}
+
+STORAGE_TYPES = {
+    "file": StorageFile
+}
+
 
 VARS_FILE = os.getenv("SPLIGHT_HUB_VARS", "vars.svars")
 BASE_DIR = Path(__file__).resolve().parent.parent
