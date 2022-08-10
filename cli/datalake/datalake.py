@@ -1,25 +1,26 @@
-from cli.utils import *
-from splight_lib.datalake import DatalakeClient
+import pandas as pd
 import splight_models as models
 from datetime import datetime
-import pandas as pd
+from cli.client import SplightClient, remotely_available
+from cli.utils import *
 
-class Datalake():
+class Datalake(SplightClient):
 
     def __init__(self, context, namespace):
         self.context = context
         self.namespace = namespace if namespace is not None else 'default'
-        self.datalake_client = DatalakeClient(self.namespace)
-        self.remote_datalake_handler = RemoteDatalakeHandler(self.context)
 
-    def list(self, remote):
-        if remote:
-            collections = [{"collection": col["source"], "algorithm": col["algorithm"]} for col in self.remote_datalake_handler.list_source()]
-        else:
-            collections = [{"collection": col, "algorithm": "-"} for col in self.datalake_client.list_collection_names()]
-        return collections
-
-    def dump(self, collection, path, filter, remote, example):
+    @property
+    def sample_dataframe(self):
+        return pd.read_csv(f"{BASE_DIR}/cli/datalake/dump_example.csv")
+    
+    @remotely_available
+    def list(self):
+        client = setup.DATALAKE_CLIENT(self.namespace)
+        return client.list_collection_names()
+    
+    @remotely_available
+    def dump(self, collection, path, filter, example):
         if os.path.exists(path):
             raise Exception(f"File {path} already exists")
         if os.path.isdir(path):
@@ -28,36 +29,35 @@ class Datalake():
             raise Exception("Only CSV files are supported")
 
         if example:
-            with open(f"{BASE_DIR}/cli/datalake/dump_example.csv", 'rb') as f:
-                ff = open(path, 'wb+')
-                ff.write(f.read())
-                ff.close()
-                return
-        filters = {f.split('=')[0]: f.split('=')[1] for f in filter}
-
-        if 'limit_' not in filters:
-            filters['limit_'] = -1
-        if remote:
-            filters['source'] = collection
-            self.remote_datalake_handler.dump(path, filters)   
+            dataframe = self.sample_dataframe
         else:
-            client = DatalakeClient(self.namespace)
-            client.get_dataframe(resource_type=models.Variable,
-                                 collection=collection,
-                                 **self._get_filters(filters)).to_csv(path, index=False)
+            filters = {
+                f.split('=')[0]: f.split('=')[1] for f in filter
+            }
+            if 'limit_' not in filters:
+                filters['limit_'] = -1
+
+            client = setup.DATALAKE_CLIENT(self.namespace)
+            dataframe = client.get_dataframe(
+                resource_type=models.Variable,
+                collection=collection,
+                **self._get_filters(filters)
+            )
+        dataframe.to_csv(path, index=False)
         click.secho(f"Succesfully dumpped {collection} in {path}", fg="green")
 
-    def load(self, collection, path, example, remote):
-        if example:
-            path = f"{BASE_DIR}/cli/datalake/dump_example.csv"
+    @remotely_available
+    def load(self, collection, path, example):
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
-        if remote:
-            self.remote_datalake_handler.load(path=path, collection=collection)
+        
+        if example:
+            dataframe = self.sample_dataframe
         else:
-            self.datalake_client.save_dataframe(pd.read_csv(path), collection=collection)
+            dataframe = pd.read_csv(path)
+        self.datalake_client.save_dataframe(dataframe, collection=collection)
         click.secho(f"Succesfully loaded {path} in {collection}", fg="green")
 
     @staticmethod

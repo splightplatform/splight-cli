@@ -44,7 +44,7 @@ def load(context: Context,
         attribute_cols = list(attribute_col)
         asset_cols = list(asset_col)
         handler = History(context, namespace)
-        handler.load(asset_id, asset_cols, attribute_id, attribute_cols, file, example, remote)
+        handler.load(asset_id, asset_cols, attribute_id, attribute_cols, file, example, remote=remote)
         click.secho(f"Succesfully loaded data.", fg="green")
     except Exception as e:
         click.secho(f"Error loading data: {str(e)}", fg='red')

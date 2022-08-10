@@ -1,5 +1,3 @@
-from collections import defaultdict
-from email.policy import default
 import os
 import click
 from enum import Enum
@@ -78,7 +76,10 @@ class Context(_Context):
         self.__manager.delete_workspace(workspace_name)
 
     def load_workspace(self):
-        [setattr(self, key, self.__manager.workspace.get(key)) for key in CONFIG_VARS]
+        for key in CONFIG_VARS:
+            value = self.__manager.workspace.get(key)
+            setattr(self, key, value)
+            os.environ[key] = value
 
     def save_workspace(self):
         self.__manager.workspace = {k: getattr(self, k) for k in CONFIG_VARS}

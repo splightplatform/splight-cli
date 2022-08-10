@@ -51,7 +51,7 @@ def dump(context: Context, collection: str, path: str, filter: list, namespace: 
         if not collection:
             collection = 'default'
         datalake = Datalake(context, namespace)
-        datalake.dump(collection, path, filter, remote, example)
+        datalake.dump(collection, path, filter, example, remote=remote)
 
     except Exception as e:
         logger.exception(e)
@@ -69,7 +69,7 @@ def list(context: Context, namespace: str=None, remote: bool=None) -> None:
             namespace = user_handler.user_namespace
 
         datalake = Datalake(context, namespace)
-        collections = datalake.list(remote)
+        collections = datalake.list(remote=remote)
         Printer.print_dict(items=collections, headers=['collection', 'algorithm'])
 
     except Exception as e:

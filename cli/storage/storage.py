@@ -1,20 +1,26 @@
-from cli.utils import *
-from splight_lib.storage import StorageClient
 from splight_models import StorageFile
+from cli.client import SplightClient, remotely_available
+from cli.utils import *
+from cli.settings import setup
 
 
-class Storage():
+class Storage(SplightClient):
 
     def __init__(self, context, namespace):
         self.context = context
         self.namespace = namespace if namespace is not None else 'default'
-        self.client = StorageClient(self.namespace)
 
+    @remotely_available
     def get(self):
-        return self.client.get(StorageFile)
+        client = setup.STORAGE_CLIENT(self.namespace)
+        return client.get(StorageFile)
 
+    @remotely_available
     def save(self, file, prefix):
-        return self.client.save(StorageFile(file=file), prefix=prefix)
+        client = setup.STORAGE_CLIENT(self.namespace)
+        return client.save(StorageFile(file=file), prefix=prefix)
     
+    @remotely_available
     def delete(self, file):
-        return self.client.delete(StorageFile, id=file)
+        client = setup.STORAGE_CLIENT(self.namespace)
+        return client.delete(StorageFile, id=file)

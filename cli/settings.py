@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-from uuid import UUID
 
 TEMPLATES_FOLDER = os.path.join(Path(__file__).resolve().parent, "component", "templates")
 
@@ -31,3 +30,5 @@ VALID_PARAMETER_VALUES = {
 }
 VARS_FILE = os.getenv("SPLIGHT_HUB_VARS", "vars.svars")
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+from splight_lib import setup

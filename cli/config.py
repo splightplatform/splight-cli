@@ -4,8 +4,8 @@ from .utils.yaml import get_yaml_from_file, save_yaml_to_file
 class ConfigManager:
     DEFAULT_CURRENT_WORKSPACE = 'default'
     DEFAULT_WORKSPACE = {
-        'SPLIGHT_HUB_API_HOST': 'https://integrationhub.splight-ae.com',
-        'SPLIGHT_PLATFORM_API_HOST': 'https://integrationapi.splight-ae.com',
+        'SPLIGHT_HUB_API_HOST': 'https://hub.splight-ae.com',
+        'SPLIGHT_PLATFORM_API_HOST': 'https://api.splight-ae.com',
     }
     DEFAULT_WORKSPACES = {
         DEFAULT_CURRENT_WORKSPACE: DEFAULT_WORKSPACE

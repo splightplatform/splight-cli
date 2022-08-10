@@ -23,7 +23,7 @@ def list(context: Context, obj_class: str, namespace: str=None, remote: bool=Non
             namespace = user_handler.user_namespace
 
         database = Database(context, namespace)
-        items = database.list(obj_class, remote)
+        items = database.list(obj_class, remote=remote)
         Printer.print_dict(items=items, headers=['id', 'name'])
 
     except Exception as e:
