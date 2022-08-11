@@ -293,11 +293,11 @@ class Component:
         handler.delete_component(type, name, version)
 
     def run(self, type, run_spec):
-        logger.setLevel(logging.DEBUG)
         self._validate_type(type)
         self.spec = json.loads(run_spec)
         self._validate_component_structure()
         self._load_component_in_run()
+        logger.setLevel(self.spec.get('log_level', logging.DEBUG))
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         instance_id = self.spec['external_id']
