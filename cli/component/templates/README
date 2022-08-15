@@ -1,2 +1,3 @@
-{{component_name}}
-Version: {{version}}
+# {{component_name}}
+
+## Version: {{version}}

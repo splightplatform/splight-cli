@@ -3,13 +3,12 @@ import sys
 import importlib
 import subprocess
 import logging
-from pathlib import Path
 from pydantic import BaseModel, validator
-from functools import cached_property
 from tempfile import NamedTemporaryFile
 from typing import Type, List, Union
-from ..utils import *
-from cli.settings import *
+from cli.component.handler import ComponentHandler, UserHandler
+from cli.utils import *
+from cli.constants import *
 from splight_lib.component import AbstractComponent
 
 logger = logging.getLogger()
@@ -38,10 +37,7 @@ class Parameter(BaseModel):
             return values
 
         type_ = values["type"]
-        if VALID_PARAMETER_VALUES[type_] is None:
-            if v is not None:
-                raise ValueError(f"value must be None")
-        else:
+        if VALID_PARAMETER_VALUES[type_] is not None:
             if not values["multiple"]:
                 try:
                     v = VALID_PARAMETER_VALUES[type_](v)
@@ -95,6 +91,10 @@ class Spec(BaseModel):
             parameters_names.add(parameter_name)
         return parameters
 
+    @classmethod
+    def verify(cls, dict: dict):
+        cls(**dict)
+
 
 class Component:
     name = None
@@ -103,15 +103,10 @@ class Component:
     parameters = None
 
     def __init__(self, path, context):
-        logger.setLevel(logging.WARNING)
         self.path = validate_path_isdir(os.path.abspath(path))
         self.vars_file = os.path.join(self.path, VARS_FILE)
-        Path(self.vars_file).touch()
+        self.spec_file = os.path.join(self.path, SPEC_FILE)
         self.context = context
-
-    @cached_property
-    def spec(self) -> dict:
-        return get_json_from_file(os.path.join(self.path, SPEC_FILE))
 
     def _validate_component_structure(self):
         validate_path_isdir(self.path)
@@ -119,21 +114,9 @@ class Component:
             if not os.path.isfile(os.path.join(self.path, required_file)):
                 raise Exception(f"{required_file} file is missing in {self.path}")
 
-    def _import_component(self):
-        component_directory_name = self.path.split(os.sep)[-1]
-        sys.path.append(os.path.dirname(self.path))
-        try:
-            component = importlib.import_module(component_directory_name)
-            main_class = getattr(component, MAIN_CLASS_NAME)
-            if not any([parent_class.__name__ == AbstractComponent.__name__ for parent_class in main_class.__mro__]):
-                raise Exception(f"Component class {MAIN_CLASS_NAME} must inherit from one of Splight's component classes")
-            return component
-        except Exception as e:
-            raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
-
     def _validate_component(self):
-        Spec(**self.spec)
         try:
+            Spec.verify(self.spec)
             component_name = MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
                 raise Exception(f"Component does not have a class called {component_name}")
@@ -145,29 +128,33 @@ class Component:
         except Exception as e:
             raise Exception(f"Failed to validate component: {str(e)}")
 
-    def _validate_type(self, type) -> None:
+    @staticmethod
+    def _validate_type(type) -> None:
         if type not in VALID_TYPES:
             raise Exception(f"Invalid component type: {type}")
         return type
 
-    def _load_component_in_run(self) -> None:
+    def _load_component(self) -> None:
         self.component = self._import_component()
-        self.name, self.version = self.spec["version"].split("-")
-        self.parameters = self.spec["parameters"]
+        self._validate_component()
 
-    def _load_component_in_push(self, no_import) -> None:
-        if no_import:
-            self.component = None
-            Spec(**self.spec)
-        else:
-            self.component = self._import_component()
-            self._validate_component()
-
+    def _load_spec(self):
+        self.spec = get_json_from_file(self.spec_file)
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
 
-    def _prompt_parameters(self, reset_input):
+    def _load_run_spec_fields(self, extra_run_spec_fields):
+        vars = get_yaml_from_file(self.vars_file)
+        for i, param in enumerate(self.spec["parameters"]):
+            name = param["name"]
+            if name in vars:
+                self.run_spec["parameters"][i]["value"] = vars[name]        
+        for key in extra_run_spec_fields.keys():
+            self.run_spec[key] = vars[key]
+
+    def _prompt_run_spec_fields(self, reset_input, extra_run_spec_fields: dict):
+        Path(self.vars_file).touch()
         vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
@@ -176,14 +163,23 @@ class Component:
                 vars[name] = input_single(param)
                 if param.get("multiple", False) and vars[name]:
                     vars[name] = vars[name].split(',')
+        for key, default in extra_run_spec_fields.items():
+            if reset_input or key not in vars:
+                vars[key] = click.prompt(
+                    key,
+                    type=str,
+                    default=default,
+                    show_default=True
+                )
         save_yaml_to_file(payload=vars, file_path=self.vars_file)
 
-    def _load_vars_from_file(self):
-        vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["parameters"]):
-            name = param["name"]
-            if name in vars:
-                self.spec["parameters"][i]["value"] = vars[name]
+    def _command_run(self, command: List[str]) -> None:
+        command: str = " ".join(command)
+        logger.debug(f"Running initialization command: {command} ...")
+        try:
+            subprocess.run(command, check=True, cwd=self.path, shell=True)
+        except subprocess.CalledProcessError as e:
+            raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
 
     def _get_command_list(self) -> List[str]:
         initialization_file_path = os.path.join(self.path, INIT_FILE)
@@ -197,21 +193,28 @@ class Component:
                 lines.append(line.split(" "))
         return lines
 
-    def _command_run(self, command: List[str]) -> None:
-        command: str = " ".join(command)
-        logger.debug(f"Running initialization command: {command} ...")
-        try:
-            subprocess.run(command, check=True, cwd=self.path, shell=True)
-        except subprocess.CalledProcessError as e:
-            raise Exception(f"Failed to run command: {e.cmd}. Output: {e.output}")
-
     def _get_random_picture(self, path):
+        # TODO REMOVE THIS.. MOVE TO HUBCLIENT IMPLEMENTATION
         user_handler = UserHandler(self.context)
-        file_data = api_get(f"{self.context.SPLIGHT_HUB_API_HOST}/random_picture/", headers=user_handler.authorization_header)
+        file_data = api_get(f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/random_picture/", headers=user_handler.authorization_header)
         with open(path, "wb+") as f:
             f.write(file_data.content)
 
+    def _import_component(self):
+        component_directory_name = self.path.split(os.sep)[-1]
+        sys.path.append(os.path.dirname(self.path))
+        try:
+            component = importlib.import_module(component_directory_name)
+            main_class = getattr(component, MAIN_CLASS_NAME)
+            if not any([parent_class.__name__ == AbstractComponent.__name__ for parent_class in main_class.__mro__]):
+                raise Exception(f"Component class {MAIN_CLASS_NAME} must inherit from one of Splight's component classes")
+            return component
+        except Exception as e:
+            raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
+
     def initialize(self):
+        # TODO this should be removed from here. But it is present 
+        # to avoid to fail redinessprobe during req installation
         health_file = NamedTemporaryFile(prefix="healthy_")
         logger.debug(f"Created healthy file")
         command_prefixes_map = {
@@ -231,10 +234,20 @@ class Component:
             health_file.close()
             raise e
 
+    @classmethod
+    def list(cls, context, type):
+        cls._validate_type(type)
+        handler = ComponentHandler(context)
+        return handler.list_components(type)
+
     def create(self, name, type, version):
         self._validate_type(type)
 
-        Spec(name=name, version=version, parameters=[])
+        Spec.validate({
+            "name": name,
+            "version": version,
+            "parameters": []
+        })
 
         self.path = os.path.join(self.path, f"{name}-{version}")
         os.mkdir(self.path)
@@ -256,15 +269,16 @@ class Component:
             with open(file_path, "w+") as f:
                 f.write(file)
 
-    def push(self, type, force, no_import):
-        self.type = self._validate_type(type)
+    def push(self, type, force, public):
+        self._validate_type(type)
         self._validate_component_structure()
-        self._load_component_in_push(no_import)
+        self._load_spec() # TODO spec should have public attr
+        self._load_component()
 
         handler = ComponentHandler(self.context)
-        if not force and handler.exists_in_hub(self.type, self.name, self.version):
+        if not force and handler.exists_in_hub(type, self.name, self.version):
             raise ComponentAlreadyExistsException
-        handler.upload_component(self.type, self.name, self.version, self.parameters, self.path)
+        handler.upload_component(type, self.name, self.version, self.parameters, public, self.path)
 
     def pull(self, name, type, version):
         self._validate_type(type)
@@ -292,36 +306,33 @@ class Component:
 
         handler.delete_component(type, name, version)
 
-    def run(self, type, run_spec):
-        self._validate_type(type)
-        self.spec = json.loads(run_spec)
-        self._validate_component_structure()
-        self._load_component_in_run()
-        logger.setLevel(self.spec.get('log_level', logging.DEBUG))
-
-        component_class = getattr(self.component, MAIN_CLASS_NAME)
-        instance_id = self.spec['external_id']
-        namespace = self.spec['namespace']
-        component_class(
-            instance_id=instance_id,
-            namespace=namespace,
-            run_spec=run_spec
-        )
-
-    def test(self, type, namespace, instance_id, reset_input):
-        logger.setLevel(logging.DEBUG)
+    def run(self, type, run_spec, reset_input):
         self._validate_type(type)
         self._validate_component_structure()
-        self._load_component_in_push(no_import=False)
-        self._prompt_parameters(reset_input=reset_input)
-        self._load_vars_from_file()
+        self._load_spec()
+
+        extra_run_spec_fields = {
+            'namespace': "DEFAULT_NAMESPACE",
+            'external_id': "DEFAULT_EXT_ID",
+            'type': type.title(),
+        }
+        if run_spec:
+            self.run_spec = json.loads(run_spec)
+        else:
+            self.run_spec = self.spec
+            self._prompt_run_spec_fields(
+                extra_run_spec_fields=extra_run_spec_fields,
+                reset_input=reset_input
+            )
+            self._load_run_spec_fields(extra_run_spec_fields)
+
+        self._load_component()
+
         component_class = getattr(self.component, MAIN_CLASS_NAME)
-        self.spec['type'] = type
-        self.spec['external_id'] = instance_id if instance_id else "db530a08-5973-4c65-92e8-cbc1d645ebb4"
-        self.spec['namespace'] = namespace if namespace is not None else 'default'
-        run_spec_str: str = json.dumps(self.spec)
-        component_class(
-            instance_id=self.spec['external_id'],  # Why we need this if we are overriding it?
-            namespace=self.spec['namespace'],
-            run_spec=run_spec_str
+        component = component_class(
+            instance_id=self.run_spec['external_id'],
+            namespace=self.run_spec['namespace'],
+            run_spec=json.dumps(self.run_spec)
         )
+        component.setup = self.context.workspace.settings.dict()
+        component.start()

@@ -2,8 +2,6 @@ import argparse
 import os
 import json
 import subprocess
-SPLIGHT_PATH = os.path.join(os.path.expanduser("~"), '.splight')
-CONFIG_FILE = os.path.join(SPLIGHT_PATH, 'config')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -23,8 +21,11 @@ if __name__ == '__main__':
     hub_name, hub_version = hub_descriptor.split("-")
 
     json_configuration = {
+        "SPLIGHT_PLATFORM_API_HOST": os.getenv('SPLIGHT_PLATFORM_API_HOST'),
+        # TODO use particular keys for the respective org
         "SPLIGHT_ACCESS_ID": os.getenv('BOT_HUB_ACCESS_ID'),
         "SPLIGHT_SECRET_KEY": os.getenv('BOT_HUB_SECRET_KEY'),
+        # TODO REMOVE THIS
         "SPLIGHT_HUB_API_HOST": os.getenv('SPLIGHT_HUB_HOST'),
     }
     subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)

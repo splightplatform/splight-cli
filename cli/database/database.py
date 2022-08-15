@@ -1,25 +1,24 @@
 import splight_models
 from splight_lib import logging
 from cli.utils import *
-from cli.client import SplightClient, remotely_available
-from cli.settings import setup
 
 
 logger = logging.getLogger()
 
 
-class Database(SplightClient):
+class Database:
 
-    def __init__(self, context, namespace):
+    def __init__(self, context):
         self.context = context
-        self.namespace = namespace if namespace is not None else 'default'
-        self.user_handler = UserHandler(context)
+        self.namespace = 'default'
 
-    @remotely_available
+    @property
+    def client(self):
+        return self.context.framework.setup.DATABASE_CLIENT(self.namespace)
+
     def list(self, obj_class):
-        db_client = setup.DATABASE_CLIENT(self.namespace)
         obj_class = getattr(splight_models, obj_class.title())
         return [
             i.dict()
-            for i in db_client.get(obj_class)
+            for i in self.client.get(obj_class)
         ]

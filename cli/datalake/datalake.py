@@ -1,25 +1,26 @@
 import pandas as pd
 import splight_models as models
 from datetime import datetime
-from cli.client import SplightClient, remotely_available
 from cli.utils import *
 
-class Datalake(SplightClient):
 
-    def __init__(self, context, namespace):
+class Datalake:
+
+    def __init__(self, context):
         self.context = context
-        self.namespace = namespace if namespace is not None else 'default'
+        self.namespace = 'default'
+
+    @property
+    def client(self):
+        return self.context.framework.setup.DATALAKE_CLIENT(self.namespace)
 
     @property
     def sample_dataframe(self):
         return pd.read_csv(f"{BASE_DIR}/cli/datalake/dump_example.csv")
     
-    @remotely_available
     def list(self):
-        client = setup.DATALAKE_CLIENT(self.namespace)
-        return client.list_collection_names()
+        return self.client.list_collection_names()
     
-    @remotely_available
     def dump(self, collection, path, filter, example):
         if os.path.exists(path):
             raise Exception(f"File {path} already exists")
@@ -34,11 +35,8 @@ class Datalake(SplightClient):
             filters = {
                 f.split('=')[0]: f.split('=')[1] for f in filter
             }
-            if 'limit_' not in filters:
-                filters['limit_'] = -1
 
-            client = setup.DATALAKE_CLIENT(self.namespace)
-            dataframe = client.get_dataframe(
+            dataframe = self.client.get_dataframe(
                 resource_type=models.Variable,
                 collection=collection,
                 **self._get_filters(filters)
@@ -46,7 +44,6 @@ class Datalake(SplightClient):
         dataframe.to_csv(path, index=False)
         click.secho(f"Succesfully dumpped {collection} in {path}", fg="green")
 
-    @remotely_available
     def load(self, collection, path, example):
         if not os.path.isfile(path):
             raise Exception("File not found")
@@ -57,7 +54,7 @@ class Datalake(SplightClient):
             dataframe = self.sample_dataframe
         else:
             dataframe = pd.read_csv(path)
-        self.datalake_client.save_dataframe(dataframe, collection=collection)
+        self.client.save_dataframe(dataframe, collection=collection)
         click.secho(f"Succesfully loaded {path} in {collection}", fg="green")
 
     @staticmethod

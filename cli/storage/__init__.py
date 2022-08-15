@@ -3,21 +3,18 @@ import logging
 from cli.utils import *
 from cli.cli import storage as storage_cli
 from cli.context import Context, pass_context
-from .storage import Storage
+from cli.storage.storage import Storage
 
 
 logger = logging.getLogger()
-logger.setLevel(logging.WARNING)
 
 
 @storage_cli.command()
-@click.option('--namespace', '-n', help="Namespace of the resource")
-@click.option('--remote', '-r', is_flag=True, help="Use remote resources")
 @pass_context
-def list(context: Context, namespace: str=None, remote: bool=False) -> None:
+def list(context: Context) -> None:
     try:
-        storage = Storage(context, namespace)
-        results = [r.dict() for r in storage.get(remote=remote)]
+        storage = Storage(context)
+        results = [r.dict() for r in storage.get()]
         Printer.print_dict(items=results, headers=["id", "file"])
     except Exception as e:
         click.secho(f"Error listing storage: {str(e)}", fg="red")
@@ -25,14 +22,12 @@ def list(context: Context, namespace: str=None, remote: bool=False) -> None:
 
 @storage_cli.command()
 @click.argument("file", nargs=1, type=str)
-@click.option('--namespace', '-n', help="Namespace of the resource")
 @click.option('--prefix', '-p', help="Prefix where to place it inside your space")
-@click.option('--remote', '-r', is_flag=True, help="Use remote resources")
 @pass_context
-def load(context: Context, file: str, namespace: str=None, prefix: str = None, remote: bool=False) -> None:
+def load(context: Context, file: str, prefix: str = None) -> None:
     try:
-        storage = Storage(context, namespace)
-        storage.save(file, prefix, remote=remote)
+        storage = Storage(context)
+        storage.save(file, prefix)
 
     except Exception as e:
         logger.exception(e)
@@ -41,13 +36,11 @@ def load(context: Context, file: str, namespace: str=None, prefix: str = None, r
 
 @storage_cli.command()
 @click.argument("file", nargs=1, type=str)
-@click.option('--namespace', '-n', help="Namespace of the resource")
-@click.option('--remote', '-r', is_flag=True, help="Use remote resources")
 @pass_context
-def delete(context: Context, file: str, namespace: str=None, remote: bool=False) -> None:
+def delete(context: Context, file: str) -> None:
     try:
-        storage = Storage(context, namespace)
-        storage.delete(file, remote=remote)
+        storage = Storage(context)
+        storage.delete(file)
 
     except Exception as e:
         logger.exception(e)
