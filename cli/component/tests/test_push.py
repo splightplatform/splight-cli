@@ -52,9 +52,7 @@ class TestPush(SplightCLITest):
             with patch.object(requests, "post", return_value=response) as post:
                 with patch.object(py7zr.SevenZipFile, "writeall") as writeall:
                     self.component.push(self.type, force=False, public=False)
-
                     writeall.assert_called_with(self.path, f"{self.name}-{self.version}")
-
                     compressed_filename = f"{self.name}-{self.version}.{COMPRESSION_TYPE}"
                     _, args, kwargs = post.mock_calls[0]
                     self.assertEqual(args[0], f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/{self.type}/upload/")

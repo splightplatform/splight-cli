@@ -60,7 +60,7 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
-                    'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
+                    'privacy_policy': PrivacyPolicy.PUBLIC if public else PrivacyPolicy.PRIVATE,
                     'parameters': json.dumps(parameters),
                 }
                 files = {

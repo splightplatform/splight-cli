@@ -4,7 +4,7 @@ from cli.context.workspace import WorkspaceManager
 from cli.context.framework import FrameworkManager
 
 
-class PrivacyPolicy(Enum):
+class PrivacyPolicy(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
 
