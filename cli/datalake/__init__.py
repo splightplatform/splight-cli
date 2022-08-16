@@ -39,7 +39,6 @@ def dump(context: Context, collection: str, path: str, filter: list, example: bo
             collection = 'default'
         datalake = Datalake(context)
         datalake.dump(collection, path, filter, example)
-
     except Exception as e:
         logger.exception(e)
         click.secho(f"Error dumping data: {str(e)}", fg="red")

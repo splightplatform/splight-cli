@@ -336,3 +336,4 @@ class Component:
         )
         component.setup = self.context.workspace.settings.dict()
         component.start()
+        component.terminate()

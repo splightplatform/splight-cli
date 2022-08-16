@@ -9,16 +9,13 @@ class TestDump(SplightCLITest):
 
     def setUp(self):
         super().setUp()
-        self.expected_dump = "algo"
         self.configure()
 
     def test_dump(self):
-        with patch.object(Datalake, "dump", return_value=self.expected_dump):
-            result = self.runner.invoke(dump, obj=self.context, catch_exceptions=False)
-            _ = result.output
-
-        with open(self.path) as f:
-            self.assertEqual(f.read(), self.expected_dump)
+        with patch.object(Datalake, "dump") as mocked_dump:
+            result = self.runner.invoke(dump, ['--path', 'dump.csv'], obj=self.context, catch_exceptions=False)
+            self.assertEqual(result.output, '')
+            mocked_dump.assert_called_once()
 
     def test_dump_example(self):
         pass

@@ -25,7 +25,6 @@ class TestList(SplightCLITest):
         with patch.object(Datalake, "list", return_value=self.remote_collections):
             result = self.runner.invoke(list, obj=self.context, catch_exceptions=False)
             _stdout = result.output
-        self.assertIn("COLLECTION", _stdout)
-        self.assertIn("ALGORITHM", _stdout)
+        self.assertIn("COLLECTION_NAME", _stdout)
         self.assertIn("default", _stdout)
         self.assertIn("default1", _stdout)

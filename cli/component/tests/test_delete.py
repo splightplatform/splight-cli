@@ -17,7 +17,7 @@ class TestDelete(SplightCLITest):
 
     def test_component_delete(self):
         headers = {
-            'Authorization': f"Splight {self.context.SPLIGHT_ACCESS_ID} {self.context.SPLIGHT_SECRET_KEY}"
+            'Authorization': f"Splight {self.context.workspace.settings.SPLIGHT_ACCESS_ID} {self.context.workspace.settings.SPLIGHT_SECRET_KEY}"
         }
         data = {
             'name': self.name,
@@ -30,6 +30,6 @@ class TestDelete(SplightCLITest):
             with patch.object(requests, "post", return_value=response) as post:
                     self.component.delete(self.name, self.type, self.version)
                     _, args, kwargs = post.mock_calls[0]
-                    self.assertEqual(args[0], f"{self.context.SPLIGHT_HUB_API_HOST}/{self.type}/remove/")
+                    self.assertEqual(args[0], f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/{self.type}/remove/")
                     self.assertDictContainsSubset(kwargs["data"], data)
                 
