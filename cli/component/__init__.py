@@ -2,7 +2,7 @@ import click
 import signal
 import sys
 import logging
-from cli.context import pass_context
+from cli.context import needs_credentials, pass_context
 from cli.cli import component as cli_component
 from cli.utils import *
 from cli.context import Context

@@ -26,6 +26,10 @@ class WorkspaceManager:
     def settings(self):
         return self._current_settings
 
+    @property
+    def current_workspace(self):
+        return self._current_workspace
+
     def update_workspace(self, new_settings):
         self._workspaces[self._current_workspace] = new_settings.dict()
         save_yaml_to_file(self._settings, self.config_file)

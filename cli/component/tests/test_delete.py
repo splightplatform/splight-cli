@@ -2,11 +2,11 @@ import os
 import requests
 from unittest.mock import patch
 from cli.component.component import Component
-from cli.utils import ComponentHandler
-from cli.tests.test_generic import SplightHubTest
-from cli.settings import *
+from cli.component.handler import ComponentHandler
+from cli.tests.test_generic import SplightCLITest
+from cli.constants import *
 
-class TestDelete(SplightHubTest):
+class TestDelete(SplightCLITest):
 
     def setUp(self):
         super().setUp()

@@ -1,10 +1,10 @@
 import json
 from unittest.mock import patch
 from cli.component.component import Component
-from cli.tests.test_generic import SplightHubTest
+from cli.tests.test_generic import SplightCLITest
 from io import StringIO
 
-class TestRun(SplightHubTest):
+class TestRun(SplightCLITest):
 
     @patch('sys.stdout', new_callable = StringIO)
     def test_run(self, stdout):
