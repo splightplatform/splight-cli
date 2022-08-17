@@ -2,12 +2,11 @@ import os
 import shutil
 from unittest.mock import patch
 from cli.component.component import Component
-from cli.utils import ComponentHandler
-from cli.tests.test_generic import SplightHubTest
+from cli.tests.test_generic import SplightCLITest
 from unittest.mock import patch
 
 
-class TestCreate(SplightHubTest):
+class TestCreate(SplightCLITest):
 
     def test_create(self):
         with patch.object(Component, '_get_random_picture') as mock_requests:

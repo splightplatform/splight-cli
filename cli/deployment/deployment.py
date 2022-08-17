@@ -1,13 +1,12 @@
-import splight_models
 from splight_lib import logging
+from splight_models import Deployment
 from cli.utils import *
 from cli.constants import DEFAULT_NAMESPACE
-
 
 logger = logging.getLogger()
 
 
-class Database:
+class DeploymentHandler:
 
     def __init__(self, context):
         self.context = context
@@ -15,11 +14,10 @@ class Database:
 
     @property
     def client(self):
-        return self.context.framework.setup.DATABASE_CLIENT(self.namespace)
+        return self.context.framework.setup.DEPLOYMENT_CLIENT(self.namespace)
 
-    def list(self, obj_class):
-        obj_class = getattr(splight_models, obj_class.title())
+    def list(self):
         return [
             i.dict()
-            for i in self.client.get(obj_class)
+            for i in self.client.get(Deployment)
         ]

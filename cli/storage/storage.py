@@ -1,14 +1,17 @@
-from cli.utils import *
-from splight_lib.storage import StorageClient
 from splight_models import StorageFile
+from cli.utils import *
+from cli.constants import DEFAULT_NAMESPACE
 
 
-class Storage():
+class Storage:
 
-    def __init__(self, context, namespace):
+    def __init__(self, context):
         self.context = context
-        self.namespace = namespace if namespace is not None else 'default'
-        self.client = StorageClient(self.namespace)
+        self.namespace = DEFAULT_NAMESPACE
+    
+    @property
+    def client(self):
+        return self.context.framework.setup.STORAGE_CLIENT(self.namespace)
 
     def get(self):
         return self.client.get(StorageFile)

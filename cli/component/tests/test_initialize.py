@@ -1,11 +1,11 @@
-import json
+import os
 from unittest.mock import patch, call
 from cli.component.component import Component
-from cli.tests.test_generic import SplightHubTest
-from cli.settings import *
+from cli.tests.test_generic import SplightCLITest
+from cli.constants import *
 import subprocess
 
-class TestInitialize(SplightHubTest):
+class TestInitialize(SplightCLITest):
     
     def test_initialize(self):
         self.component = Component(self.path, self.context)

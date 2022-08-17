@@ -1,5 +1,5 @@
 from splight_lib.component.io import AbstractServerComponent
-from splight_lib.communication import Variable
+from splight_models import Variable
 from typing import List
 
 class Main(AbstractServerComponent):
@@ -13,4 +13,7 @@ class Main(AbstractServerComponent):
         Args:
             variables: List of variables to update.
         '''
+        pass
+
+    def start(self):
         pass

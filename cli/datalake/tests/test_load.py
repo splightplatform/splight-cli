@@ -1,69 +1,21 @@
-import os
-from cli.context import Context
-from unittest import TestCase
-from ...settings import *
+from unittest.mock import patch
+from cli.constants import *
+from cli.datalake import load
 from cli.datalake.datalake import Datalake
-import json
+from cli.tests.test_generic import SplightCLITest
 
 
-class TestLoad(TestCase):
+class TestLoad(SplightCLITest):
 
     def setUp(self):
-        self.context = Context()
-        self.namespace = 'default'
-        self.collection_load = 'qw298nCUIS38b2LOAD1'
-        self.collection_example = 'qw298nCUIS38b2LOAD2'
-        self.collection_path_load = os.path.expanduser(f"~/.splight/datalake/{self.collection_load}")
-        self.collection_path_example = os.path.expanduser(f"~/.splight/datalake/{self.collection_example}")
-        self.path = os.path.join(BASE_DIR, "cli", "datalake", "load_example.csv")
-        self.expected_output = [
-            {
-                "args": {
-                    "f": 0,
-                    "p": 1,
-                    "q": 2,
-                    "r": 3,
-                    "s": 4
-                },
-                "asset_id": "052fb43e-21f3-4503-a7da-fe9455d89b03",
-                "attribute_id": "2",
-                "instance_id": None,
-                "instance_type": None,
-                "path": "2/10",
-                "timestamp": "2020-10-10 00:00:00"
-            }
-        ]
-        self.expected_example_output = [
-            {
-                "args": {
-                    "f": 0,
-                    "p": 1,
-                    "q": 2,
-                    "r": 3,
-                    "s": 4
-                },
-                "asset_id": "052fb43e-21f3-4503-a7da-fe9455d89b03",
-                "attribute_id": "h80fb43e-21f3-4503-a7da-fe9455d89b03",
-                "instance_id": None,
-                "instance_type": None,
-                "path": "2/10",
-                "timestamp": "2020-10-10 00:00:00"
-            } 
-            for i in range(5)
-        ]
+        super().setUp()
+        self.expected_load_result = "algo"
+        self.configure()
 
     def test_load(self):
-        d = Datalake(self.context, self.namespace)
-        d.load(collection=self.collection_load, path=self.path, example=False, remote=False)
-        with open(self.collection_path_load) as f:
-            read = json.loads(f.read())
-        os.remove(self.collection_path_load)
-        self.assertEqual(read, self.expected_output)
+        with patch.object(Datalake, "load", return_value=self.expected_load_result):
+            result = self.runner.invoke(load, obj=self.context, catch_exceptions=False)
+            _ = result.output
     
     def test_load_example(self):
-        d = Datalake(self.context, self.namespace)
-        d.load(collection=self.collection_example, path=None, example=True, remote=False)
-        with open(self.collection_path_example) as f:
-            read = json.loads(f.read())
-        os.remove(self.collection_path_example)
-        self.assertEqual(read, self.expected_example_output)
+        pass
