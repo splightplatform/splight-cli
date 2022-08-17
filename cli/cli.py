@@ -58,7 +58,8 @@ def configure(ctx: Context, from_json=False) -> None:
     ctx.obj = Context()
     try:
         if from_json:
-            new_settings = SplightCLISettings.parse_file(from_json)
+            from_json = json.loads(from_json)
+            new_settings = SplightCLISettings.parse_obj(from_json)
         else:
             new_settings_data = {}
             for config_var in CONFIG_VARS:
