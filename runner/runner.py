@@ -1,5 +1,4 @@
 import argparse
-import os
 import json
 import subprocess
 
@@ -22,13 +21,14 @@ if __name__ == '__main__':
     hub_name, hub_version = hub_descriptor.split("-")
     access_id = run_spec.get("access_id", None)
     secret_key = run_spec.get("secret_key", None)
+    api_host = run_spec.get("api_host", 'https://integrationapi.splight-ae.com') # Remove this default
+    hub_api_host = run_spec.get("hub_api_host", 'https://integrationhub.splight-ae.com') # Remove this default
 
     json_configuration = {
         "SPLIGHT_ACCESS_ID": access_id,
         "SPLIGHT_SECRET_KEY": secret_key,
-        "SPLIGHT_PLATFORM_API_HOST": os.getenv('SPLIGHT_PLATFORM_API_HOST'),
-        # TODO REMOVE THIS
-        "SPLIGHT_HUB_API_HOST": os.getenv('SPLIGHT_HUB_HOST'),
+        "SPLIGHT_PLATFORM_API_HOST": api_host,
+        "SPLIGHT_HUB_API_HOST": hub_api_host,
     }
     subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
     subprocess.run(["splightcli", "component", "pull", hub_type, hub_name, hub_version], check=True)
