@@ -33,4 +33,4 @@ if __name__ == '__main__':
     subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
     subprocess.run(["splightcli", "component", "pull", hub_type, hub_name, hub_version], check=True)
     subprocess.run(["splightcli", "component", "install-requirements", hub_type, hub_descriptor], check=True)
-    subprocess.run(["splightcli", "component", "run", hub_type, hub_descriptor, json.dumps(run_spec)], check=True)
+    subprocess.run(["splightcli", "component", "run", hub_type, hub_descriptor, "--run-spec", json.dumps(run_spec)], check=True)
