@@ -34,6 +34,13 @@ def database(ctx):
 @cli.group()
 @pass_context
 @needs_credentials
+def deployment(ctx):
+    ctx.obj = Context()
+
+
+@cli.group()
+@pass_context
+@needs_credentials
 def storage(ctx):
     ctx.obj = Context()
 

@@ -2,13 +2,14 @@ import pandas as pd
 import splight_models as models
 from datetime import datetime
 from cli.utils import *
+from cli.constants import DEFAULT_NAMESPACE
 
 
 class Datalake:
 
     def __init__(self, context):
         self.context = context
-        self.namespace = 'default'
+        self.namespace = DEFAULT_NAMESPACE
 
     @property
     def client(self):

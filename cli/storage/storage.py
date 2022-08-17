@@ -1,12 +1,13 @@
 from splight_models import StorageFile
 from cli.utils import *
+from cli.constants import DEFAULT_NAMESPACE
 
 
 class Storage:
 
     def __init__(self, context):
         self.context = context
-        self.namespace = 'default'
+        self.namespace = DEFAULT_NAMESPACE
     
     @property
     def client(self):

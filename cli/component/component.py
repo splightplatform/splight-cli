@@ -312,8 +312,8 @@ class Component:
         self._load_spec()
 
         extra_run_spec_fields = {
-            'namespace': "DEFAULT_NAMESPACE",
-            'external_id': "DEFAULT_EXT_ID",
+            'namespace': DEFAULT_NAMESPACE,
+            'external_id': DEFAULT_EXTERNAL_ID,
             'type': type.title(),
         }
         if run_spec:
@@ -336,4 +336,3 @@ class Component:
         )
         component.setup = self.context.workspace.settings.dict()
         component.start()
-        component.terminate()

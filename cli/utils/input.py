@@ -3,7 +3,7 @@ from pydoc import locate
 
 def input_single(param: dict):
     default = 'None' if param['value'] is None and not param['required'] else param['value']
-    name = f"{param['name']}{'*' if param['required'] else ''}"
+    name = f"{'*' if param['required'] else ''}{param['name']}: {param['type']}"
     val = click.prompt(
         name,
         type=locate(param['type']),

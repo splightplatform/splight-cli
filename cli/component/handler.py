@@ -29,7 +29,7 @@ class UserHandler:
 
     @cached_property
     def user_namespace(self):
-        org_id = 'default'
+        org_id = DEFAULT_NAMESPACE
         try:
             headers = self.authorization_header
             response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
@@ -52,6 +52,8 @@ class ComponentHandler:
         """
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
+        if os.path.exists(os.path.join(local_path, VARS_FILE)):
+            logger.warning(f"Remove {VARS_FILE} file before pushing")
         with Loader("Pushing component to Splight Hub..."):
             try:
                 with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
@@ -60,7 +62,7 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
-                    'privacy_policy': PrivacyPolicy.PUBLIC if public else PrivacyPolicy.PRIVATE,
+                    'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
                     'parameters': json.dumps(parameters),
                 }
                 files = {

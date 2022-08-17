@@ -8,7 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_FOLDER = os.path.join(BASE_DIR, "cli", "component", "templates")
 
 COMPRESSION_TYPE = "7z"
-
+DEFAULT_NAMESPACE = 'NO_NAMESPACE'
+DEFAULT_EXTERNAL_ID = "DEMO"
 DEFAULT_WORKSPACE_NAME = 'default'
 DEFAULT_WORKSPACE = SplightCLISettings().dict()
 DEFAULT_WORKSPACES = {

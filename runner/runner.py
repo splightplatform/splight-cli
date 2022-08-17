@@ -16,15 +16,17 @@ if __name__ == '__main__':
                         
     args = parser.parse_args()
     run_spec = json.loads(args.run_spec[0])
+    # TODO remove this overparsing
     hub_type = run_spec["type"].lower()
     hub_descriptor = run_spec["version"]
     hub_name, hub_version = hub_descriptor.split("-")
+    access_id = run_spec.get("access_id", None)
+    secret_key = run_spec.get("secret_key", None)
 
     json_configuration = {
+        "SPLIGHT_ACCESS_ID": access_id,
+        "SPLIGHT_SECRET_KEY": secret_key,
         "SPLIGHT_PLATFORM_API_HOST": os.getenv('SPLIGHT_PLATFORM_API_HOST'),
-        # TODO use particular keys for the respective org
-        "SPLIGHT_ACCESS_ID": os.getenv('BOT_HUB_ACCESS_ID'),
-        "SPLIGHT_SECRET_KEY": os.getenv('BOT_HUB_SECRET_KEY'),
         # TODO REMOVE THIS
         "SPLIGHT_HUB_API_HOST": os.getenv('SPLIGHT_HUB_HOST'),
     }

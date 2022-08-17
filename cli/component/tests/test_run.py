@@ -1,6 +1,7 @@
 import json
 from cli.component.component import Component
 from cli.component import run
+from cli.constants import DEFAULT_EXTERNAL_ID, DEFAULT_NAMESPACE
 from cli.tests.test_generic import SplightCLITest
 
 class TestRun(SplightCLITest):
@@ -8,8 +9,8 @@ class TestRun(SplightCLITest):
     def test_run(self):
         self.component = Component(self.path, self.context)
         run_version = f"{self.name}-{self.version}"
-        external_id = "db530a08-5973-4c65-92e8-cbc1d645ebb4"
-        namespace = "default"
+        external_id = DEFAULT_EXTERNAL_ID
+        namespace = DEFAULT_NAMESPACE
         run_spec = {
             "name": self.name,
             "type": self.type,

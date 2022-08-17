@@ -53,9 +53,7 @@ def delete(context: Context, name: str) -> None:
 def select(context: Context, name: str) -> None:
     try:
         context.workspace.select_workspace(name)
-        results = context.workspace.list_workspaces()
-        results_colors = ['green' if '*' in item else Printer.DEFAULT_COLOR for item in results]
-        Printer.print_list(items=results, items_colors=results_colors, header="WORKSPACES")
+        click.secho(f"Current workspace: {name}", fg="green")
     except Exception as e:
         click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
         return

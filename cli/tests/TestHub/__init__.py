@@ -1,4 +1,3 @@
-import time
 from splight_lib.component import AbstractAlgorithmComponent
 
 
@@ -9,3 +8,4 @@ class Main(AbstractAlgorithmComponent):
     def start(self):
         print("HELLO")
         self.test()
+        self.terminate()
