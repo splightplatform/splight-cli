@@ -1,3 +1,16 @@
+from splight_lib.component import AbstractComponent
+from cli.settings import *
+from ..utils import *
+from typing import Type, List, Union, Optional
+from pathlib import Path
+from cli.constants import *
+from cli.utils import *
+from cli.component.handler import ComponentHandler, UserHandler
+from typing import Type, List, Union
+from tempfile import NamedTemporaryFile
+from cli.settings import VALID_PARAMETER_VALUES
+import os
+import sys
 import importlib
 import json
 import logging
@@ -57,106 +70,6 @@ class ComponentAlreadyExistsException(Exception):
     pass
 
 
-class Parameter(BaseModel):
-    name: str
-    type: str
-    required: bool
-    multiple: bool = False
-    value: Union[str, int, float, bool, list, None]
-
-    @validator("type")
-    def validate_type(cls, type):
-        if type not in VALID_PARAMETER_VALUES:
-            raise ValueError(
-                f"type must be one of: {list(VALID_PARAMETER_VALUES.keys())}"
-            )
-        return type
-
-    @validator("value")
-    def validate_value(cls, v, values, field):
-        if "type" not in values:
-            return values
-
-        type_ = values["type"]
-        if VALID_PARAMETER_VALUES[type_] is not None:
-            if not values["multiple"]:
-                try:
-                    v = VALID_PARAMETER_VALUES[type_](v)
-                except Exception:
-                    if v is not None or values["required"]:
-                        raise ValueError(
-                            f"value must be of type {str(VALID_PARAMETER_VALUES[type_])}"
-                        )
-            else:
-                if not isinstance(v, list):
-                    raise ValueError("value must be a list")
-                try:
-                    new_v = []
-                    for v_ in v:
-                        new_v.append(VALID_PARAMETER_VALUES[type_](v_))
-                    v = new_v
-                except Exception as e:
-                    raise ValueError(
-                        f"the value in the list must be of type {str(VALID_PARAMETER_VALUES[type_])}"
-                    ) from e
-        return v
-
-
-class Spec(BaseModel):
-    name: str
-    version: str
-    parameters: List[Parameter]
-    tags: Optional[List[str]] = []
-
-    @validator("name")
-    def validate_name(cls, name):
-        invalid_characters = ["/", "-"]
-        if not name[0].isupper():
-            raise ValueError("value's first letter must be capitalized")
-        if any(x in name for x in invalid_characters):
-            raise Exception(
-                f"value cannot contain any of these characters: {invalid_characters}"
-            )
-        return name
-
-    @validator("version")
-    def validate_version(cls, version):
-        invalid_characters = ["/", "-"]
-        if len(version) > 20:
-            raise Exception("value must be 20 characters maximum")
-
-        if any(x in version for x in invalid_characters):
-            raise Exception(
-                f"value cannot contain any of these characters: {invalid_characters}"
-            )
-        return version
-
-    @validator("parameters")
-    def validate_parameters(cls, parameters):
-        parameters_names = set()
-        for parameter in parameters:
-            parameter_name = parameter.name
-            if parameter_name in parameters_names:
-                raise Exception(
-                    f"Parameter name {parameter_name} is not unique"
-                )
-            parameters_names.add(parameter_name)
-        return parameters
-
-    @validator("tags")
-    def validate_tags(cls, tags):
-        tag_names = set()
-        for tag in tags:
-            if tag in tag_names:
-                raise Exception(f"Tag name {tag} is not unique")
-            tag_names.add(tag)
-        return tag_names
-
-    @classmethod
-    def verify(cls, dict: dict):
-        cls(**dict)
-
-
 class Component:
     name = None
     type = None
@@ -178,9 +91,8 @@ class Component:
                 )
 
     def _validate_component(self):
-        #        SpecDeployment(**self.spec)
         try:
-            Spec.verify(self.spec)
+            Deployment.verify(self.spec)
             component_name = MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
                 raise Exception(
@@ -212,7 +124,7 @@ class Component:
     def _load_component_in_push(self, no_import) -> None:
         if no_import:
             self.component = None
-#            SpecDeployment(**self.spec)
+            Deployment.verify(self.spec)
         else:
             self.component = self._import_component()
             self._validate_component()
@@ -221,16 +133,13 @@ class Component:
         self.spec = get_json_from_file(self.spec_file)
         self.name = self.spec["name"]
         self.version = self.spec["version"]
-        self.parameters = self.spec["parameters"]
-        # Retrocompatibility: The old spec file does not have this field.
-        self.tags = self.spec.get("tags", [])
 
     def _load_run_spec_fields(self, extra_run_spec_fields):
         vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["parameters"]):
+        for i, param in enumerate(self.spec["input"]):
             name = param["name"]
             if name in vars:
-                self.run_spec["parameters"][i]["value"] = vars[name]
+                self.run_spec["input"][i]["value"] = vars[name]
         for key in extra_run_spec_fields.keys():
             self.run_spec[key] = vars[key]
 
@@ -239,10 +148,14 @@ class Component:
     ):
         Path(self.vars_file).touch()
         vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["parameters"]):
+        for i, param in enumerate(self.spec["input"]):
             name = param["name"]
             if reset_input or name not in vars:
                 param["value"] = vars.get(name, param["value"])
+                if param["type"] not in VALID_PARAMETER_VALUES:
+                    raise Exception(f"Invalid parameter type: {param['type']}."
+                                    f" Custom types not supported yet.")
+                param['value'] = vars.get(name, param['value'])
                 vars[name] = input_single(param)
                 if param.get("multiple", False) and vars[name]:
                     vars[name] = vars[name].split(",")
@@ -337,7 +250,15 @@ class Component:
     def create(self, name, type, version):
         component_type = self._validate_type(type)
 
-        Spec.validate({"name": name, "version": version, "parameters": []})
+        self._validate_type(type)
+        Deployment.verify({
+            "name": name,
+            "version": version,
+            "custom_types": [],
+            "input": [],
+            "output": [],
+            "filters": []
+        })
 
         self.path = os.path.join(self.path, f"{name}-{version}")
         os.mkdir(self.path)
@@ -412,6 +333,7 @@ class Component:
 
     def run(self, type, run_spec, reset_input):
         component_type = self._validate_type(type)
+        self._validate_type(type)
         self._validate_component_structure()
         self._load_spec()
 
@@ -433,11 +355,8 @@ class Component:
         self._load_component()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
-        instance_id = self.spec['external_id']
-        namespace = self.spec['namespace']
-
-        component_class(
-            instance_id=instance_id,
-            namespace=namespace,
-            run_spec=self.spec
+        component = component_class(
+            run_spec=self.run_spec
         )
+        component.setup = self.context.workspace.settings.dict()
+        component.start()

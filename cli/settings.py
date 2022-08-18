@@ -1,7 +1,5 @@
 import os
 from pathlib import Path
-from functools import partial
-from datetime import datetime
 from pydantic import BaseSettings
 from splight_models import *
 
@@ -40,30 +38,21 @@ VALID_PARAMETER_VALUES = {
     "bool": bool,
     "str": str,
     "float": float,
+    "Date": str,
     "file": None,  # UUID
     "Asset": None,  # UUID,
     "Algorithm": None,  # UUID,
     "Attribute": None,  # UUID,
     "Connector": None,  # UUID,
-    "Date": partial(datetime.strptime, format="%Y-%m-%dT%H:%M:%S%z"),  # datetime.datetime,
     "Graph": None,  # UUID,
     "Network": None,  # UUID,
     "Rule": None,  # UUID,
 }
 
-DATABASE_TYPES = {
-    "Asset": Asset,
-    "Algorithm": Algorithm,
-    "Attribute": Attribute,
-    "Connector": Connector,
-    "Graph": Graph,
-    "Network": Network,
-    "Rule": MappingRule,
-}
-
-STORAGE_TYPES = {
-    "file": StorageFile
-}
+VALID_DEPENDS_ON = [
+    ("Asset", "Graph"),
+    ("Attribute", "Asset"),
+]
 
 
 VARS_FILE = os.getenv("SPLIGHT_HUB_VARS", "vars.svars")
