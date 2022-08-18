@@ -28,6 +28,7 @@ def load(context: Context, file: str, prefix: str = None) -> None:
     try:
         storage = Storage(context)
         storage.save(file, prefix)
+        click.secho(f"Saved file: {file}", fg="green")
 
     except Exception as e:
         logger.exception(e)
@@ -41,7 +42,21 @@ def delete(context: Context, file: str) -> None:
     try:
         storage = Storage(context)
         storage.delete(file)
+        click.secho(f"Deleted file: {file}", fg="green")
 
+    except Exception as e:
+        logger.exception(e)
+        click.secho(f"Error deleting storage: {str(e)}", fg="red")
+
+
+@storage_cli.command()
+@click.argument("file", nargs=1, type=str)
+@pass_context
+def download(context: Context, file: str) -> None:
+    try:
+        storage = Storage(context)
+        storage.download(file)
+        click.secho(f"Donwloaded file: ./{file}", fg="green")
     except Exception as e:
         logger.exception(e)
         click.secho(f"Error deleting storage: {str(e)}", fg="red")

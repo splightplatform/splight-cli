@@ -21,3 +21,7 @@ class Storage:
     
     def delete(self, file):
         return self.client.delete(StorageFile, id=file)
+
+    def download(self, file):
+        return self.client.download(StorageFile, id=file, target=f"./{file}")
+
