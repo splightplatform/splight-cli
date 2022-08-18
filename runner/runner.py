@@ -1,4 +1,5 @@
 import argparse
+from asyncio.log import logger
 import json
 import subprocess
 
@@ -21,8 +22,8 @@ if __name__ == '__main__':
     hub_name, hub_version = hub_descriptor.split("-")
     access_id = run_spec.get("access_id", None)
     secret_key = run_spec.get("secret_key", None)
-    api_host = run_spec.get("api_host", 'https://integrationapi.splight-ae.com') # Remove this default
-    hub_api_host = run_spec.get("hub_api_host", 'https://integrationhub.splight-ae.com') # Remove this default
+    api_host = run_spec.get("api_host", None)
+    hub_api_host = run_spec.get("hub_api_host", None)
 
     json_configuration = {
         "SPLIGHT_ACCESS_ID": access_id,
@@ -30,6 +31,7 @@ if __name__ == '__main__':
         "SPLIGHT_PLATFORM_API_HOST": api_host,
         "SPLIGHT_HUB_API_HOST": hub_api_host,
     }
+    logger.info(f"Configure with {access_id} to run {hub_type} {hub_name} {hub_version}. Remote set to {api_host}")
     subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
     subprocess.run(["splightcli", "component", "pull", hub_type, hub_name, hub_version], check=True)
     subprocess.run(["splightcli", "component", "install-requirements", hub_type, hub_descriptor], check=True)
