@@ -1,7 +1,7 @@
 from pydantic import validator
 from typing import List
 from ..utils import *
-from cli.settings import *
+from cli.constants import *
 from splight_models import (
     Parameter as ModelParameter,
     CustomType as ModelCustomType,
