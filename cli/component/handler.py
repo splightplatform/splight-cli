@@ -55,7 +55,6 @@ class ComponentHandler:
                          custom_types: List[Dict],
                          input: List[Dict],
                          output: List[Dict],
-                         filters: List[Dict],
                          public,
                          local_path):
         """
@@ -74,17 +73,16 @@ class ComponentHandler:
                     'name': name,
                     'version': version,
                     'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
-                    'custom_types': custom_types,
-                    'input': input,
-                    'output': output,
-                    'filters': filters,
+                    'custom_types': json.dumps(custom_types),
+                    'input': json.dumps(input),
+                    'output': json.dumps(output),
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                     'picture': open(os.path.join(local_path, PICTURE_FILE), 'rb'),
                 }
-                response = api_post(f"{self.user_handler.host}/{type}/upload/", files=files, data=data, headers=headers, format="json")
+                response = api_post(f"{self.user_handler.host}/{type}/upload/", files=files, data=data, headers=headers)
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:

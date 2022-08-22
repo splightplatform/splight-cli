@@ -296,7 +296,7 @@ class Component:
             self.input,
             self.output,
             public,
-            self.path,
+            self.path
         )
 
     def pull(self, name, type, version):
