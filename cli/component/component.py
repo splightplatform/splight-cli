@@ -1,16 +1,14 @@
 from splight_lib.component import AbstractComponent
-from cli.settings import *
-from ..utils import *
-from typing import Type, List, Union, Optional
+from typing import Type, List
 from pathlib import Path
+from cli.settings import *
 from cli.constants import *
 from cli.utils import *
 from cli.component.handler import ComponentHandler, UserHandler
+from ..utils import *
+from .deployment import Deployment
 from typing import Type, List, Union
 from tempfile import NamedTemporaryFile
-from cli.settings import VALID_PARAMETER_VALUES
-import os
-import sys
 import importlib
 import json
 import logging
@@ -23,7 +21,6 @@ from typing import List, Type, Union, Optional
 
 import click
 from jinja2 import Template
-from pydantic import BaseModel, validator
 from typing import Type, List, Union
 from cli.component.handler import ComponentHandler, UserHandler
 from cli.utils import *
@@ -118,8 +115,6 @@ class Component:
     def _load_component(self) -> None:
         self.component = self._import_component()
         self._validate_component()
-        self.name, self.version = self.spec["version"].split("-")
-        self.parameters = self.spec["parameters"]
 
     def _load_component_in_push(self, no_import) -> None:
         if no_import:
@@ -351,12 +346,11 @@ class Component:
                 reset_input=reset_input,
             )
             self._load_run_spec_fields(extra_run_spec_fields)
-
         self._load_component()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         component = component_class(
-            run_spec=self.run_spec
+            run_spec=self.run_spec,
+            initial_setup=self.context.workspace.settings.dict()
         )
-        component.setup = self.context.workspace.settings.dict()
         component.start()

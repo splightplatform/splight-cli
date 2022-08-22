@@ -36,11 +36,13 @@ VALID_PARAMETER_VALUES = {
     "bool": bool,
     "str": str,
     "float": float,
+    "Date": str,
     "file": None,  # UUID
     "Asset": None,  # UUID,
     "Attribute": None,  # UUID,
-    "Network": None,  # UUID,
     "Algorithm": None,  # UUID,
     "Connector": None,  # UUID,
+    "Graph": None,  # UUID,
+    "Network": None,  # UUID,
     "Rule": None,  # UUID,
 }

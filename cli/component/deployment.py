@@ -116,7 +116,7 @@ class Deployment(ModelDeployment):
         if not name[0].isupper():
             raise ValueError(f"value's first letter must be capitalized")
         if any(x in name for x in invalid_characters):
-            raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
+            raise Exception(f"name cannot contain any of these characters: {invalid_characters}")
         return name
 
     @validator("version", check_fields=False)
@@ -126,7 +126,7 @@ class Deployment(ModelDeployment):
             raise Exception(f"value must be 20 characters maximum")
 
         if any(x in version for x in invalid_characters):
-            raise Exception(f"value cannot contain any of these characters: {invalid_characters}")
+            raise Exception(f"version cannot contain any of these characters: {invalid_characters}")
         return version
 
     @validator("custom_types")
@@ -159,7 +159,7 @@ class Deployment(ModelDeployment):
 
         for parameter in v:
             if parameter.type not in valid_types_names and parameter.type not in custom_type_names:
-                raise ValueError(f"parameter type {parameter.type} not defined")
+                raise ValueError(f"input type {parameter.type} not defined")
 
         # depends on
         _check_parameter_depends_on(v)
@@ -172,21 +172,24 @@ class Deployment(ModelDeployment):
 
         for parameter in v:
             if parameter.type not in valid_types_names:
-                raise ValueError(f"invalid parameter type {parameter.type}, can not be custom type")
+                raise ValueError(f"invalid output type {parameter.type}, can not be custom type")
 
         # depends on
         _check_parameter_depends_on(v)
 
     @validator("filters")
     def validate_filters(cls, v, values, field):
+        if not values['output']:
+            return v
         output_and_filters = v + values["output"]
+
         _check_unique_names(output_and_filters, "output and filter parameters")
 
         valid_types_names: List[str] = VALID_PARAMETER_VALUES.keys()
 
         for parameter in v:
             if parameter.type not in valid_types_names:
-                raise ValueError(f"invalid parameter type {parameter.type}, can not be custom type")
+                raise ValueError(f"invalid filter type {parameter.type}, can not be custom type")
 
         # depends on
         _check_parameter_depends_on(v)
