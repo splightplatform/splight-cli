@@ -1,8 +1,9 @@
 # THIS CLASS SHOULD NOT EXISTS
-# TODO MOVE THIS TO HUBCLIENT REMOTE_LIB IMPLEMENTATION 
+# TODO MOVE THIS TO HUBCLIENT REMOTE_LIB IMPLEMENTATION
 import json
 import os
 import py7zr
+from typing import List, Dict
 from functools import cached_property
 from cli.constants import *
 from cli.context import PrivacyPolicy
@@ -46,7 +47,17 @@ class ComponentHandler:
         self.context = context
         self.user_handler = UserHandler(context)
 
-    def upload_component(self, type, name, version, parameters, tags, public, local_path):
+    def upload_component(self,
+                         type: str,
+                         name: str,
+                         version: str,
+                         tags: List[str],
+                         custom_types: List[Dict],
+                         input: List[Dict],
+                         output: List[Dict],
+                         filters: List[Dict],
+                         public,
+                         local_path):
         """
         Save the component to the hub.
         """
@@ -63,15 +74,17 @@ class ComponentHandler:
                     'name': name,
                     'version': version,
                     'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
-                    'parameters': json.dumps(parameters),
-                    'tags': json.dumps(tags)
+                    'custom_types': custom_types,
+                    'input': input,
+                    'output': output,
+                    'filters': filters,
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                     'picture': open(os.path.join(local_path, PICTURE_FILE), 'rb'),
                 }
-                response = api_post(f"{self.user_handler.host}/{type}/upload/", files=files, data=data, headers=headers)
+                response = api_post(f"{self.user_handler.host}/{type}/upload/", files=files, data=data, headers=headers, format="json")
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
@@ -79,7 +92,7 @@ class ComponentHandler:
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
-                
+
     def download_component(self, type, name, version, local_path):
         """
         Download the component from the hub.

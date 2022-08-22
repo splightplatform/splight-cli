@@ -1,5 +1,5 @@
 from pydantic import validator
-from typing import List
+from typing import List, Dict, Optional
 from ..utils import *
 from cli.constants import *
 from splight_models import (
@@ -104,7 +104,9 @@ class CustomType(ModelCustomType):
         return fields
 
 
-class Deployment(ModelDeployment):
+class Spec(ModelDeployment):
+    type: Optional[str] = None
+    tags: List[str] = []
     custom_types: List[CustomType] = []
     input: List[Parameter]
     output: List[Parameter]
@@ -128,6 +130,15 @@ class Deployment(ModelDeployment):
         if any(x in version for x in invalid_characters):
             raise Exception(f"version cannot contain any of these characters: {invalid_characters}")
         return version
+
+    @validator("tags")
+    def validate_tags(cls, tags):
+        tag_names = set()
+        for tag in tags:
+            if tag in tag_names:
+                raise Exception(f"Tag name {tag} is not unique")
+            tag_names.add(tag)
+        return tag_names
 
     @validator("custom_types")
     def validate_custom_types(cls, custom_types):

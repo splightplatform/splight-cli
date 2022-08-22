@@ -4,9 +4,9 @@ from pydantic import BaseSettings
 class SplightCLISettings(BaseSettings):
     SPLIGHT_ACCESS_ID: str = None
     SPLIGHT_SECRET_KEY: str = None
-    SPLIGHT_PLATFORM_API_HOST: str = 'https://api.splight-ai.com'
+    SPLIGHT_PLATFORM_API_HOST: str = 'https://integrationapi.splight-ae.com'
     # TODO REMOVE THIS
-    SPLIGHT_HUB_API_HOST: str = 'https://hub.splight-ai.com'
+    SPLIGHT_HUB_API_HOST: str = 'https://integrationhub.splight-ae.com'
     # FRAMEWORK
     DATABASE_CLIENT: str = "remote_splight_lib.database.DatabaseClient"
     DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"

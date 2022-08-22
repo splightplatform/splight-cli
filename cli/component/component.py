@@ -6,7 +6,7 @@ from cli.constants import *
 from cli.utils import *
 from cli.component.handler import ComponentHandler, UserHandler
 from ..utils import *
-from .deployment import Deployment
+from .spec import Spec
 from typing import Type, List, Union
 from tempfile import NamedTemporaryFile
 import importlib
@@ -71,7 +71,6 @@ class Component:
     name = None
     type = None
     version = None
-    parameters = None
 
     def __init__(self, path, context):
         self.path = validate_path_isdir(os.path.abspath(path))
@@ -89,7 +88,7 @@ class Component:
 
     def _validate_component(self):
         try:
-            Deployment.verify(self.spec)
+            Spec.verify(self.spec)
             component_name = MAIN_CLASS_NAME
             if not hasattr(self.component, component_name):
                 raise Exception(
@@ -119,7 +118,7 @@ class Component:
     def _load_component_in_push(self, no_import) -> None:
         if no_import:
             self.component = None
-            Deployment.verify(self.spec)
+            Spec.verify(self.spec)
         else:
             self.component = self._import_component()
             self._validate_component()
@@ -127,7 +126,11 @@ class Component:
     def _load_spec(self):
         self.spec = get_json_from_file(self.spec_file)
         self.name = self.spec["name"]
+        self.tags = self.spec["tags"]
         self.version = self.spec["version"]
+        self.custom_types = self.spec["custom_types"]
+        self.input = self.spec["input"]
+        self.output = self.spec["output"]
 
     def _load_run_spec_fields(self, extra_run_spec_fields):
         vars = get_yaml_from_file(self.vars_file)
@@ -246,7 +249,7 @@ class Component:
         component_type = self._validate_type(type)
 
         self._validate_type(type)
-        Deployment.verify({
+        Spec.verify({
             "name": name,
             "version": version,
             "custom_types": [],
@@ -288,8 +291,10 @@ class Component:
             component_type,
             self.name,
             self.version,
-            self.parameters,
             self.tags,
+            self.custom_types,
+            self.input,
+            self.output,
             public,
             self.path,
         )
@@ -346,6 +351,7 @@ class Component:
                 reset_input=reset_input,
             )
             self._load_run_spec_fields(extra_run_spec_fields)
+
         self._load_component()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)

@@ -1,7 +1,9 @@
 {
     "name": "{{component_name}}",
     "version": "{{version}}",
-    "parameters": [
+    "tags": [],
+    "custom_types": [],
+    "input": [
         {
             "name": "period",
             "type": "int",
@@ -9,5 +11,10 @@
             "value": 10
         }
     ],
-    "tags": []
+    "output": [
+        {
+            "name": "result",
+            "type": "int"
+        }
+    ]
 }
