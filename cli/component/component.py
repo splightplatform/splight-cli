@@ -7,7 +7,7 @@ from cli.utils import *
 from cli.component.handler import ComponentHandler, UserHandler
 from ..utils import *
 from .spec import Spec
-from typing import Type, List, Union
+from typing import Type, List
 from tempfile import NamedTemporaryFile
 import importlib
 import json
