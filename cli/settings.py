@@ -8,7 +8,7 @@ class SplightCLISettings(BaseSettings):
     # TODO REMOVE THIS
     SPLIGHT_HUB_API_HOST: str = 'https://integrationhub.splight-ae.com'
     # FRAMEWORK
-    DATABASE_CLIENT: str = "remote_splight_lib.database.DatabaseClient"
+    DATABASE_CLIENT: str = 'private_splight_lib.database.DjangoClient'
     DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"
     STORAGE_CLIENT: str = "remote_splight_lib.storage.StorageClient"
     DEPLOYMENT_CLIENT: str = "remote_splight_lib.deployment.DeploymentClient"
