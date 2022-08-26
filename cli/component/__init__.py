@@ -2,7 +2,7 @@ import click
 import signal
 import sys
 import logging
-from cli.context import needs_credentials, pass_context
+from cli.context import pass_context
 from cli.cli import component as cli_component
 from cli.utils import *
 from cli.context import Context
@@ -131,7 +131,7 @@ def run(context: Context, type: str, path: str, run_spec: str = None, reset_inpu
 
     except Exception as e:
         click.secho(f"Error running component: {str(e)}", fg="red")
-        return
+        exit(1)
 
 
 @cli_component.command()
@@ -146,4 +146,4 @@ def install_requirements(context: Context, type: str, path: str) -> None:
 
     except Exception as e:
         click.secho(f"Error installing component requirements: {str(e)}", fg="red")
-        return
+        exit(1) # TODO DO THIS WITH A DECORATOR IN EVERY TRY EXCEPT

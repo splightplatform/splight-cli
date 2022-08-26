@@ -13,7 +13,6 @@ if __name__ == '__main__':
                         nargs=1,
                         help='Run Spec',
                         required=True)
-                        
     args = parser.parse_args()
     run_spec = json.loads(args.run_spec[0])
     # TODO remove this overparsing

@@ -76,4 +76,4 @@ def configure(ctx: Context, from_json=False) -> None:
         click.secho(f"Configuration saved successfully", fg="green")
     except Exception as e:
         click.secho(f"Error configuring Splight CLI: {str(e)}", fg="red")
-        return
+        exit(1)
