@@ -105,7 +105,7 @@ def delete(context: Context, type: str, name: str, version: str) -> None:
 @pass_context
 def list(context: Context, type: str) -> None:
     try:
-        if type not in VALID_TYPES:
+        if type.title() not in VALID_TYPES:
             click.secho(f"Invalid type {type}. Valid types are {', '.join(VALID_TYPES)}", fg="red")
             return
         results = Component.list(context, type)
