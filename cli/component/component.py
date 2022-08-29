@@ -405,3 +405,4 @@ class Component:
             run_spec=json.dumps(self.run_spec),
         )
         component.setup = self.context.workspace.settings.dict()
+        component.start()
