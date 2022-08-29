@@ -4,17 +4,23 @@ from ..utils import *
 from cli.constants import *
 from splight_models import (
     Parameter as ModelParameter,
+    OutputParameter as ModelOutputParameter,
     CustomType as ModelCustomType,
-    Deployment as ModelDeployment)
+    Output as ModelOutput,
+    Deployment as ModelDeployment
+)
 
 
-class Parameter(ModelParameter):
+class ChoiseMixin:
     @validator("choices", check_fields=False)
     def validate_choices(cls, v, values):
         if "type" not in values:
             return v
 
         type_ = values["type"]
+
+        if type not in ["str", "int", "float"]:
+            raise ValueError("Choices can only be used with string, int or float types")
 
         # choises type match type field
         try:
@@ -25,6 +31,8 @@ class Parameter(ModelParameter):
 
         return v
 
+
+class Parameter(ModelParameter, ChoiseMixin):
     @validator("value", check_fields=False)
     def validate_value(cls, v, values, field):
         if not set(values.keys()).issuperset({"type", "required", "multiple", "choices"}):
@@ -66,6 +74,14 @@ class Parameter(ModelParameter):
         return v
 
 
+class OutputParameter(ModelOutputParameter, ChoiseMixin):
+    @validator("type", check_fields=False)
+    def validate_type(cls, type):
+        if type not in VALID_PARAMETER_VALUES:
+            raise ValueError(f"invalid output type {type}, can not be custom type")
+        return type
+
+
 def _check_parameter_depends_on(parameters: List[Parameter]):
     parameter_map: Dict[str, Parameter] = {p.name: p for p in parameters}
     for parameter in parameters:
@@ -88,9 +104,7 @@ def _check_unique_names(parameters: List[Parameter], type: str):
         raise ValueError(f"{type} must have unique names")
 
 
-class CustomType(ModelCustomType):
-    fields: List[Parameter]
-
+class FieldMixin:
     @validator("fields")
     def validate_fields(cls, fields):
         if len(fields) == 0:
@@ -104,13 +118,20 @@ class CustomType(ModelCustomType):
         return fields
 
 
+class CustomType(ModelCustomType, FieldMixin):
+    fields: List[Parameter]
+
+
+class Output(ModelOutput, FieldMixin):
+    fields: List[OutputParameter]
+
+
 class Spec(ModelDeployment):
     type: Optional[str] = None
     tags: List[str] = []
     custom_types: List[CustomType] = []
     input: List[Parameter]
-    output: List[Parameter]
-    filters: List[Parameter]
+    output: List[Output]
 
     @validator("name", check_fields=False)
     def validate_name(cls, name):
@@ -166,10 +187,10 @@ class Spec(ModelDeployment):
         _check_unique_names(v, "input parameters")
 
         custom_type_names: List[str] = [c.name for c in values["custom_types"]]
-        valid_types_names: List[str] = VALID_PARAMETER_VALUES.keys()
+        valid_types_names: List[str] = list(VALID_PARAMETER_VALUES.keys()) + custom_type_names
 
         for parameter in v:
-            if parameter.type not in valid_types_names and parameter.type not in custom_type_names:
+            if parameter.type not in valid_types_names:
                 raise ValueError(f"input type {parameter.type} not defined")
 
         # depends on
@@ -179,31 +200,10 @@ class Spec(ModelDeployment):
 
     @validator("output")
     def validate_output(cls, v, values, field):
-        valid_types_names: List[str] = VALID_PARAMETER_VALUES.keys()
+        if len(v) == 0:
+            raise ValueError("output must not be empty")
 
-        for parameter in v:
-            if parameter.type not in valid_types_names:
-                raise ValueError(f"invalid output type {parameter.type}, can not be custom type")
-
-        # depends on
-        _check_parameter_depends_on(v)
-
-    @validator("filters")
-    def validate_filters(cls, v, values, field):
-        if not values['output']:
-            return v
-        output_and_filters = v + values["output"]
-
-        _check_unique_names(output_and_filters, "output and filter parameters")
-
-        valid_types_names: List[str] = VALID_PARAMETER_VALUES.keys()
-
-        for parameter in v:
-            if parameter.type not in valid_types_names:
-                raise ValueError(f"invalid filter type {parameter.type}, can not be custom type")
-
-        # depends on
-        _check_parameter_depends_on(v)
+        _check_unique_names(v, "output parameters")
 
     @classmethod
     def verify(cls, dict: dict):

@@ -255,7 +255,6 @@ class Component:
             "custom_types": [],
             "input": [],
             "output": [],
-            "filters": []
         })
 
         self.path = os.path.join(self.path, f"{name}-{version}")
