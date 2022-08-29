@@ -1,8 +1,11 @@
+import sys
+
 import click
 from cli.context import *
 from cli.constants import *
 from cli.settings import *
 from cli.utils import *
+
 
 @click.group()
 @click.pass_context
@@ -73,7 +76,7 @@ def configure(ctx: Context, from_json=False) -> None:
                 new_settings_data.update({config_var: value})
             new_settings = SplightCLISettings.parse_obj(new_settings_data)
         ctx.workspace.update_workspace(new_settings)
-        click.secho(f"Configuration saved successfully", fg="green")
+        click.secho("Configuration saved successfully", fg="green")
     except Exception as e:
         click.secho(f"Error configuring Splight CLI: {str(e)}", fg="red")
-        return
+        sys.exit(1)

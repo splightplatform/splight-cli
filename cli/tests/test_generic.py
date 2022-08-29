@@ -1,6 +1,7 @@
 import os
 from unittest import TestCase
 from click.testing import CliRunner
+from splight_models import ComponentType
 from cli.constants import DEFAULT_WORKSPACE, SPEC_FILE
 from cli.context import Context
 from cli.settings import SplightCLISettings
@@ -73,7 +74,7 @@ class SplightCLITest(TestCase):
     def setUp(self):
         self.path = os.path.join(os.path.dirname(__file__), "TestHub")
         self.component_json = get_json_from_file(os.path.join(self.path, SPEC_FILE))
-        self.type = "algorithm"
+        self.type = "Algorithm"
         self.name = self.component_json['name']
         self.version = self.component_json['version']
         self.parameters = self.component_json['parameters']
@@ -86,7 +87,7 @@ class SplightCLITest(TestCase):
             "SPLIGHT_ACCESS_ID": "access_id",
             "SPLIGHT_SECRET_KEY": "secret_key"
         })
-    
+
     def configure(self):
         self.context.workspace.update_workspace(self.default_configuration)
 

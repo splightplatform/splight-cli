@@ -1,4 +1,5 @@
 import click
+import os
 import signal
 import sys
 import logging
@@ -35,7 +36,7 @@ def create(context: Context, name: str, type: str, version: str) -> None:
 
     except Exception as e:
         click.secho(f"Error creating component of type {type}: {str(e)}", fg="red")
-        return
+        sys.exit(1)
 
 
 @cli_component.command()
@@ -60,7 +61,7 @@ def push(context: Context, type: str, path: str, force: bool, public: bool = Fal
 
     except Exception as e:
         click.secho(f"Error pushing component: {str(e)}", fg="red")
-        return
+        sys.exit(1)
 
 
 @cli_component.command()
@@ -77,7 +78,8 @@ def pull(context: Context, type: str, name: str, version: str) -> None:
 
     except Exception as e:
         click.secho(f"Error pulling component of type {type}: {str(e)}", fg="red")
-        return
+        sys.exit(1)
+
 
 @cli_component.command()
 @click.argument("type", nargs=1, type=str)
@@ -89,7 +91,7 @@ def delete(context: Context, type: str, name: str, version: str) -> None:
         response = click.prompt(click.style(f"Are you sure you want to delete {name}-{version}? This operation will delete the component from Splight Hub and it won't be recoverable. (y/n)", fg="yellow"), type=str, default="n", show_default=False)
         if response not in ["y", "Y"]:
             click.secho("Component not deleted", fg="blue")
-            return
+            sys.exit(1)
         path = os.path.abspath(".")
         component = Component(path, context)
         component.delete(name, type, version)
@@ -97,7 +99,7 @@ def delete(context: Context, type: str, name: str, version: str) -> None:
 
     except Exception as e:
         click.secho(f"Error deleting component of type {type}: {str(e)}", fg="red")
-        return
+        sys.exit(1)
 
 
 @cli_component.command()
@@ -105,7 +107,7 @@ def delete(context: Context, type: str, name: str, version: str) -> None:
 @pass_context
 def list(context: Context, type: str) -> None:
     try:
-        if type not in VALID_TYPES:
+        if type.title() not in VALID_TYPES:
             click.secho(f"Invalid type {type}. Valid types are {', '.join(VALID_TYPES)}", fg="red")
             return
         results = Component.list(context, type)
@@ -114,7 +116,7 @@ def list(context: Context, type: str) -> None:
 
     except Exception as e:
         click.secho(f"Error listing component of type {type}: {str(e)}", fg="red")
-        return
+        sys.exit(1)
 
 
 @cli_component.command()
@@ -126,12 +128,12 @@ def list(context: Context, type: str) -> None:
 def run(context: Context, type: str, path: str, run_spec: str = None, reset_input: str = None) -> None:
     try:
         component = Component(path, context)
-        click.secho(f"Running component...", fg="green")
+        click.secho("Running component...", fg="green")
         component.run(type, run_spec, reset_input)
 
     except Exception as e:
         click.secho(f"Error running component: {str(e)}", fg="red")
-        return
+        sys.exit(1)
 
 
 @cli_component.command()
@@ -141,9 +143,9 @@ def run(context: Context, type: str, path: str, run_spec: str = None, reset_inpu
 def install_requirements(context: Context, type: str, path: str) -> None:
     try:
         component = Component(path, context)
-        click.secho(f"Installing component requirements...", fg="green")
+        click.secho("Installing component requirements...", fg="green")
         component.initialize()
 
     except Exception as e:
         click.secho(f"Error installing component requirements: {str(e)}", fg="red")
-        return
+        sys.exit(1)
