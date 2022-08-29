@@ -29,10 +29,3 @@ class TestConfigure(SplightCLITest):
         self.assertEqual(result.exit_code, 0)
         self.assertIn('NAME', result.output)
         self.assertIn('VERSION', result.output)
-
-
-
-    
-
-
-
