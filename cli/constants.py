@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from splight_models import ComponentType
+
 from cli.settings import SplightCLISettings
 
 
@@ -28,7 +30,8 @@ REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE, PICTURE_FIL
 
 MAIN_CLASS_NAME = "Main"
 
-VALID_TYPES = ["Algorithm", "Connector", "Network"]
+# VALID_TYPES = ["Algorithm", "Connector", "Network"]
+VALID_TYPES = [component.value for component in ComponentType]
 VALID_PARAMETER_VALUES = {
     "int": int,
     "bool": bool,
