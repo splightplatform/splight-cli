@@ -28,7 +28,7 @@ REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE, PICTURE_FIL
 
 MAIN_CLASS_NAME = "Main"
 
-VALID_TYPES = ["algorithm", "connector", "network"]
+VALID_TYPES = ["Algorithm", "Connector", "Network"]
 VALID_PARAMETER_VALUES = {
     "int": int,
     "bool": bool,
