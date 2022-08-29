@@ -149,7 +149,7 @@ class Component:
         for i, param in enumerate(self.spec["parameters"]):
             name = param["name"]
             if name in vars:
-                self.run_spec["parameters"][i]["value"] = vars[name]        
+                self.run_spec["parameters"][i]["value"] = vars[name]
         for key in extra_run_spec_fields.keys():
             self.run_spec[key] = vars[key]
 
@@ -213,7 +213,7 @@ class Component:
             raise Exception(f"Failed importing component {component_directory_name}: {str(e)}")
 
     def initialize(self):
-        # TODO this should be removed from here. But it is present 
+        # TODO this should be removed from here. But it is present
         # to avoid to fail redinessprobe during req installation
         health_file = NamedTemporaryFile(prefix="healthy_")
         logger.debug(f"Created healthy file")
@@ -259,7 +259,8 @@ class Component:
                 self._get_random_picture(file_path)
                 continue
             if file_name == COMPONENT_FILE:
-                template_name = f"{type}.py"
+                component_type = type.lower()
+                template_name = f"{component_type}.py"
             template: Template = get_template(template_name)
             file = template.render(
                 component_type=type,
