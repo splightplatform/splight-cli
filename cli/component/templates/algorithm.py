@@ -12,6 +12,7 @@ class Main(AbstractAlgorithmComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         logger.info(f"It worked!")
+        self.start()
 
     def start(self):
         pass
