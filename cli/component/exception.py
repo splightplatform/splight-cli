@@ -1,0 +1,2 @@
+class InvalidComponentType(Exception):
+    pass

@@ -1,8 +1,14 @@
 from splight_lib.component import AbstractAlgorithmComponent
+
+
 class Main(AbstractAlgorithmComponent):
-    def __init__(self, run_spec, *args, **kwargs):
-        self.run_spec = run_spec
-        self.test()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
     def test(self):
-        print(self.run_spec)
+        print("HELLO2")
+
+    def start(self):
+        print("HELLO")
+        self.test()
+        self.terminate()

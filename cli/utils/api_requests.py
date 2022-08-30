@@ -1,7 +1,7 @@
 import requests
 import json
 from functools import wraps
-from ..settings import *
+from cli.constants import *
 from requests.exceptions import ConnectionError
 
 def http_request_validation(func):
