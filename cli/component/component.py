@@ -6,7 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import List, Type, Union
+from typing import List, Type, Union, Optional
 
 import click
 from jinja2 import Template
@@ -96,6 +96,7 @@ class Spec(BaseModel):
     name: str
     version: str
     parameters: List[Parameter]
+    tags: Optional[List[str]] = []
 
     @validator("name")
     def validate_name(cls, name):
@@ -131,6 +132,15 @@ class Spec(BaseModel):
                 )
             parameters_names.add(parameter_name)
         return parameters
+
+    @validator("tags")
+    def validate_tags(cls, tags):
+        tag_names = set()
+        for tag in tags:
+            if tag in tag_names:
+                raise Exception(f"Tag name {tag} is not unique")
+            tag_names.add(tag)
+        return tag_names
 
     @classmethod
     def verify(cls, dict: dict):
@@ -191,6 +201,7 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
+        self.tags = self.spec["tags"]
 
     def _load_run_spec_fields(self, extra_run_spec_fields):
         vars = get_yaml_from_file(self.vars_file)
@@ -340,6 +351,7 @@ class Component:
             self.name,
             self.version,
             self.parameters,
+            self.tags,
             public,
             self.path,
         )

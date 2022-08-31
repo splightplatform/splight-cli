@@ -32,6 +32,7 @@ class TestPush(SplightCLITest):
                     self.name,
                     self.version,
                     self.parameters,
+                    self.tags,
                     False,
                     self.path,
                 )
@@ -58,6 +59,7 @@ class TestPush(SplightCLITest):
                 self.name,
                 self.version,
                 self.parameters,
+                self.tags,
                 False,
                 self.path,
             )
@@ -71,6 +73,7 @@ class TestPush(SplightCLITest):
             "name": self.name,
             "version": self.version,
             "privacy_policy": "private",
+            "tags": json.dumps(self.tags),
             "parameters": json.dumps(self.parameters),
         }
 
