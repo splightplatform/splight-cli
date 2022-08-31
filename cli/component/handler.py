@@ -46,7 +46,7 @@ class ComponentHandler:
         self.context = context
         self.user_handler = UserHandler(context)
 
-    def upload_component(self, type, name, version, parameters, public, local_path):
+    def upload_component(self, type, name, version, parameters, tags, public, local_path):
         """
         Save the component to the hub.
         """
@@ -64,6 +64,7 @@ class ComponentHandler:
                     'version': version,
                     'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
                     'parameters': json.dumps(parameters),
+                    'tags': json.dumps(tags)
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
