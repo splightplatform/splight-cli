@@ -78,6 +78,7 @@ class SplightCLITest(TestCase):
         self.name = self.component_json['name']
         self.version = self.component_json['version']
         self.parameters = self.component_json['parameters']
+        self.tags = self.component_json['tags']
         self.context = FakeContext()
         self.runner = CliRunner()
 
