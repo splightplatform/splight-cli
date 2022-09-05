@@ -36,7 +36,7 @@ VALID_PARAMETER_VALUES = {
     "bool": bool,
     "str": str,
     "float": float,
-    "Date": str,
+    "Date": None,
     "file": None,  # UUID
     "Asset": None,  # UUID,
     "Algorithm": None,  # UUID,

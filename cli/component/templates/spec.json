@@ -13,8 +13,8 @@
     ],
     "output": [
         {
-            "name": "result",
-            "type": "int"
+            "name": "Value",
+            "type": "float"
         }
     ]
 }

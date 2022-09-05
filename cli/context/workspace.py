@@ -12,7 +12,7 @@ class WorkspaceManager:
         self._settings = self.__load_config()
         self._workspaces: List[Dict] = self._settings.get('workspaces')
         self._current_workspace: str = self._settings.get('current_workspace')
-        self._current_settings = SplightCLISettings.parse_obj(self._workspaces[self._current_workspace])
+        self._current_settings = SplightCLISettings(**self._workspaces[self._current_workspace])
 
     def __load_config(self):
         config = get_yaml_from_file(self.config_file)

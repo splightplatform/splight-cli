@@ -1,41 +1,20 @@
-from splight_lib.component import AbstractComponent
-from typing import Type, List
-from pathlib import Path
-from cli.settings import *
-from cli.constants import *
-from cli.utils import *
-from cli.component.handler import ComponentHandler, UserHandler
-from ..utils import *
-from .spec import Spec
-from typing import Type, List
-from tempfile import NamedTemporaryFile
-import importlib
-import json
-import logging
-import os
 import subprocess
+import importlib
+import logging
+import json
 import sys
-from pathlib import Path
-from tempfile import NamedTemporaryFile
-from typing import List, Type, Union, Optional
-
-import click
+import os
+from typing import Type, List
 from jinja2 import Template
-from typing import Type, List, Union
-from cli.component.handler import ComponentHandler, UserHandler
-from cli.utils import *
-from cli.constants import *
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Type, List, Union
-from ..utils import *
-from cli.settings import *
+import click
+
 from splight_lib.component import AbstractComponent
 from splight_lib import logging
-from cli.component.exception import InvalidComponentType
-from cli.component.handler import ComponentHandler, UserHandler
 
-
+from cli.settings import *
+from cli.constants import *
 from cli.constants import (
     COMPONENT_FILE,
     DEFAULT_EXTERNAL_ID,
@@ -58,7 +37,10 @@ from cli.utils import (
     save_yaml_to_file,
     validate_path_isdir,
 )
-
+from cli.component.handler import ComponentHandler, UserHandler
+from cli.component.exception import InvalidComponentType
+from cli.component.handler import ComponentHandler, UserHandler
+from cli.component.spec import Spec
 
 logger = logging.getLogger()
 
@@ -332,7 +314,6 @@ class Component:
 
     def run(self, type, run_spec, reset_input):
         component_type = self._validate_type(type)
-        self._validate_type(type)
         self._validate_component_structure()
         self._load_spec()
 

@@ -132,6 +132,7 @@ def run(context: Context, type: str, path: str, run_spec: str = None, reset_inpu
         component.run(type, run_spec, reset_input)
 
     except Exception as e:
+        raise e
         click.secho(f"Error running component: {str(e)}", fg="red")
         sys.exit(1)
 
