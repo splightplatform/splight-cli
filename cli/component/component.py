@@ -201,7 +201,7 @@ class Component:
         self.name = self.spec["name"]
         self.version = self.spec["version"]
         self.parameters = self.spec["parameters"]
-        # The old spec file does not have this field.
+        # Retrocompatibility: The old spec file does not have this field.
         self.tags = self.spec.get("tags", [])
 
     def _load_run_spec_fields(self, extra_run_spec_fields):
