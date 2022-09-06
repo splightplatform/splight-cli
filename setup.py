@@ -12,7 +12,7 @@ os.system("cat ~/.pypirc")
 
 setup(
     name='splight-cli',
-    version='0.1.9',
+    version='0.1.10',
     author='Splight',
     author_email='factory@splight-ae.com',
     description='Splight developer CLI tool. Splight.',
