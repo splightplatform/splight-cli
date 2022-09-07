@@ -200,9 +200,6 @@ class Spec(ModelDeployment):
 
     @validator("output")
     def validate_output(cls, v, values, field):
-        if len(v) == 0:
-            raise ValueError("output must not be empty")
-
         _check_unique_names(v, "output parameters")
 
     @classmethod

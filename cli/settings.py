@@ -4,12 +4,12 @@ from pydantic import BaseSettings
 class SplightCLISettings(BaseSettings):
     SPLIGHT_ACCESS_ID: str = None
     SPLIGHT_SECRET_KEY: str = None
-    SPLIGHT_PLATFORM_API_HOST: str = 'https://integrationapi.splight-ae.com'
+    SPLIGHT_PLATFORM_API_HOST: str = 'https://api.splight-ai.com'
     # TODO REMOVE THIS
-    SPLIGHT_HUB_API_HOST: str = 'https://integrationhub.splight-ae.com'
+    SPLIGHT_HUB_API_HOST: str = 'https://hub.splight-ai.com'
     # FRAMEWORK
-    DATABASE_CLIENT: str = 'private_splight_lib.database.DjangoClient'
-    DATALAKE_CLIENT: str = "private_splight_lib.datalake.MongoClient"
+    DATABASE_CLIENT: str = "remote_splight_lib.database.DatabaseClient"
+    DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"
     STORAGE_CLIENT: str = "remote_splight_lib.storage.StorageClient"
     DEPLOYMENT_CLIENT: str = "remote_splight_lib.deployment.DeploymentClient"
 
