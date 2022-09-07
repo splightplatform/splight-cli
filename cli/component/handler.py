@@ -72,6 +72,7 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
+                    'tags': json.dumps(tags),
                     'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
                     'custom_types': json.dumps(custom_types),
                     'input': json.dumps(input),

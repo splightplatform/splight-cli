@@ -11,7 +11,7 @@ from splight_models import (
 )
 
 
-class ChoiseMixin:
+class ChoiceMixin:
     @validator("choices", check_fields=False)
     def validate_choices(cls, v, values):
         if "type" not in values:
@@ -32,7 +32,7 @@ class ChoiseMixin:
         return v
 
 
-class Parameter(ModelParameter, ChoiseMixin):
+class Parameter(ModelParameter, ChoiceMixin):
     @validator("value", check_fields=False)
     def validate_value(cls, v, values, field):
         if not set(values.keys()).issuperset({"type", "required", "multiple", "choices"}):
@@ -74,7 +74,7 @@ class Parameter(ModelParameter, ChoiseMixin):
         return v
 
 
-class OutputParameter(ModelOutputParameter, ChoiseMixin):
+class OutputParameter(ModelOutputParameter, ChoiceMixin):
     @validator("type", check_fields=False)
     def validate_type(cls, type):
         if type not in VALID_PARAMETER_VALUES:
