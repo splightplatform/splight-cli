@@ -16,7 +16,10 @@ class TestRun(SplightCLITest):
             "name": self.name,
             "type": self.type,
             "version": run_version,
-            "parameters": self.parameters,
+            "tags": self.tags,
+            "custom_types": self.custom_types,
+            "input": self.input,
+            "output": self.output,
             "external_id": external_id,
             "namespace": namespace,
         }

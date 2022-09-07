@@ -31,8 +31,10 @@ class TestPush(SplightCLITest):
                     self.type.lower(),
                     self.name,
                     self.version,
-                    self.parameters,
                     self.tags,
+                    self.custom_types,
+                    self.input,
+                    self.output,
                     False,
                     self.path,
                 )
@@ -58,8 +60,10 @@ class TestPush(SplightCLITest):
                 self.type.lower(),
                 self.name,
                 self.version,
-                self.parameters,
                 self.tags,
+                self.custom_types,
+                self.input,
+                self.output,
                 False,
                 self.path,
             )
@@ -74,7 +78,9 @@ class TestPush(SplightCLITest):
             "version": self.version,
             "privacy_policy": "private",
             "tags": json.dumps(self.tags),
-            "parameters": json.dumps(self.parameters),
+            "custom_types": json.dumps(self.custom_types),
+            "input": json.dumps(self.input),
+            "output": json.dumps(self.output),
         }
 
         with patch.object(

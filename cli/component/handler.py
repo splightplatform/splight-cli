@@ -1,8 +1,9 @@
 # THIS CLASS SHOULD NOT EXISTS
-# TODO MOVE THIS TO HUBCLIENT REMOTE_LIB IMPLEMENTATION 
+# TODO MOVE THIS TO HUBCLIENT REMOTE_LIB IMPLEMENTATION
 import json
 import os
 import py7zr
+from typing import List, Dict
 from functools import cached_property
 from cli.constants import *
 from cli.context import PrivacyPolicy
@@ -46,7 +47,16 @@ class ComponentHandler:
         self.context = context
         self.user_handler = UserHandler(context)
 
-    def upload_component(self, type, name, version, parameters, tags, public, local_path):
+    def upload_component(self,
+                         type: str,
+                         name: str,
+                         version: str,
+                         tags: List[str],
+                         custom_types: List[Dict],
+                         input: List[Dict],
+                         output: List[Dict],
+                         public,
+                         local_path):
         """
         Save the component to the hub.
         """
@@ -62,9 +72,11 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
+                    'tags': json.dumps(tags),
                     'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
-                    'parameters': json.dumps(parameters),
-                    'tags': json.dumps(tags)
+                    'custom_types': json.dumps(custom_types),
+                    'input': json.dumps(input),
+                    'output': json.dumps(output),
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
@@ -79,7 +91,7 @@ class ComponentHandler:
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
-                
+
     def download_component(self, type, name, version, local_path):
         """
         Download the component from the hub.

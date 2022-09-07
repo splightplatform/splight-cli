@@ -1,7 +1,8 @@
 {
     "name": "TestHub",
     "version": "0_1",
-    "parameters": [
+    "custom_types": [],
+    "input": [
         {
             "name": "Int",
             "type": "int",
@@ -25,43 +26,22 @@
             "type": "float",
             "required": true,
             "value": 1.0
-        },
-        {
-            "name": "File",
-            "type": "file",
-            "required": true,
-            "value": null
-        },
-        {
-            "name": "Asset",
-            "type": "Asset",
-            "required": true,
-            "value": null
-        },
-        {
-            "name": "Attribute",
-            "type": "Attribute",
-            "required": true,
-            "value": null
-        },
-        {
-            "name": "Network",
-            "type": "Network",
-            "required": true,
-            "value": null
-        },
-        {
-            "name": "Algorithm",
-            "type": "Algorithm",
-            "required": false,
-            "value": null
-        },
-        {
-            "name": "Connector",
-            "type": "Connector",
-            "required": false,
-            "value": null
         }
     ],
-    "tags": ["tag1", "tag2", "tag3"]
+    "output": [
+        {
+            "name": "Test",
+            "fields": [
+                {
+                    "name": "Asset",
+                    "type": "Asset"
+                }
+            ]
+        }
+    ],
+    "tags": [
+        "tag1",
+        "tag2",
+        "tag3"
+    ]
 }
