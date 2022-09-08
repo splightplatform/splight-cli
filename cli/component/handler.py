@@ -57,9 +57,6 @@ class ComponentHandler:
                          output: List[Dict],
                          public,
                          local_path):
-        """
-        Save the component to the hub.
-        """
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
         if os.path.exists(os.path.join(local_path, VARS_FILE)):
@@ -77,13 +74,14 @@ class ComponentHandler:
                     'custom_types': json.dumps(custom_types),
                     'input': json.dumps(input),
                     'output': json.dumps(output),
+                    'type': type,
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(os.path.join(local_path, README_FILE), 'rb'),
                     'picture': open(os.path.join(local_path, PICTURE_FILE), 'rb'),
                 }
-                response = api_post(f"{self.user_handler.host}/{type}/upload/", files=files, data=data, headers=headers)
+                response = api_post(f"{self.user_handler.host}/upload/", files=files, data=data, headers=headers)
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
@@ -93,16 +91,15 @@ class ComponentHandler:
                     os.remove(compressed_filename)
 
     def download_component(self, type, name, version, local_path):
-        """
-        Download the component from the hub.
-        """
         with Loader("Pulling component from Splight Hub..."):
             headers = self.user_handler.authorization_header
             data = {
                 'name': name,
                 'version': version,
+                'type': type,
             }
-            response = api_post(f"{self.user_handler.host}/{type}/download/", data=data, headers=headers)
+            # response = api_post(f"{self.user_handler.host}/{type}/download/", data=data, headers=headers)
+            response = api_post(f"{self.user_handler.host}/download/", data=data, headers=headers)
 
             if response.status_code != 200:
                 if response.status_code == 404:
@@ -122,16 +119,13 @@ class ComponentHandler:
                     os.remove(compressed_filename)
 
     def delete_component(self, type, name, version):
-        """
-        Download the component from the hub.
-        """
         with Loader("Deleting component from Splight Hub..."):
             headers = self.user_handler.authorization_header
             data = {
                 'name': name,
                 'version': version,
             }
-            response = api_post(f"{self.user_handler.host}/{type}/remove/", data=data, headers=headers)
+            response = api_post(f"{self.user_handler.host}/mine/component-versions/remove/", data=data, headers=headers)
 
             if response.status_code != 201:
                 if response.status_code == 404:
@@ -139,21 +133,44 @@ class ComponentHandler:
                 raise Exception(f"Failed to delete the component from splight hub")
 
     def list_components(self, type):
-        headers = self.user_handler.authorization_header
-        list_ = []
-        page = api_get(f"{self.user_handler.host}/{type}/", headers=headers)
-        page = page.json()
-        if page["results"]:
-            list_.extend(page["results"])
-        while page["next"] is not None:
-            page = api_get(page["next"], headers=headers)
+        with Loader("Listing components.."):
+            headers = self.user_handler.authorization_header
+            list_ = []
+            page = api_get(f"{self.user_handler.host}/mine/components/?type={type}", headers=headers)
             page = page.json()
             if page["results"]:
                 list_.extend(page["results"])
+            while page["next"] is not None:
+                page = api_get(page["next"], headers=headers)
+                page = page.json()
+                if page["results"]:
+                    list_.extend(page["results"])
+        return list_
+
+    def list_component_versions(self, type, name):
+        with Loader("Listing component versions.."):
+            headers = self.user_handler.authorization_header
+            list_ = []
+            page = api_get(f"{self.user_handler.host}/mine/component-versions/?type={type}&name={name}", headers=headers)
+            page = page.json()
+            if page["results"]:
+                list_.extend(page["results"])
+            while page["next"] is not None:
+                page = api_get(page["next"], headers=headers)
+                page = page.json()
+                if page["results"]:
+                    list_.extend(page["results"])
         return list_
 
     def exists_in_hub(self, type, name, version):
         headers = self.user_handler.authorization_header
-        response = api_get(f"{self.user_handler.host}/{type}/mine/?name={name}&version={version}", headers=headers)
-        response = response.json()
+        endpoints = [
+            f"{self.user_handler.host}/private/component-versions/?name={name}&version={version}"
+            f"{self.user_handler.host}/public/component-versions/?name={name}&version={version}"
+        ]
+        for endpoint in endpoints:
+            response = api_get(endpoint, headers=headers)
+            response = response.json()
+            if response["count"] > 0:
+                break
         return response["count"] > 0

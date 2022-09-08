@@ -3,7 +3,7 @@ import os
 import signal
 import sys
 import logging
-from cli.context import needs_credentials, pass_context
+from cli.context import pass_context
 from cli.cli import component as cli_component
 from cli.utils import *
 from cli.context import Context
@@ -111,7 +111,25 @@ def list(context: Context, type: str) -> None:
             click.secho(f"Invalid type {type}. Valid types are {', '.join(VALID_TYPES)}", fg="red")
             return
         results = Component.list(context, type)
-        Printer.print_dict(items=results, headers=['name', 'version'])
+        Printer.print_dict(items=results, headers=['name'])
+        return list
+
+    except Exception as e:
+        click.secho(f"Error listing component of type {type}: {str(e)}", fg="red")
+        sys.exit(1)
+
+
+@cli_component.command()
+@click.argument("type", nargs=1, type=str)
+@click.argument("name", nargs=1, type=str)
+@pass_context
+def versions(context: Context, type: str, name: str) -> None:
+    try:
+        if type.title() not in VALID_TYPES:
+            click.secho(f"Invalid type {type}. Valid types are {', '.join(VALID_TYPES)}", fg="red")
+            return
+        results = Component.versions(context, type, name)
+        Printer.print_dict(items=results, headers=['name', 'version', 'verified'])
         return list
 
     except Exception as e:
