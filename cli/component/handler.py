@@ -121,16 +121,12 @@ class ComponentHandler:
     def delete_component(self, type, name, version):
         with Loader("Deleting component from Splight Hub..."):
             headers = self.user_handler.authorization_header
-            data = {
-                'name': name,
-                'version': version,
-            }
-            response = api_post(f"{self.user_handler.host}/mine/component-versions/remove/", data=data, headers=headers)
-
-            if response.status_code != 201:
-                if response.status_code == 404:
-                    raise Exception(f"Component not found")
-                raise Exception(f"Failed to delete the component from splight hub")
+            response = api_get(f"{self.user_handler.host}/mine/component-versions/?type={type}&name={name}&version={version}", headers=headers)
+            response = response.json()
+            for item in response["results"]:
+                response = api_delete(f"{self.user_handler.host}/mine/component-versions/{item['id']}/", headers=headers)
+                if response.status_code != 204:
+                    raise Exception(f"Failed to delete the component from splight hub")
 
     def list_components(self, type):
         with Loader("Listing components.."):

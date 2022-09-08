@@ -98,6 +98,7 @@ def delete(context: Context, type: str, name: str, version: str) -> None:
         click.secho(f"Component {name}-{version} deleted successfully", fg="green")
 
     except Exception as e:
+        logger.exception(e)
         click.secho(f"Error deleting component of type {type}: {str(e)}", fg="red")
         sys.exit(1)
 
@@ -129,7 +130,7 @@ def versions(context: Context, type: str, name: str) -> None:
             click.secho(f"Invalid type {type}. Valid types are {', '.join(VALID_TYPES)}", fg="red")
             return
         results = Component.versions(context, type, name)
-        Printer.print_dict(items=results, headers=['name', 'version', 'verified'])
+        Printer.print_dict(items=results, headers=['name', 'version', 'verification', 'privacy_policy'])
         return list
 
     except Exception as e:

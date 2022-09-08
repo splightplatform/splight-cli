@@ -302,15 +302,7 @@ class Component:
 
     def delete(self, name, type, version):
         component_type = self._validate_type(type)
-
-        versioned_name = f"{name}-{version}"
-
         handler = ComponentHandler(self.context)
-        if not handler.exists_in_hub(component_type, name, version):
-            raise Exception(
-                f"Component {versioned_name} does not exist in Splight Hub"
-            )
-
         handler.delete_component(component_type, name, version)
 
     def run(self, type, run_spec, reset_input):
