@@ -5,7 +5,7 @@ ARG JFROG_BOT_USERNAME
 ARG JFROG_BOT_PASS
 
 RUN pip config set global.index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
-RUN pip install splight-cli==0.2.0
+RUN pip install splight-cli==0.2.1
 
 WORKDIR /code
 RUN mkdir /code/.config; cp -R /root/.config/pip /code/.config/pip
