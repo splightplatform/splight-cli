@@ -227,6 +227,12 @@ class Component:
         handler = ComponentHandler(context)
         return handler.list_components(component_type)
 
+    @classmethod
+    def versions(cls, context, type, name):
+        component_type = cls._validate_type(type)
+        handler = ComponentHandler(context)
+        return handler.list_component_versions(component_type, name)
+
     def create(self, name, type, version):
         component_type = self._validate_type(type)
 
@@ -292,24 +298,11 @@ class Component:
             )
 
         handler = ComponentHandler(self.context)
-        if not handler.exists_in_hub(component_type, name, version):
-            raise Exception(
-                f"Component {versioned_name} does not exist in Splight Hub"
-            )
-
         handler.download_component(component_type, name, version, self.path)
 
     def delete(self, name, type, version):
         component_type = self._validate_type(type)
-
-        versioned_name = f"{name}-{version}"
-
         handler = ComponentHandler(self.context)
-        if not handler.exists_in_hub(component_type, name, version):
-            raise Exception(
-                f"Component {versioned_name} does not exist in Splight Hub"
-            )
-
         handler.delete_component(component_type, name, version)
 
     def run(self, type, run_spec, reset_input):

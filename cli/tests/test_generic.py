@@ -1,7 +1,6 @@
 import os
 from unittest import TestCase
 from click.testing import CliRunner
-from splight_models import ComponentType
 from cli.constants import DEFAULT_WORKSPACE, SPEC_FILE
 from cli.context import Context
 from cli.settings import SplightCLISettings

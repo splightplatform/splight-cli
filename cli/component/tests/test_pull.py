@@ -22,32 +22,12 @@ class TestPull(SplightCLITest):
 
     def test_pull(self):
         with patch.object(
-            ComponentHandler, "exists_in_hub", return_value=True
-        ) as exists_in_hub:
-            with patch.object(
-                ComponentHandler, "download_component"
-            ) as downloader:
-                self.component.pull(self.name, self.type, self.version)
-                exists_in_hub.assert_called_with(
-                    self.type.lower(), self.name, self.version
-                )
-                downloader.assert_called_with(
-                    self.type.lower(), self.name, self.version, self.path
-                )
-
-    def test_pull_already_not_exists_in_hub(self):
-        with patch.object(
-            ComponentHandler, "exists_in_hub", return_value=False
-        ) as exists_in_hub:
-            with patch.object(
-                ComponentHandler, "download_component"
-            ) as downloader:
-                with self.assertRaises(Exception):
-                    self.component.pull(self.name, self.type, self.version)
-                exists_in_hub.assert_called_with(
-                    self.type.lower(), self.name, self.version
-                )
-                assert not downloader.called
+            ComponentHandler, "download_component"
+        ) as downloader:
+            self.component.pull(self.name, self.type, self.version)
+            downloader.assert_called_with(
+                self.type.lower(), self.name, self.version, self.path
+            )
 
     def test_pull_already_exists_in_local(self):
         already_component = os.path.join(
@@ -64,7 +44,7 @@ class TestPull(SplightCLITest):
                 "Authorization": f"Splight {self.context.workspace.settings.SPLIGHT_ACCESS_ID} {self.context.workspace.settings.SPLIGHT_SECRET_KEY}"
             }
             data = {
-                "type": self.type,
+                "type": self.type.lower(),
                 "name": self.name,
                 "version": self.version,
             }
@@ -93,7 +73,7 @@ class TestPull(SplightCLITest):
                     _, args, kwargs = post.mock_calls[0]
                     self.assertEqual(
                         args[0],
-                        f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/{self.type.lower()}/download/",
+                        f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/download/",
                     )
                     self.assertDictContainsSubset(kwargs["data"], data)
                     self.assertDictContainsSubset(kwargs["headers"], headers)
