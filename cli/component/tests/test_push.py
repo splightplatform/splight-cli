@@ -31,7 +31,10 @@ class TestPush(SplightCLITest):
                     self.type.lower(),
                     self.name,
                     self.version,
-                    self.parameters,
+                    self.tags,
+                    self.custom_types,
+                    self.input,
+                    self.output,
                     False,
                     self.path,
                 )
@@ -57,7 +60,10 @@ class TestPush(SplightCLITest):
                 self.type.lower(),
                 self.name,
                 self.version,
-                self.parameters,
+                self.tags,
+                self.custom_types,
+                self.input,
+                self.output,
                 False,
                 self.path,
             )
@@ -71,7 +77,10 @@ class TestPush(SplightCLITest):
             "name": self.name,
             "version": self.version,
             "privacy_policy": "private",
-            "parameters": json.dumps(self.parameters),
+            "tags": json.dumps(self.tags),
+            "custom_types": json.dumps(self.custom_types),
+            "input": json.dumps(self.input),
+            "output": json.dumps(self.output),
         }
 
         with patch.object(
@@ -91,7 +100,7 @@ class TestPush(SplightCLITest):
                     _, args, kwargs = post.mock_calls[0]
                     self.assertEqual(
                         args[0],
-                        f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/{self.type.lower()}/upload/",
+                        f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/upload/",
                     )
                     self.assertEqual(
                         kwargs["files"]["file"].name, compressed_filename

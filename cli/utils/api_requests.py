@@ -9,7 +9,7 @@ def http_request_validation(func):
     def wrapper(*args, **kwargs):
         try:
             response = func(*args, **kwargs)
-            if response.status_code not in [200, 201]:
+            if response.status_code >= 400:
                 response = response.json()
                 detail = response.get("detail", None)
 
@@ -29,3 +29,7 @@ def api_get(*args, **kwargs):
 @http_request_validation
 def api_post(*args, **kwargs):
     return requests.post(*args, **kwargs)
+
+@http_request_validation
+def api_delete(*args, **kwargs):
+    return requests.delete(*args, **kwargs)

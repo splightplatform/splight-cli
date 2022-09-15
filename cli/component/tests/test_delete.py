@@ -1,7 +1,6 @@
 import os
 from unittest.mock import patch
 
-import requests
 
 from cli.component.component import Component
 from cli.component.handler import ComponentHandler
@@ -19,20 +18,10 @@ class TestDelete(SplightCLITest):
         self.component = Component(self.path, self.context)
 
     def test_component_delete(self):
-        data = {
-            "name": self.name,
-            "version": self.version,
-        }
-        hub_url = self.context.workspace.settings.SPLIGHT_HUB_API_HOST
-        component_type = self.type.lower()
-        url = f"{hub_url}/{component_type}/remove/"
         with patch.object(
-            ComponentHandler, "exists_in_hub", return_value=True
-        ):
-            response = requests.Response()
-            response.status_code = 201
-            with patch.object(requests, "post", return_value=response) as post:
-                self.component.delete(self.name, self.type, self.version)
-                _, args, kwargs = post.mock_calls[0]
-                self.assertEqual(args[0], url)
-                self.assertDictContainsSubset(kwargs["data"], data)
+            ComponentHandler, "delete_component"
+        ) as call:
+            self.component.delete(self.name, self.type, self.version)
+            call.assert_called_with(
+                self.type.lower(), self.name, self.version
+            )

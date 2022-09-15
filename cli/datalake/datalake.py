@@ -18,10 +18,10 @@ class Datalake:
     @property
     def sample_dataframe(self):
         return pd.read_csv(f"{BASE_DIR}/cli/datalake/dump_example.csv")
-    
+
     def list(self):
         return self.client.list_collection_names()
-    
+
     def dump(self, collection, path, filter, example):
         if os.path.exists(path):
             raise Exception(f"File {path} already exists")
@@ -40,7 +40,7 @@ class Datalake:
             dataframe = self.client.get_dataframe(
                 resource_type=models.Variable,
                 collection=collection,
-                **self._get_filters(filters)
+                **self._get_filters()
             )
         dataframe.to_csv(path, index=False)
         click.secho(f"Succesfully dumpped {collection} in {path}", fg="green")
@@ -50,7 +50,7 @@ class Datalake:
             raise Exception("File not found")
         if not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
-        
+
         if example:
             dataframe = self.sample_dataframe
         else:

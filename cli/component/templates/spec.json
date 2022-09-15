@@ -1,12 +1,25 @@
 {
     "name": "{{component_name}}",
     "version": "{{version}}",
-    "parameters" : [
+    "tags": [],
+    "custom_types": [],
+    "input": [
         {
             "name": "period",
             "type": "int",
             "required": false,
             "value": 10
+        }
+    ],
+    "output": [
+        {
+            "name": "Value",
+            "fields": [
+                {
+                    "name": "value",
+                    "type": "int"
+                }
+            ]
         }
     ]
 }

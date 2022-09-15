@@ -1,7 +1,6 @@
 import os
 from unittest import TestCase
 from click.testing import CliRunner
-from splight_models import ComponentType
 from cli.constants import DEFAULT_WORKSPACE, SPEC_FILE
 from cli.context import Context
 from cli.settings import SplightCLISettings
@@ -77,7 +76,10 @@ class SplightCLITest(TestCase):
         self.type = "Algorithm"
         self.name = self.component_json['name']
         self.version = self.component_json['version']
-        self.parameters = self.component_json['parameters']
+        self.custom_types = self.component_json['custom_types']
+        self.input = self.component_json['input']
+        self.output = self.component_json['output']
+        self.tags = self.component_json['tags']
         self.context = FakeContext()
         self.runner = CliRunner()
 
