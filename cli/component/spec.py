@@ -93,7 +93,7 @@ def _check_parameter_depends_on(parameters: List[Parameter]):
 
         depend_parameter = parameter_map[parameter.depends_on]
 
-        if (depend_parameter.type, parameter.type) not in VALID_DEPENDS_ON:
+        if (parameter.type, depend_parameter.type) not in VALID_DEPENDS_ON:
             raise ValueError(f"incompatible dependance: type {parameter.type} can not"
                              f"depend on type {depend_parameter.type}")
 
