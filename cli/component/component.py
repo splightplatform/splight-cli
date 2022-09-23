@@ -11,6 +11,7 @@ from tempfile import NamedTemporaryFile
 import click
 
 from splight_lib.component import AbstractComponent
+from splight_lib.execution import Thread
 from splight_lib import logging
 
 from cli.settings import *
@@ -332,4 +333,4 @@ class Component:
             run_spec=self.run_spec,
             initial_setup=self.context.workspace.settings.dict()
         )
-        component.start()
+        component.execution_client.start(Thread(target=component.start))
