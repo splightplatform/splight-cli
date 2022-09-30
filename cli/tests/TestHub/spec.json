@@ -39,6 +39,17 @@
             ]
         }
     ],
+    "commands": [
+        {
+            "name": "Hello",
+            "fields": [
+                {
+                    "name": "message",
+                    "type": "str"
+                }
+            ]
+        }
+    ],
     "tags": [
         "tag1",
         "tag2",

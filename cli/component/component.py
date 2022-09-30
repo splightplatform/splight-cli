@@ -114,6 +114,7 @@ class Component:
         self.custom_types = self.spec["custom_types"]
         self.input = self.spec["input"]
         self.output = self.spec["output"]
+        self.commands = self.spec.get("commands", [])
 
     def _load_run_spec_fields(self, extra_run_spec_fields):
         vars = get_yaml_from_file(self.vars_file)
@@ -283,6 +284,7 @@ class Component:
             self.custom_types,
             self.input,
             self.output,
+            self.commands,
             public,
             self.path
         )

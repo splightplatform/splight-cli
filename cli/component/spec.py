@@ -1,10 +1,11 @@
 from pydantic import validator
 from typing import List, Dict, Optional
-from ..utils import *
+from cli.utils import *
 from cli.constants import *
 from splight_models import (
     Parameter as ModelParameter,
     OutputParameter as ModelOutputParameter,
+    CommandParameter as ModelCommandParameter,
     CustomType as ModelCustomType,
     Output as ModelOutput,
     Deployment as ModelDeployment
@@ -75,6 +76,14 @@ class Parameter(ModelParameter, ChoiceMixin):
 
 
 class OutputParameter(ModelOutputParameter, ChoiceMixin):
+    @validator("type", check_fields=False)
+    def validate_type(cls, type):
+        if type not in VALID_PARAMETER_VALUES:
+            raise ValueError(f"invalid output type {type}, can not be custom type")
+        return type
+
+
+class CommandParameter(ModelCommandParameter, ChoiceMixin):
     @validator("type", check_fields=False)
     def validate_type(cls, type):
         if type not in VALID_PARAMETER_VALUES:
