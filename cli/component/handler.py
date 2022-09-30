@@ -55,6 +55,7 @@ class ComponentHandler:
                          custom_types: List[Dict],
                          input: List[Dict],
                          output: List[Dict],
+                         commands: List[Dict],
                          public,
                          local_path):
         versioned_name = f"{name}-{version}"
@@ -74,6 +75,7 @@ class ComponentHandler:
                     'custom_types': json.dumps(custom_types),
                     'input': json.dumps(input),
                     'output': json.dumps(output),
+                    'commands': json.dumps(commands),
                     'type': type,
                 }
                 files = {

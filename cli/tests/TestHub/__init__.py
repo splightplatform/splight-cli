@@ -12,3 +12,6 @@ class Main(AbstractAlgorithmComponent):
         print("HELLO")
         self.test()
         self.terminate()
+
+    def hello(self, message: str):
+        return "hello" + message
