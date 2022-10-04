@@ -6,7 +6,6 @@ import py7zr
 from typing import List, Dict
 from functools import cached_property
 from cli.constants import *
-from cli.context import PrivacyPolicy
 from cli.utils.loader import Loader
 from cli.utils.api_requests import *
 from splight_lib import logging
@@ -49,6 +48,7 @@ class ComponentHandler:
 
     def upload_component(self,
                          type: str,
+                         privacy_policy: str,
                          name: str,
                          version: str,
                          tags: List[str],
@@ -56,7 +56,6 @@ class ComponentHandler:
                          input: List[Dict],
                          output: List[Dict],
                          commands: List[Dict],
-                         public,
                          local_path):
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
@@ -70,8 +69,8 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
-                    'tags': json.dumps(tags),
-                    'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
+                    'privacy_policy': privacy_policy,
+                    'tags': tags,
                     'custom_types': json.dumps(custom_types),
                     'input': json.dumps(input),
                     'output': json.dumps(output),
