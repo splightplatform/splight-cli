@@ -1,5 +1,5 @@
 FROM python:3.8-slim
-RUN apt update && apt -y install libpq-dev gcc libczmq-dev librdkafka-dev
+RUN apt update && apt -y install libpq-dev gcc libczmq-dev librdkafka-dev git
 
 ARG JFROG_BOT_USERNAME
 ARG JFROG_BOT_PASS
