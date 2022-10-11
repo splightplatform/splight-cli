@@ -12,6 +12,7 @@ class SplightCLISettings(BaseSettings):
     DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"
     STORAGE_CLIENT: str = "remote_splight_lib.storage.StorageClient"
     DEPLOYMENT_CLIENT: str = "remote_splight_lib.deployment.DeploymentClient"
+    COMMUNICATION_CLIENT: str = "remote_splight_lib.communication.CommunicationClient"
 
 
 ALL_CONFIG_VARS = SplightCLISettings.__fields__

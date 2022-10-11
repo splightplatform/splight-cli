@@ -1,6 +1,6 @@
 click==8.0.4
 setuptools==60.9.3
-splight-lib==0.4.25
+splight-lib==0.4.38
 py7zr==0.18.5
 colorama==0.4.4
 requests==2.27.1

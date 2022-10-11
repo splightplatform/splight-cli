@@ -11,6 +11,7 @@ from tempfile import NamedTemporaryFile
 import click
 
 from splight_lib.component import AbstractComponent
+from splight_lib.execution import Thread
 from splight_lib import logging
 
 from cli.settings import *
@@ -113,6 +114,7 @@ class Component:
         self.custom_types = self.spec["custom_types"]
         self.input = self.spec["input"]
         self.output = self.spec["output"]
+        self.commands = self.spec.get("commands", [])
 
     def _load_run_spec_fields(self, extra_run_spec_fields):
         vars = get_yaml_from_file(self.vars_file)
@@ -282,6 +284,7 @@ class Component:
             self.custom_types,
             self.input,
             self.output,
+            self.commands,
             public,
             self.path
         )
@@ -332,4 +335,4 @@ class Component:
             run_spec=self.run_spec,
             initial_setup=self.context.workspace.settings.dict()
         )
-        component.start()
+        component.execution_client.start(Thread(target=component.start))

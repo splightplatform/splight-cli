@@ -35,6 +35,7 @@ class TestPush(SplightCLITest):
                     self.custom_types,
                     self.input,
                     self.output,
+                    self.commands,
                     False,
                     self.path,
                 )
@@ -64,6 +65,7 @@ class TestPush(SplightCLITest):
                 self.custom_types,
                 self.input,
                 self.output,
+                self.commands,
                 False,
                 self.path,
             )
@@ -81,6 +83,7 @@ class TestPush(SplightCLITest):
             "custom_types": json.dumps(self.custom_types),
             "input": json.dumps(self.input),
             "output": json.dumps(self.output),
+            "commands": json.dumps(self.commands),
         }
 
         with patch.object(
