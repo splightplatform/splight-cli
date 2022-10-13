@@ -9,6 +9,7 @@ from jinja2 import Template
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 import click
+from cli.context import PrivacyPolicy
 
 from splight_lib.component import AbstractComponent
 from splight_lib.execution import Thread
@@ -267,8 +268,9 @@ class Component:
 
     def push(self, type, force, public):
         component_type = self._validate_type(type)
+        privacy_policy = PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value
         self._validate_component_structure()
-        self._load_spec()  # TODO spec should have public attr
+        self._load_spec()
         self._load_component()
 
         handler = ComponentHandler(self.context)
@@ -278,6 +280,7 @@ class Component:
             raise ComponentAlreadyExistsException
         handler.upload_component(
             component_type,
+            privacy_policy,
             self.name,
             self.version,
             self.tags,
@@ -285,7 +288,6 @@ class Component:
             self.input,
             self.output,
             self.commands,
-            public,
             self.path
         )
 

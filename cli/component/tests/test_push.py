@@ -29,6 +29,7 @@ class TestPush(SplightCLITest):
                 )
                 uploader.assert_called_with(
                     self.type.lower(),
+                    'private',
                     self.name,
                     self.version,
                     self.tags,
@@ -36,7 +37,6 @@ class TestPush(SplightCLITest):
                     self.input,
                     self.output,
                     self.commands,
-                    False,
                     self.path,
                 )
 
@@ -59,6 +59,7 @@ class TestPush(SplightCLITest):
             self.component.push(self.type, force=True, public=False)
             uploader.assert_called_with(
                 self.type.lower(),
+                'private',
                 self.name,
                 self.version,
                 self.tags,
@@ -66,7 +67,6 @@ class TestPush(SplightCLITest):
                 self.input,
                 self.output,
                 self.commands,
-                False,
                 self.path,
             )
 
