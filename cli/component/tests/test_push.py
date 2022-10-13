@@ -79,7 +79,7 @@ class TestPush(SplightCLITest):
             "name": self.name,
             "version": self.version,
             "privacy_policy": "private",
-            "tags": json.dumps(self.tags),
+            "tags": self.tags,
             "custom_types": json.dumps(self.custom_types),
             "input": json.dumps(self.input),
             "output": json.dumps(self.output),
