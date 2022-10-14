@@ -103,7 +103,7 @@ class TestPush(SplightCLITest):
                     _, args, kwargs = post.mock_calls[0]
                     self.assertEqual(
                         args[0],
-                        f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/upload/",
+                        f"{self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST}/hub/upload/",
                     )
                     self.assertEqual(
                         kwargs["files"]["file"].name, compressed_filename
