@@ -1,4 +1,4 @@
-from pydantic import BaseSettings
+from pydantic import BaseSettings, Extra
 
 
 class SplightCLISettings(BaseSettings):
@@ -11,6 +11,9 @@ class SplightCLISettings(BaseSettings):
     STORAGE_CLIENT: str = "remote_splight_lib.storage.StorageClient"
     DEPLOYMENT_CLIENT: str = "remote_splight_lib.deployment.DeploymentClient"
     COMMUNICATION_CLIENT: str = "remote_splight_lib.communication.CommunicationClient"
+
+    class Config:
+        extra = Extra.ignore
 
 
 ALL_CONFIG_VARS = SplightCLISettings.__fields__
