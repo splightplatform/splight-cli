@@ -176,7 +176,7 @@ class Component:
         user_handler = UserHandler(self.context)
         base_url = self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST
         file_data = api_get(
-            f"{base_url}/random_picture/",
+            f"{base_url}/hub/random_picture/",
             headers=user_handler.authorization_header,
         )
         with open(path, "wb+") as f:
