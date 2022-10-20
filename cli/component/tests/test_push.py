@@ -9,6 +9,7 @@ from cli.component.component import Component, ComponentAlreadyExistsException
 from cli.component.handler import ComponentHandler
 from cli.constants import COMPRESSION_TYPE, README_FILE
 from cli.tests.test_generic import SplightCLITest
+from cli.settings import SPLIGHT_CLI_VERSION
 
 
 class TestPush(SplightCLITest):
@@ -84,6 +85,7 @@ class TestPush(SplightCLITest):
             "input": json.dumps(self.input),
             "output": json.dumps(self.output),
             "commands": json.dumps(self.commands),
+            "splight_cli_version": SPLIGHT_CLI_VERSION,
         }
 
         with patch.object(
