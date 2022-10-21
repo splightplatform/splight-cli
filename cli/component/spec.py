@@ -43,8 +43,6 @@ class Parameter(ModelParameter, ChoiceMixin):
 
         # allow custom type
         if type_ not in VALID_PARAMETER_VALUES:
-            if v is not None:
-                raise ValueError(f"custom types value must be None")
             return v
 
         # UUIDs and Date must be None
