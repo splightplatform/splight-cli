@@ -425,11 +425,6 @@ class Component:
         self._validate_component_structure()
         self._load_spec()
 
-        # extra_run_spec_fields = {
-        #     "namespace": DEFAULT_NAMESPACE,
-        #     "external_id": DEFAULT_EXTERNAL_ID,
-        #     "type": component_type.title(),
-        # }
         if run_spec:
             self.run_spec = json.loads(run_spec)
         else:
@@ -440,15 +435,8 @@ class Component:
                 reset_values=reset_input
             )
             self.run_spec = loader.load_values(spec_dict=self.run_spec)
-            # self._prompt_run_spec_fields(
-            #     extra_run_spec_fields=extra_run_spec_fields,
-            #     reset_input=reset_input,
-            # )
-            # self._load_run_spec_fields(extra_run_spec_fields)
 
         self._load_component()
-
-        print("ahoa")
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         component = component_class(
