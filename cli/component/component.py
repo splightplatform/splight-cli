@@ -241,10 +241,8 @@ class Component:
         for i, param in enumerate(self.spec["input"]):
             name = param["name"]
             if reset_input or name not in vars:
-                __import__('ipdb').set_trace()
                 param["value"] = vars.get(name, param["value"])
                 if param["type"] not in VALID_PARAMETER_VALUES:
-                    break
                     raise Exception(f"Invalid parameter type: {param['type']}."
                                     f" Custom types not supported yet.")
                 param['value'] = vars.get(name, param['value'])
