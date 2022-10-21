@@ -1,10 +1,9 @@
 import subprocess
 import importlib
-import logging
 import json
 import sys
 import os
-from typing import Type, List
+from typing import Dict, List, Type
 from jinja2 import Template
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -41,7 +40,6 @@ from cli.utils import (
 )
 from cli.component.handler import ComponentHandler, UserHandler
 from cli.component.exception import InvalidComponentType
-from cli.component.handler import ComponentHandler, UserHandler
 from cli.component.spec import Spec
 
 logger = logging.getLogger()
@@ -49,6 +47,113 @@ logger = logging.getLogger()
 
 class ComponentAlreadyExistsException(Exception):
     pass
+
+
+class ComponentConfigLoader:
+
+    _EXTRA_SPEC_FIELDS = {
+        "namespace": DEFAULT_NAMESPACE,
+        "external_id": DEFAULT_EXTERNAL_ID,
+        "type": None
+    }
+
+    def __init__(
+        self,
+        vars_file_path: str,
+        component_type: str,
+        reset_values: bool = False
+    ):
+        self._vars_file_path = vars_file_path
+        self._reset_values = reset_values
+        self._EXTRA_SPEC_FIELDS["type"] = component_type
+
+        if not os.path.exists(self._vars_file_path):
+            Path(self._vars_file_path).touch()
+
+    def load_values(self, spec_dict: Dict) -> Dict:
+        custom_types_names = [
+            param["name"] for param in spec_dict["custom_types"]
+        ]
+        input_variables = spec_dict["input"]
+
+        variables = get_yaml_from_file(self._vars_file_path)
+
+        full_spec = {}
+        extra_fields = self._load_extra_fields(variables)
+        full_spec.update(extra_fields)
+
+        replaced_input = self._replace_values(
+            input_variables, variables, custom_types_names
+        )
+        spec_dict["input"] = replaced_input
+        full_spec.update(spec_dict)
+        self._export_to_yaml(full_spec)
+        return full_spec
+
+    def _replace_values(
+        self, input_variables: List, variables: Dict, custom_types: List[str]
+    ) -> Dict:
+        replaced = []
+        for var in input_variables:
+            new_value = self._set_variable_value(
+                var, variables, custom_types
+            )
+            replaced.append(new_value)
+        return replaced
+
+    def _set_variable_value(
+        self, var: Dict, variables: Dict, custom_types: List[str]
+    ) -> Dict:
+        var_type = var["type"]
+        new_var = var
+        if var_type in VALID_PARAMETER_VALUES:
+            new_var = self._set_primitive_variable(var, variables)
+        elif var_type in custom_types:
+            new_custom_var = self._replace_values(
+                var["value"], variables[var["name"]], []
+            )
+            new_var["value"] = new_custom_var
+        return new_var
+
+    def _set_primitive_variable(self, var: Dict, variables: Dict) -> Dict:
+        var["value"] = variables.get(var["name"], var["value"])
+        new_value = input_single(var) if self._reset_values else var["value"]
+        var["value"] = new_value
+        return var
+
+    def _load_extra_fields(self, variables: Dict) -> Dict:
+        extra_fields = {}
+        for key, default in self._EXTRA_SPEC_FIELDS.items():
+            var = {
+                "name": key,
+                "value": default,
+                "required": False,
+                "type": "str",
+            }
+            new_value = self._set_primitive_variable(var, variables)
+            extra_fields[key] = new_value["value"]
+        return extra_fields
+
+    def _export_to_yaml(self, spec_dict: Dict):
+        vars = {key: spec_dict.get(key) for key in self._EXTRA_SPEC_FIELDS}
+        custom_types = [
+            x["name"] for x in spec_dict["custom_types"]
+        ]
+
+        for input_param in spec_dict["input"]:
+            param_name = input_param["name"]
+            param_type = input_param["type"]
+            param_value = input_param["value"]
+            if param_type in custom_types:
+                var_value = {
+                    sub_var["name"]: sub_var["value"]
+                    for sub_var in param_value
+                }
+            else:
+                var_value = param_value
+            vars[param_name] = var_value
+
+        save_yaml_to_file(payload=vars, file_path=self._vars_file_path)
 
 
 class Component:
@@ -117,6 +222,7 @@ class Component:
         self.output = self.spec["output"]
         self.commands = self.spec.get("commands", [])
 
+    # TODO: Delete this method
     def _load_run_spec_fields(self, extra_run_spec_fields):
         vars = get_yaml_from_file(self.vars_file)
         for i, param in enumerate(self.spec["input"]):
@@ -126,6 +232,7 @@ class Component:
         for key in extra_run_spec_fields.keys():
             self.run_spec[key] = vars[key]
 
+    # TODO: Delete this method
     def _prompt_run_spec_fields(
         self, reset_input, extra_run_spec_fields: dict
     ):
@@ -134,8 +241,10 @@ class Component:
         for i, param in enumerate(self.spec["input"]):
             name = param["name"]
             if reset_input or name not in vars:
+                __import__('ipdb').set_trace()
                 param["value"] = vars.get(name, param["value"])
                 if param["type"] not in VALID_PARAMETER_VALUES:
+                    break
                     raise Exception(f"Invalid parameter type: {param['type']}."
                                     f" Custom types not supported yet.")
                 param['value'] = vars.get(name, param['value'])
@@ -316,22 +425,30 @@ class Component:
         self._validate_component_structure()
         self._load_spec()
 
-        extra_run_spec_fields = {
-            "namespace": DEFAULT_NAMESPACE,
-            "external_id": DEFAULT_EXTERNAL_ID,
-            "type": component_type.title(),
-        }
+        # extra_run_spec_fields = {
+        #     "namespace": DEFAULT_NAMESPACE,
+        #     "external_id": DEFAULT_EXTERNAL_ID,
+        #     "type": component_type.title(),
+        # }
         if run_spec:
             self.run_spec = json.loads(run_spec)
         else:
             self.run_spec = self.spec
-            self._prompt_run_spec_fields(
-                extra_run_spec_fields=extra_run_spec_fields,
-                reset_input=reset_input,
+            loader = ComponentConfigLoader(
+                vars_file_path=self.vars_file,
+                component_type=component_type,
+                reset_values=reset_input
             )
-            self._load_run_spec_fields(extra_run_spec_fields)
+            self.run_spec = loader.load_values(spec_dict=self.run_spec)
+            # self._prompt_run_spec_fields(
+            #     extra_run_spec_fields=extra_run_spec_fields,
+            #     reset_input=reset_input,
+            # )
+            # self._load_run_spec_fields(extra_run_spec_fields)
 
         self._load_component()
+
+        print("ahoa")
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
         component = component_class(
