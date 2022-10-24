@@ -1,0 +1,2 @@
+docker==6.0.0
+splight-cli==0.2.4
