@@ -88,7 +88,6 @@ class ComponentConfigLoader:
             default=variables.get("external_id")
         )
         full_spec["external_id"] = external_id
-        full_spec["namespace"] = "org_5hfnqcWToRaieJsE"
 
         replaced_input = self._replace_values(
             input_variables, variables, custom_types_names

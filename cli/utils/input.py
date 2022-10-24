@@ -20,7 +20,6 @@ def input_single(param: dict):
     name = (
         f"{'*' if param['required'] else ''}{param['name']}: {param['type']}"
     )
-    print(param)
     param_type = locate(param["type"])
     value_proc = None
     if param.get("multiple"):
