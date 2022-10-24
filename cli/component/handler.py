@@ -197,3 +197,23 @@ class ComponentHandler:
             if response["count"] > 0:
                 break
         return response["count"] > 0
+
+    def create_component(
+        self,
+        component_type: str,
+        component_name: str,
+        component_version: str,
+    ) -> Dict:
+        endpoint = f"{self.user_handler.host}/{component_type.lower()}/"
+        headers = self.user_handler.authorization_header
+        data = {
+            "name": f"CLI: {component_name}",
+            "description": "created by Splight CLI",
+            "version": component_version,
+            "custom_types": [],
+            "input": [],
+            "output": [],
+        }
+        response = api_post(endpoint, headers=headers, data=data)
+        response.raise_for_status()
+        return response.json()
