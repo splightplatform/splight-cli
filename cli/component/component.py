@@ -3,7 +3,9 @@ import importlib
 import json
 import sys
 import os
-from typing import Dict, List, Type
+from copy import deepcopy
+from uuid import UUID
+from typing import Dict, List, Type, Optional
 from jinja2 import Template
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -14,12 +16,8 @@ from splight_lib.component import AbstractComponent
 from splight_lib.execution import Thread
 from splight_lib import logging
 
-from cli.settings import *
-from cli.constants import *
 from cli.constants import (
     COMPONENT_FILE,
-    DEFAULT_EXTERNAL_ID,
-    DEFAULT_NAMESPACE,
     INIT_FILE,
     MAIN_CLASS_NAME,
     PICTURE_FILE,
@@ -49,23 +47,27 @@ class ComponentAlreadyExistsException(Exception):
     pass
 
 
+class InvalidComponentID(Exception):
+    pass
+
+
 class ComponentConfigLoader:
 
-    _EXTRA_SPEC_FIELDS = {
-        "namespace": DEFAULT_NAMESPACE,
-        "external_id": DEFAULT_EXTERNAL_ID,
-        "type": None
-    }
+    _EXTRA_SPEC_FIELDS = [
+        "namespace", "type", "external_id"
+    ]
 
     def __init__(
         self,
+        context,
         vars_file_path: str,
         component_type: str,
         reset_values: bool = False
     ):
+        self._context = context
         self._vars_file_path = vars_file_path
         self._reset_values = reset_values
-        self._EXTRA_SPEC_FIELDS["type"] = component_type
+        self._component_type = component_type
 
         if not os.path.exists(self._vars_file_path):
             Path(self._vars_file_path).touch()
@@ -79,8 +81,14 @@ class ComponentConfigLoader:
         variables = get_yaml_from_file(self._vars_file_path)
 
         full_spec = {}
-        extra_fields = self._load_extra_fields(variables)
-        full_spec.update(extra_fields)
+        full_spec["type"] = self._component_type.title()
+        external_id = self._load_external_id(
+            name=spec_dict["name"],
+            version=spec_dict["version"],
+            default=variables.get("external_id")
+        )
+        full_spec["external_id"] = external_id
+        full_spec["namespace"] = "org_5hfnqcWToRaieJsE"
 
         replaced_input = self._replace_values(
             input_variables, variables, custom_types_names
@@ -91,48 +99,110 @@ class ComponentConfigLoader:
         return full_spec
 
     def _replace_values(
-        self, input_variables: List, variables: Dict, custom_types: List[str]
+        self,
+        input_variables: List,
+        variables: Dict,
+        custom_types: List[str],
+        prefix: Optional[str] = None
     ) -> Dict:
         replaced = []
         for var in input_variables:
             new_value = self._set_variable_value(
-                var, variables, custom_types
+                var, variables, custom_types, prefix=prefix
             )
             replaced.append(new_value)
         return replaced
 
     def _set_variable_value(
-        self, var: Dict, variables: Dict, custom_types: List[str]
+        self,
+        var: Dict,
+        variables: Dict,
+        custom_types: List[str],
+        prefix: Optional[str] = None
     ) -> Dict:
         var_type = var["type"]
         new_var = var
         if var_type in VALID_PARAMETER_VALUES:
-            new_var = self._set_primitive_variable(var, variables)
+            new_var = self._set_primitive_variable(
+                var, variables, prefix=prefix
+            )
         elif var_type in custom_types:
             new_custom_var = self._replace_values(
-                var["value"], variables[var["name"]], []
+                var["value"], variables[var["name"]], [], prefix=var["name"]
             )
             new_var["value"] = new_custom_var
         return new_var
 
-    def _set_primitive_variable(self, var: Dict, variables: Dict) -> Dict:
-        var["value"] = variables.get(var["name"], var["value"])
+    def _set_primitive_variable(
+        self, var: Dict, variables: Dict, prefix: Optional[str] = None
+    ) -> Dict:
+        var_name = var["name"]
+        var["value"] = variables.get(var_name, var["value"])
+        if prefix:
+            var["name"] = f"{prefix}.{var_name}"
         new_value = input_single(var) if self._reset_values else var["value"]
         var["value"] = new_value
+        var["name"] = var_name
         return var
 
-    def _load_extra_fields(self, variables: Dict) -> Dict:
-        extra_fields = {}
-        for key, default in self._EXTRA_SPEC_FIELDS.items():
-            var = {
-                "name": key,
-                "value": default,
-                "required": False,
-                "type": "str",
-            }
-            new_value = self._set_primitive_variable(var, variables)
-            extra_fields[key] = new_value["value"]
-        return extra_fields
+    def _load_external_id(
+        self, name: str, version: str, default: Optional[str] = None
+    ) -> str:
+        if not default or self._reset_values:
+            external_id = self._refresh_external_id(
+                name=name, version=version
+            )
+        else:
+            external_id = default
+        click.secho(
+            f"Component running with external_id: {external_id}", fg="green"
+        )
+        return external_id
+
+    def _refresh_external_id(
+        self, name: str, version: str
+    ) -> str:
+        create_component = click.prompt(
+            click.style(
+                "Do you want to create a component in Splight Platform? (y/n)",
+                fg="yellow",
+            ),
+            type=str,
+            default="n"
+        )
+        if create_component in ["y", "Y", "yes"]:
+            external_id = self._create_new_component(
+                name=name, version=version
+            )
+        else:
+            external_id = self._read_existing_component_id()
+        return external_id
+
+    def _create_new_component(self, name: str, version: str) -> str:
+        handler = ComponentHandler(self._context)
+        component = handler.create_component(
+            component_type=self._component_type,
+            component_name=name,
+            component_version=version
+        )
+        return component["id"]
+
+    def _read_existing_component_id(self) -> str:
+        external_id = click.prompt(
+            click.style(
+                "Write the ID of an existing component in Splight Platform",
+                fg="white",
+            ),
+            type=str,
+            default=None,
+        )
+        try:
+            UUID(external_id, version=4)
+        except ValueError:
+            raise InvalidComponentID(
+                f"The ID {external_id} is not a valid UUID"
+            )
+        return external_id
 
     def _export_to_yaml(self, spec_dict: Dict):
         vars = {key: spec_dict.get(key) for key in self._EXTRA_SPEC_FIELDS}
@@ -221,40 +291,6 @@ class Component:
         self.input = self.spec["input"]
         self.output = self.spec["output"]
         self.commands = self.spec.get("commands", [])
-
-    # TODO: Delete this method
-    def _load_run_spec_fields(self, extra_run_spec_fields):
-        vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["input"]):
-            name = param["name"]
-            if name in vars:
-                self.run_spec["input"][i]["value"] = vars[name]
-        for key in extra_run_spec_fields.keys():
-            self.run_spec[key] = vars[key]
-
-    # TODO: Delete this method
-    def _prompt_run_spec_fields(
-        self, reset_input, extra_run_spec_fields: dict
-    ):
-        Path(self.vars_file).touch()
-        vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["input"]):
-            name = param["name"]
-            if reset_input or name not in vars:
-                param["value"] = vars.get(name, param["value"])
-                if param["type"] not in VALID_PARAMETER_VALUES:
-                    raise Exception(f"Invalid parameter type: {param['type']}."
-                                    f" Custom types not supported yet.")
-                param['value'] = vars.get(name, param['value'])
-                vars[name] = input_single(param)
-                if param.get("multiple", False) and vars[name]:
-                    vars[name] = vars[name].split(",")
-        for key, default in extra_run_spec_fields.items():
-            if reset_input or key not in vars:
-                vars[key] = click.prompt(
-                    key, type=str, default=default, show_default=True
-                )
-        save_yaml_to_file(payload=vars, file_path=self.vars_file)
 
     def _command_run(self, command: List[str]) -> None:
         command: str = " ".join(command)
@@ -426,13 +462,14 @@ class Component:
         if run_spec:
             self.run_spec = json.loads(run_spec)
         else:
-            self.run_spec = self.spec
+            spec_dict = deepcopy(self.spec)
             loader = ComponentConfigLoader(
+                context=self.context,
                 vars_file_path=self.vars_file,
                 component_type=component_type,
                 reset_values=reset_input
             )
-            self.run_spec = loader.load_values(spec_dict=self.run_spec)
+            self.run_spec = loader.load_values(spec_dict=spec_dict)
 
         self._load_component()
 
