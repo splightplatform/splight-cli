@@ -52,7 +52,7 @@ if __name__ == '__main__':
     hub_client.mine.update(HubComponentVersion, id=component.id, data=component.dict())
 
     try:
-        tag = f"{component_name}:{build_spec.workspace}-{component_version}"
+        tag = f"splight-components:{component_name}-{build_spec.workspace}-{component_version}"
         docker_client = docker.from_env()
         logging.info("Building image")
         docker_client.images.build(

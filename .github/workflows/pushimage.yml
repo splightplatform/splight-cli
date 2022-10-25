@@ -26,7 +26,7 @@ jobs:
           export VERSION=$(python setup.py --version)
           export BRANCH=${GITHUB_REF##*/}
           JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS docker-compose build
-          docker tag splight-runner:${VERSION} $AWS_ECR/splight-runner:${BRANCH}-${VERSION}
+          docker tag splight-runner $AWS_ECR/splight-runner:${BRANCH}-${VERSION}
           docker push $AWS_ECR/splight-runner:${BRANCH}-${VERSION}
       - name: build and push builder image
         working-directory: ./builder
@@ -34,7 +34,7 @@ jobs:
           export VERSION=$(python setup.py --version)
           export BRANCH=${GITHUB_REF##*/}
           JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS docker-compose build
-          docker tag splight-builder:${VERSION} $AWS_ECR/splight-builder:${BRANCH}-${VERSION}
+          docker tag splight-builder $AWS_ECR/splight-builder:${BRANCH}-${VERSION}
           docker push $AWS_ECR/splight-builder:${BRANCH}-${VERSION}
         env:
           JFROG_USERNAME: ${{secrets.JFROG_USERNAME}}
