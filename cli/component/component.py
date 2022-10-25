@@ -18,6 +18,7 @@ from splight_lib import logging
 
 from cli.constants import (
     COMPONENT_FILE,
+    DEFAULT_NAMESPACE,
     INIT_FILE,
     MAIN_CLASS_NAME,
     PICTURE_FILE,
@@ -82,6 +83,7 @@ class ComponentConfigLoader:
 
         full_spec = {}
         full_spec["type"] = self._component_type.title()
+        full_spec["namespace"] = DEFAULT_NAMESPACE
         external_id = self._load_external_id(
             name=spec_dict["name"],
             version=spec_dict["version"],
@@ -149,7 +151,7 @@ class ComponentConfigLoader:
     ) -> str:
         if not default or self._reset_values:
             external_id = self._refresh_external_id(
-                name=name, version=version
+                name=name, version=version, default=default
             )
         else:
             external_id = default
@@ -159,7 +161,7 @@ class ComponentConfigLoader:
         return external_id
 
     def _refresh_external_id(
-        self, name: str, version: str
+        self, name: str, version: str, default: Optional[str] = None
     ) -> str:
         create_component = click.prompt(
             click.style(
@@ -174,7 +176,7 @@ class ComponentConfigLoader:
                 name=name, version=version
             )
         else:
-            external_id = self._read_existing_component_id()
+            external_id = self._read_existing_component_id(default=default)
         return external_id
 
     def _create_new_component(self, name: str, version: str) -> str:
@@ -186,14 +188,16 @@ class ComponentConfigLoader:
         )
         return component["id"]
 
-    def _read_existing_component_id(self) -> str:
+    def _read_existing_component_id(
+        self, default: Optional[str] = None
+    ) -> str:
         external_id = click.prompt(
             click.style(
                 "Write the ID of an existing component in Splight Platform",
                 fg="white",
             ),
             type=str,
-            default=None,
+            default=default,
         )
         try:
             UUID(external_id, version=4)
