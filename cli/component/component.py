@@ -128,8 +128,9 @@ class ComponentConfigLoader:
                 var, variables, prefix=prefix
             )
         elif var_type in custom_types:
+            default_values = variables.get(var["name"], {})
             new_custom_var = self._replace_values(
-                var["value"], variables[var["name"]], [], prefix=var["name"]
+                var["value"], default_values, [], prefix=var["name"]
             )
             new_var["value"] = new_custom_var
         return new_var
@@ -138,10 +139,15 @@ class ComponentConfigLoader:
         self, var: Dict, variables: Dict, prefix: Optional[str] = None
     ) -> Dict:
         var_name = var["name"]
-        var["value"] = variables.get(var_name, var["value"])
+        default_value = variables.get(var_name)
+        if default_value:
+            var["value"] = default_value
         if prefix:
             var["name"] = f"{prefix}.{var_name}"
-        new_value = input_single(var) if self._reset_values else var["value"]
+
+        new_value = var["value"]
+        if self._reset_values or default_value is None:
+            new_value = input_single(var)
         var["value"] = new_value
         var["name"] = var_name
         return var
