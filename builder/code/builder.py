@@ -17,6 +17,7 @@ class BuildSpec(BaseModel):
     secret_key: str
     workspace: str
     registry: str
+    cli_version: str
 
 
 def get_hub_client(build_spec: BuildSpec):
@@ -51,13 +52,13 @@ if __name__ == '__main__':
     hub_client.mine.update(HubComponentVersion, id=component.id, data=component.dict())
 
     try:
-        tag = f"splight-runner:{build_spec.workspace}-{component_name}-{component_version}"
+        tag = f"{component_name}:{build_spec.workspace}-{component_version}"
         docker_client = docker.from_env()
         logging.info("Building image")
         docker_client.images.build(
             path=".",
             buildargs={
-                "BASE_IMAGE": f"{build_spec.registry}/splight-runner:{build_spec.workspace}",
+                "BASE_IMAGE": f"{build_spec.registry}/splight-runner:{build_spec.workspace}-{build_spec.cli_version}",
                 "BUILD_SPEC": args.build_spec[0],
             },
             tag=tag
