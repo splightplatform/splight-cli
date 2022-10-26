@@ -2,16 +2,14 @@ import os
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from uuid import UUID
 
 import click
 
 from cli.component.handler import ComponentHandler
-from cli.constants import (  # COMPONENT_FILE,; INIT_FILE,; MAIN_CLASS_NAME,; PICTURE_FILE,; REQUIRED_FILES,; SPEC_FILE,; VALID_TYPES,; VARS_FILE,
+from cli.constants import (
     DEFAULT_NAMESPACE,
-    VALID_PARAMETER_VALUES,
 )
-from cli.utils import (  # api_get,; get_json_from_file,; get_template,; validate_path_isdir,
+from cli.utils import (
     get_yaml_from_file,
     input_single,
     save_yaml_to_file,
@@ -266,7 +264,6 @@ class ComponentConfigLoader:
                 var_value = param_value
             vars[param_name] = var_value
 
-        # save_yaml_to_file(payload=vars, file_path="./variables.yaml")
         save_yaml_to_file(payload=vars, file_path=self._vars_file_path)
 
     @staticmethod

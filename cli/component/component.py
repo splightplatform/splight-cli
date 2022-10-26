@@ -4,12 +4,9 @@ import json
 import sys
 import os
 from copy import deepcopy
-from uuid import UUID
-from typing import Dict, List, Type, Optional
+from typing import List, Type
 from jinja2 import Template
-from pathlib import Path
 from tempfile import NamedTemporaryFile
-import click
 from cli.context import PrivacyPolicy
 
 from splight_lib.component import AbstractComponent
@@ -18,13 +15,11 @@ from splight_lib import logging
 
 from cli.constants import (
     COMPONENT_FILE,
-    DEFAULT_NAMESPACE,
     INIT_FILE,
     MAIN_CLASS_NAME,
     PICTURE_FILE,
     REQUIRED_FILES,
     SPEC_FILE,
-    VALID_PARAMETER_VALUES,
     VALID_TYPES,
     VARS_FILE,
 )
@@ -32,9 +27,6 @@ from cli.utils import (
     api_get,
     get_json_from_file,
     get_template,
-    get_yaml_from_file,
-    input_single,
-    save_yaml_to_file,
     validate_path_isdir,
 )
 from cli.component.handler import ComponentHandler, UserHandler
