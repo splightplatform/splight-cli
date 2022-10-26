@@ -6,7 +6,6 @@ import py7zr
 from typing import List, Dict
 from functools import cached_property
 from cli.constants import *
-from cli.context import PrivacyPolicy
 from cli.utils.loader import Loader
 from cli.utils.api_requests import *
 from splight_lib import logging
@@ -20,7 +19,7 @@ class UserHandler:
         self.context = context
         self.access_id = self.context.workspace.settings.SPLIGHT_ACCESS_ID
         self.secret_key = self.context.workspace.settings.SPLIGHT_SECRET_KEY
-        self.host = self.context.workspace.settings.SPLIGHT_HUB_API_HOST
+        self.host = self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST
 
     @property
     def authorization_header(self):
@@ -33,7 +32,7 @@ class UserHandler:
         org_id = DEFAULT_NAMESPACE
         try:
             headers = self.authorization_header
-            response = api_get(f"{self.context.SPLIGHT_PLATFORM_API_HOST}/admin/me", headers=headers)
+            response = api_get(f"{self.host}/admin/me", headers=headers)
             response = response.json()
             org_id = response.get("organization_id")
         except Exception:
@@ -49,6 +48,7 @@ class ComponentHandler:
 
     def upload_component(self,
                          type: str,
+                         privacy_policy: str,
                          name: str,
                          version: str,
                          tags: List[str],
@@ -56,7 +56,6 @@ class ComponentHandler:
                          input: List[Dict],
                          output: List[Dict],
                          commands: List[Dict],
-                         public,
                          local_path):
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
@@ -70,8 +69,8 @@ class ComponentHandler:
                 data = {
                     'name': name,
                     'version': version,
-                    'tags': json.dumps(tags),
-                    'privacy_policy': PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value,
+                    'privacy_policy': privacy_policy,
+                    'tags': tags,
                     'custom_types': json.dumps(custom_types),
                     'input': json.dumps(input),
                     'output': json.dumps(output),
@@ -80,10 +79,19 @@ class ComponentHandler:
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
-                    'readme': open(os.path.join(local_path, README_FILE), 'rb'),
-                    'picture': open(os.path.join(local_path, PICTURE_FILE), 'rb'),
+                    'readme': open(
+                        os.path.join(local_path, README_FILE), 'rb'
+                    ),
+                    'picture': open(
+                        os.path.join(local_path, PICTURE_FILE), 'rb'
+                    ),
                 }
-                response = api_post(f"{self.user_handler.host}/upload/", files=files, data=data, headers=headers)
+                response = api_post(
+                    f"{self.user_handler.host}/hub/upload/",
+                    files=files,
+                    data=data,
+                    headers=headers
+                )
                 if response.status_code != 201:
                     raise Exception(f"Failed to push component: {response.text}")
             except Exception as e:
@@ -100,13 +108,16 @@ class ComponentHandler:
                 'version': version,
                 'type': type,
             }
-            # response = api_post(f"{self.user_handler.host}/{type}/download/", data=data, headers=headers)
-            response = api_post(f"{self.user_handler.host}/download/", data=data, headers=headers)
+            response = api_post(
+                f"{self.user_handler.host}/hub/download/",
+                data=data,
+                headers=headers
+            )
 
             if response.status_code != 200:
                 if response.status_code == 404:
-                    raise Exception(f"Component not found")
-                raise Exception(f"Failed to pull the component from splight hub")
+                    raise Exception("Component not found")
+                raise Exception("Failed to pull the component from splight hub")
 
             versioned_name = f"{name}-{version}"
             compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
@@ -123,18 +134,29 @@ class ComponentHandler:
     def delete_component(self, type, name, version):
         with Loader("Deleting component from Splight Hub..."):
             headers = self.user_handler.authorization_header
-            response = api_get(f"{self.user_handler.host}/mine/component-versions/?type={type}&name={name}&version={version}", headers=headers)
+            response = api_get(
+                f"{self.user_handler.host}/hub/mine/component-versions/?type={type}&name={name}&version={version}",
+                headers=headers
+            )
             response = response.json()
             for item in response["results"]:
-                response = api_delete(f"{self.user_handler.host}/mine/component-versions/{item['id']}/", headers=headers)
+                response = api_delete(
+                    f"{self.user_handler.host}/hub/mine/component-versions/{item['id']}/",
+                    headers=headers
+                )
                 if response.status_code != 204:
-                    raise Exception(f"Failed to delete the component from splight hub")
+                    raise Exception(
+                        "Failed to delete the component from splight hub"
+                    )
 
     def list_components(self, type):
         with Loader("Listing components.."):
             headers = self.user_handler.authorization_header
             list_ = []
-            page = api_get(f"{self.user_handler.host}/mine/components/?type={type}", headers=headers)
+            page = api_get(
+                f"{self.user_handler.host}/hub/mine/components/?type={type}",
+                headers=headers
+            )
             page = page.json()
             if page["results"]:
                 list_.extend(page["results"])
@@ -149,7 +171,10 @@ class ComponentHandler:
         with Loader("Listing component versions.."):
             headers = self.user_handler.authorization_header
             list_ = []
-            page = api_get(f"{self.user_handler.host}/mine/component-versions/?type={type}&name={name}", headers=headers)
+            page = api_get(
+                f"{self.user_handler.host}/hub/mine/component-versions/?type={type}&name={name}",
+                headers=headers
+            )
             page = page.json()
             if page["results"]:
                 list_.extend(page["results"])
@@ -163,8 +188,8 @@ class ComponentHandler:
     def exists_in_hub(self, type, name, version):
         headers = self.user_handler.authorization_header
         endpoints = [
-            f"{self.user_handler.host}/private/component-versions/?name={name}&version={version}"
-            f"{self.user_handler.host}/public/component-versions/?name={name}&version={version}"
+            f"{self.user_handler.host}/hub/private/component-versions/?name={name}&version={version}"
+            f"{self.user_handler.host}/hub/public/component-versions/?name={name}&version={version}"
         ]
         for endpoint in endpoints:
             response = api_get(endpoint, headers=headers)
@@ -172,3 +197,23 @@ class ComponentHandler:
             if response["count"] > 0:
                 break
         return response["count"] > 0
+
+    def create_component(
+        self,
+        component_type: str,
+        component_name: str,
+        component_version: str,
+    ) -> Dict:
+        endpoint = f"{self.user_handler.host}/{component_type.lower()}/"
+        headers = self.user_handler.authorization_header
+        data = {
+            "name": f"CLI: {component_name}",
+            "description": "created by Splight CLI",
+            "version": component_version,
+            "custom_types": [],
+            "input": [],
+            "output": [],
+        }
+        response = api_post(endpoint, headers=headers, data=data)
+        response.raise_for_status()
+        return response.json()

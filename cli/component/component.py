@@ -1,31 +1,25 @@
 import subprocess
 import importlib
-import logging
 import json
 import sys
 import os
-from typing import Type, List
+from copy import deepcopy
+from typing import List, Type
 from jinja2 import Template
-from pathlib import Path
 from tempfile import NamedTemporaryFile
-import click
+from cli.context import PrivacyPolicy
 
 from splight_lib.component import AbstractComponent
 from splight_lib.execution import Thread
 from splight_lib import logging
 
-from cli.settings import *
-from cli.constants import *
 from cli.constants import (
     COMPONENT_FILE,
-    DEFAULT_EXTERNAL_ID,
-    DEFAULT_NAMESPACE,
     INIT_FILE,
     MAIN_CLASS_NAME,
     PICTURE_FILE,
     REQUIRED_FILES,
     SPEC_FILE,
-    VALID_PARAMETER_VALUES,
     VALID_TYPES,
     VARS_FILE,
 )
@@ -33,15 +27,12 @@ from cli.utils import (
     api_get,
     get_json_from_file,
     get_template,
-    get_yaml_from_file,
-    input_single,
-    save_yaml_to_file,
     validate_path_isdir,
 )
 from cli.component.handler import ComponentHandler, UserHandler
 from cli.component.exception import InvalidComponentType
-from cli.component.handler import ComponentHandler, UserHandler
 from cli.component.spec import Spec
+from cli.component.spec_loader import ComponentConfigLoader
 
 logger = logging.getLogger()
 
@@ -116,38 +107,6 @@ class Component:
         self.output = self.spec["output"]
         self.commands = self.spec.get("commands", [])
 
-    def _load_run_spec_fields(self, extra_run_spec_fields):
-        vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["input"]):
-            name = param["name"]
-            if name in vars:
-                self.run_spec["input"][i]["value"] = vars[name]
-        for key in extra_run_spec_fields.keys():
-            self.run_spec[key] = vars[key]
-
-    def _prompt_run_spec_fields(
-        self, reset_input, extra_run_spec_fields: dict
-    ):
-        Path(self.vars_file).touch()
-        vars = get_yaml_from_file(self.vars_file)
-        for i, param in enumerate(self.spec["input"]):
-            name = param["name"]
-            if reset_input or name not in vars:
-                param["value"] = vars.get(name, param["value"])
-                if param["type"] not in VALID_PARAMETER_VALUES:
-                    raise Exception(f"Invalid parameter type: {param['type']}."
-                                    f" Custom types not supported yet.")
-                param['value'] = vars.get(name, param['value'])
-                vars[name] = input_single(param)
-                if param.get("multiple", False) and vars[name]:
-                    vars[name] = vars[name].split(",")
-        for key, default in extra_run_spec_fields.items():
-            if reset_input or key not in vars:
-                vars[key] = click.prompt(
-                    key, type=str, default=default, show_default=True
-                )
-        save_yaml_to_file(payload=vars, file_path=self.vars_file)
-
     def _command_run(self, command: List[str]) -> None:
         command: str = " ".join(command)
         logger.debug(f"Running initialization command: {command} ...")
@@ -173,8 +132,9 @@ class Component:
     def _get_random_picture(self, path):
         # TODO REMOVE THIS.. MOVE TO HUBCLIENT IMPLEMENTATION
         user_handler = UserHandler(self.context)
+        base_url = self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST
         file_data = api_get(
-            f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/random_picture/",
+            f"{base_url}/hub/random_picture/",
             headers=user_handler.authorization_header,
         )
         with open(path, "wb+") as f:
@@ -267,8 +227,9 @@ class Component:
 
     def push(self, type, force, public):
         component_type = self._validate_type(type)
+        privacy_policy = PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value
         self._validate_component_structure()
-        self._load_spec()  # TODO spec should have public attr
+        self._load_spec()
         self._load_component()
 
         handler = ComponentHandler(self.context)
@@ -278,6 +239,7 @@ class Component:
             raise ComponentAlreadyExistsException
         handler.upload_component(
             component_type,
+            privacy_policy,
             self.name,
             self.version,
             self.tags,
@@ -285,7 +247,6 @@ class Component:
             self.input,
             self.output,
             self.commands,
-            public,
             self.path
         )
 
@@ -313,20 +274,17 @@ class Component:
         self._validate_component_structure()
         self._load_spec()
 
-        extra_run_spec_fields = {
-            "namespace": DEFAULT_NAMESPACE,
-            "external_id": DEFAULT_EXTERNAL_ID,
-            "type": component_type.title(),
-        }
         if run_spec:
             self.run_spec = json.loads(run_spec)
         else:
-            self.run_spec = self.spec
-            self._prompt_run_spec_fields(
-                extra_run_spec_fields=extra_run_spec_fields,
-                reset_input=reset_input,
+            spec_dict = deepcopy(self.spec)
+            loader = ComponentConfigLoader(
+                context=self.context,
+                vars_file_path=self.vars_file,
+                component_type=component_type,
+                reset_values=reset_input
             )
-            self._load_run_spec_fields(extra_run_spec_fields)
+            self.run_spec = loader.load_values(spec_dict=spec_dict)
 
         self._load_component()
 

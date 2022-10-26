@@ -73,7 +73,7 @@ class TestPull(SplightCLITest):
                     _, args, kwargs = post.mock_calls[0]
                     self.assertEqual(
                         args[0],
-                        f"{self.context.workspace.settings.SPLIGHT_HUB_API_HOST}/download/",
+                        f"{self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST}/hub/download/",
                     )
                     self.assertDictContainsSubset(kwargs["data"], data)
                     self.assertDictContainsSubset(kwargs["headers"], headers)

@@ -88,7 +88,10 @@ class SplightCLITest(TestCase):
     def default_configuration(self):
         return SplightCLISettings.parse_obj({
             "SPLIGHT_ACCESS_ID": "access_id",
-            "SPLIGHT_SECRET_KEY": "secret_key"
+            "SPLIGHT_SECRET_KEY": "secret_key",
+            "DATABASE_CLIENT": "fake_splight_lib.database.FakeDatabaseClient",
+            "DATALAKE_CLIENT": "fake_splight_lib.datalake.FakeDatalakeClient",
+            "DEPLOYMENT_CLIENT": "fake_splight_lib.deployment.FakeDeploymentClient",
         })
 
     def configure(self):
