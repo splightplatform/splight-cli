@@ -18,6 +18,13 @@
     - [Storage](#storage)
     - [Workspace](#workspace)
   - [Developing Components](#developing-components)
+    - [What is a component?](#what-is-a-component)
+    - [Component types](#component-types)
+    - [Creating a Component](#creating-a-component)
+      - [Component Core](#component-core)
+      - [Component Initialization](#component-initialization)
+      - [Component Configuration](#component-configuration)
+      - [Running Locally](#running-locally)
 
 
 ## Introduction
@@ -106,8 +113,8 @@ where `<command>` is the command you want to use, and optionally you can add the
 
 ### Component
 
-This is probably the most important command and the one you will use most. The command `component` allow you to operate over components, this mean you can create components, test locally components, push private or public components to *Splight HUB*, download 
-existing component in *Splight HUB* and delete them.
+This is probably the most important command and the one you will use most. The command `component` allow you to operate over components, this mean you can create components, test locally components, push private or public components to *Splight Hub*, download 
+existing component in *Splight Hub* and delete them.
 
 In the following section we will cover in details the development process of a 
 component, here we will only cover the different sub-commands you can use
@@ -134,7 +141,7 @@ component, here we will only cover the different sub-commands you can use
   ```bash
   splightcli component delete <component_type> <name> <version>
   ```
-  This command deletes the component in *Splight HUB* so it can't be used any more.
+  This command deletes the component in *Splight Hub* so it can't be used any more.
   
 * Install component locally
 
@@ -156,7 +163,7 @@ component, here we will only cover the different sub-commands you can use
 
 * Pull or download a component
   
-  For downloading an existing component in *Splight HUB* you can use
+  For downloading an existing component in *Splight Hub* you can use
   ```bash
   splightcli component pull <component_type> <name> <version>
   ```
@@ -165,7 +172,7 @@ component, here we will only cover the different sub-commands you can use
 
 * Push a component
   
-  For pushing a new component or component version to *Splight HUB* the command is
+  For pushing a new component or component version to *Splight Hub* the command is
   ```bash
   splightcli component push <component_type> <path>
   ```
@@ -278,3 +285,229 @@ The available subcommands are
 
 ## Developing Components
 
+Now it's time to talk about the process for developing components.
+
+### What is a component?
+
+A component is a package of code that can be executed in the Splight platform. Splight 
+Hub is the space that manages all components that exist in Splight. You can upload your 
+own coded component for your usability or even allow other people in Splight to use it!
+
+The expected flow for your component is the following:
+
+- You create your component and code it locally
+- Upload it to Splight Hub
+- Use your component in Splight, where all your data is available
+
+### Component types
+
+In Splight Hub, there are three different types of components.
+
+- Algorithm: Components that execute a custom coded algorithm
+- Network: Components that serve as connectivity tool and allow to access a particular computer network
+- Connector: Components that execute and interact with real life hardware
+
+### Creating a Component
+
+To create a component with the Splight Hub CLI, open a terminal and change the directory to the one where you want to work.
+
+Execute the following command:
+
+```bash
+splightcli component create <type> <name> <version>
+```
+
+where type can be one of the following: `algorithm` , `connector` or `network`
+
+This will create a directory with the following structure:
+
+```
+<name>-<version>
+│   __init__.py
+│   Initialization
+│   spec.json
+│   README
+```
+
+- `__init__.py` : The component is coded here.
+- `Initialization` : Execute instructions for the component to be initialized.
+- `spec.json` : JSON file where the component metadata is set.
+- `README` : Text that describes the component and how it works
+
+#### Component Core
+
+When creating a component, inside `__init__.py` you will find a component template already written in python for you, in order to make it easier to write the component code.
+
+For example, when you create an algorithm component, in `__init__.py` will have the following:
+
+```python
+import random
+
+from splight_lib import logging
+from splight_lib.component.algorithms import AbstractAlgorithmComponent
+from splight_lib.execution import Task
+
+from splight_models import Variable
+
+
+logger = logging.getLogger()
+
+
+class Main(AbstractAlgorithmComponent):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        logger.info("It worked!")
+
+    def start(self):
+        # To start a periodic function uncomment this
+        self.execution_client.start(
+            Task(
+                handler=self._my_periodic_function,
+                args=tuple(),
+                period=self.period
+            )
+        )
+
+    def _my_periodic_function(self):
+        logger.info("It worked!")
+        # To ingest in datalake uncomment the following
+        args = {
+            "value": chosen_number,
+        }
+        self.datalake_client.save(
+            Variable,
+            instances=[Variable(args=args)],
+            collection=self.collection_name
+        )
+```
+
+The component class must always be called `Main` and must inherit from one of 
+`splight_lib`  abstract component classes. Also, super() init must be called. The 
+execution of the component starts when the method `start()` is called, so that method
+that should implemented by the developer that is writting the component.
+
+#### Component Initialization
+
+In the case you need some previous steps to be run before the component is executed, 
+you can use the file `Initialization`. When you create your component with Splight Hub,
+`Initialization` will have the following:
+
+```json
+RUN pip install splight-lib==<some lib version>
+```
+
+This command will be run before the component is executed. You can add more lines like 
+this, or maybe even create a requirements.txt file in the component directory and just 
+leave `Initialization` as:
+
+```json
+RUN pip install -r requirements.txt
+```
+
+#### Component Configuration
+
+The file `spec.json` defines all the specification for the component, in this file you 
+will find generic information about the component like the name and version but also 
+you will find the input and output parameters. 
+
+The structure of the file `spec.json` is the following
+```json
+{
+    "name": "component_name",
+    "version": "component_version",
+    "tags": ["tag1", "tag2"],
+    "custom_types": [],
+    "input": [],
+    "output": []
+}
+```
+
+A component can have different inputs and outputs that are previously defined, these 
+parameters can any or primite Python types like `str`, `int`, `float`, `bool` or `file`, 
+can also take the value of any Splight parameter like `Asset`, `Attribute`, `Network`, 
+`Algorithm`, `Connector`, `Rule`, but also can be custom type defined in the 
+`"custom_types"` key.
+A parameter have the structure 
+```json
+{
+  "name": <name>,
+  "type": <type>,
+  "required": <required>,
+  "value": <value>
+}
+```
+and also accepts the key `"multiple"` with `true` or `false` value to specify if the 
+parameter can take multiple value that is parsed as a list when the component is running.
+
+A custom type is defined by the following format
+```json
+{
+    "name": "<custom_type_name",
+    "fields": [
+        {
+            "name": "<name>",
+            "type": "<type>",
+            "required": "<required>",
+            "multiple": "<multiple>",
+            "value": "<value>"
+        }
+    ]
+}
+```
+Then the custom type can be used as input or output. For example, we create 
+a custom type:
+```json
+{
+    "name": "AssetAttribute",
+    "fields": [
+        {
+            "name": "asset",
+            "type": "Asset",
+            "required": true,
+            "multiple": false
+        },
+        {
+            "name": "attribute",
+            "type": "Attribute",
+            "depends_on": "asset",
+            "required": true,
+            "multiple": false
+        }
+    ]
+}
+
+```
+So we can use it as follows
+```json
+{
+    "name": "CustomTypeVar",
+    "type": "AssetAttribute",
+    "required": true,
+    "multiple": false,
+    "value": [
+        {
+            "name": "asset",
+            "type": "Asset",
+            "required": true,
+            "multiple": false,
+            "value": <asset_id>
+        },
+        {
+            "name": "attribute",
+            "type": "Attribute",
+            "required": true,
+            "multiple": false,
+            "value": <attribute_id>
+        }
+    ]
+}
+```
+
+#### Running Locally
+
+You can run the component locally before pushing it to the platform
+
+```bash
+splightcli component run <type> <component directory>
+```
