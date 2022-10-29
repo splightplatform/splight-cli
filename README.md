@@ -30,7 +30,7 @@
 ## Introduction
 
 The Splight Command Line Interface is a unified tool to interact with *Splight 
-Platform*. It contains different features that a user can use for creating, deloping, 
+Platform*. It contains different features that a user can use for creating, deloping, and
 publishing components.
 
 ## Getting Started
@@ -143,7 +143,7 @@ component, here we will only cover the different sub-commands you can use
   ```
   This command deletes the component in *Splight Hub* so it can't be used any more.
   
-* Install component locally
+* Install component requirements
 
   The command
   ```bash
@@ -153,6 +153,22 @@ component, here we will only cover the different sub-commands you can use
   locally.
 
   This command is useful for running locally a component for testing and development.
+
+* Run locally a component
+  
+  You can run locally a component, this is quite usefull for testing a comoponent
+  before push it and for development a new component. The command is the following
+
+  ```bash
+  splightcli component run <component_type> <path> [-r] [-rs]
+  ```
+  This command will run a component locally. Optionally you can use the flag 
+  `-r/--reset-input`, so you will be asked to configure some parameters for the 
+  component. If it is the first time you run a component, you will see some messages in 
+  the terminal for input some parameters values that are needed for running correctly 
+  the component. Also, you can use the flag `-rs/--run-spec` for using a custom 
+  configuration different to the one defined in the `spec.json` file. In the following 
+  section we will dive in in the usage of the file `spec.json`.
 
 * List component
 
@@ -179,21 +195,7 @@ component, here we will only cover the different sub-commands you can use
   Where `<path>` is the path (relative or absolute) for the source code of the 
   component to be uploded.
 
-* Run locally a component
-  
-  You can run locally a component, this is quite usefull for testing a comoponent
-  before push it and for development a new component. The command is the following
 
-  ```bash
-  splightcli component run <component_type> <path> [-r] [-rs]
-  ```
-  This command will run a component locally. Optionally you can use the flag 
-  `-r/--reset-input`, so you will be asked to configure some parameters for the 
-  component. If it is the first time you run a component, you will see some messages in 
-  the terminal for input some parameters values that are needed for running correctly 
-  the component. Also, you can use the flag `-rs/--run-spec` for using a custom 
-  configuration different to the one defined in the `spec.json` file. In the following 
-  section we will dive in in the usage of the file `spec.json`.
 
 * List component versions
   
@@ -384,8 +386,10 @@ class Main(AbstractAlgorithmComponent):
 
 The component class must always be called `Main` and must inherit from one of 
 `splight_lib`  abstract component classes. Also, super() init must be called. The 
-execution of the component starts when the method `start()` is called, so that method
-that should implemented by the developer that is writting the component.
+execution of the component starts when the method `start()` is called, so the method
+should be implemented by the developer that is writting the component. Also, we 
+provide you a lot of useful functions in our package so you can use them to interact 
+with the platform and make better components
 
 #### Component Initialization
 
@@ -503,6 +507,9 @@ So we can use it as follows
     ]
 }
 ```
+
+This is just an example but you can create custom types as complex as you want, 
+the limit is your imagination.
 
 #### Running Locally
 
