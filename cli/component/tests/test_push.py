@@ -112,5 +112,9 @@ class TestPush(SplightCLITest):
                         kwargs["files"]["readme"].name,
                         os.path.join(self.path, README_FILE),
                     )
-                    self.assertDictContainsSubset(kwargs["data"], data)
-                    self.assertDictContainsSubset(kwargs["headers"], headers)
+                    self.assertEqual(
+                        kwargs["data"], {**kwargs["data"], **data}
+                    )
+                    self.assertEqual(
+                        kwargs["headers"], {**kwargs["headers"], **headers}
+                    )
