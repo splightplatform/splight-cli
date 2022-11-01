@@ -1,2 +1,2 @@
 docker==6.0.0
-private-splight-lib==0.0.448
+private-splight-lib==0.4.54

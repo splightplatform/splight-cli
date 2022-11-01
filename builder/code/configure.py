@@ -30,8 +30,9 @@ if __name__ == '__main__':
         "SPLIGHT_SECRET_KEY": secret_key,
         "SPLIGHT_PLATFORM_API_HOST": api_host,
     }
+
     logger.info(f"Configure with {access_id} to configure {hub_type} {hub_name} {hub_version}. Remote set to {api_host}")
-    logger.info(f"Configure with {json_configuration}")
+
     try:
         subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
         subprocess.run(["splightcli", "component", "pull", hub_type, hub_name, hub_version], check=True)

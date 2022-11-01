@@ -1,12 +1,15 @@
-FROM --platform=linux/amd64 docker:latest
-RUN apt-get update
-RUN apt-get upgrade -y
-RUN apt-get install -y python3 libpq-dev python3-dev pip curl unzip build-essential
+FROM docker:latest
+RUN apk update
+RUN apk add python3 py3-pip python3-dev  curl unzip libpq-dev gcc build-base
+RUN echo $(python3 --version)
+
+# RUN apt-get install -y python3 libpq-dev python3-dev pip curl unzip build-essential
 
 ARG JFROG_BOT_USERNAME
 ARG JFROG_BOT_PASS
 
 RUN pip config set global.index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
+
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 

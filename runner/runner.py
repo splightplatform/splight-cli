@@ -30,5 +30,11 @@ if __name__ == '__main__':
         "SPLIGHT_PLATFORM_API_HOST": api_host,
         "COMPONENT_ID": component_id,
     }
-    subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
-    subprocess.run(["splightcli", "component", "run", hub_type, hub_descriptor, "--run-spec", json.dumps(run_spec)], check=True)
+    try:
+        subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
+        subprocess.run(["splightcli", "component", "run", hub_type, hub_descriptor, "--run-spec", json.dumps(run_spec)], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error running component: {e}")
+        logger.error(f"Stdout: {e.stdout}")
+        logger.error(f"Stderr: {e.stderr}")
+        exit(1)
