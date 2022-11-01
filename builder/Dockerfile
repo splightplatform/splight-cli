@@ -1,4 +1,4 @@
-FROM docker:latest
+FROM docker:20.10.21-cli
 RUN apk update
 RUN apk add python3 py3-pip python3-dev  curl unzip libpq-dev gcc build-base
 RUN echo $(python3 --version)
