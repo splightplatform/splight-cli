@@ -7,10 +7,12 @@ from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
 import docker
-import argparse
 import base64
 import boto3
+import typer
 
+
+app = typer.Typer(name="Splight Component Builder")
 logger = logging.getLogger(__name__)
 
 
@@ -41,7 +43,7 @@ class Builder:
         logger.info("Deleting credentials")
         AuthClient = setup.AUTH_CLIENT
         auth_client = AuthClient(headers=self.credentials)
-        auth_client.deployment.destroy(build_spec.access_id)
+        auth_client.deployment.destroy(self.build_spec.access_id)
 
     @property
     def registry(self):
@@ -62,7 +64,7 @@ class Builder:
     @property
     def credentials(self):
         headers = {
-            "Authorization": f"Splight {build_spec.access_id} {build_spec.secret_key}"
+            "Authorization": f"Splight {self.build_spec.access_id} {self.build_spec.secret_key}"
         }
         return headers
 
@@ -110,8 +112,9 @@ class Builder:
             HubComponentVersion,
             type=self.build_spec.type,
             name=self.build_spec.name,
-            version=self.build_spec.version
-        )[0]
+            version=self.build_spec.version,
+            first=True
+        )
 
     def _build_component(self):
         logger.info("Building component")
@@ -129,10 +132,10 @@ class Builder:
             raise e
 
     def _push_component(self):
-        logger.info("Pushing component")
+        logger.info("Pushing component image")
         try:
             result = self.docker_client.images.push(self.tag)
-            logger.info(f"Push result: {result}")
+            logger.info(f"Pushed result: {result}")
         except APIError as e:
             logger.error(f"Error pushing component: {e}")
             raise e
@@ -151,21 +154,17 @@ class Builder:
             logger.error(f"Error updating component build status: {e}")
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Builds a hub component image.'
-    )
-    parser.add_argument('-b',
-                        '--build-spec',
-                        type=str,
-                        nargs=1,
-                        help='Build Spec',
-                        required=True)
+@app.command()
+def main(
+    build_spec_str: str = typer.Option(..., "-b", "--build-spec", help="build spec as defined in the private lib")
+):
 
-    args = parser.parse_args()
-
-    build_spec = BuildSpec.parse_raw(args.build_spec[0])
+    build_spec = BuildSpec.parse_raw(build_spec_str)
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
     builder.delete_credentials()
+
+
+if __name__ == "__main__":
+    app()

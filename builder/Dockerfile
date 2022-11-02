@@ -1,9 +1,6 @@
 FROM docker:20.10.21-cli
-RUN apk update
-RUN apk add python3 py3-pip python3-dev  curl unzip libpq-dev gcc build-base
-RUN echo $(python3 --version)
 
-# RUN apt-get install -y python3 libpq-dev python3-dev pip curl unzip build-essential
+RUN apk update && apk add python3 py3-pip python3-dev curl unzip libpq-dev gcc build-base
 
 ARG JFROG_BOT_USERNAME
 ARG JFROG_BOT_PASS
@@ -18,8 +15,6 @@ ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
 RUN mkdir -p ~/.aws
 RUN printf "[default]\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY" > ~/.aws/credentials
-# RUN aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 609067598877.dkr.ecr.us-east-1.amazonaws.com
-# RUN docker login -u AWS -p $(aws ecr get-login-password --region us-east-1) 609067598877.dkr.ecr.us-east-1.amazonaws.com
 
 RUN mkdir -p /code
 WORKDIR /code
