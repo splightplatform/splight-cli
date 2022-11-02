@@ -1,8 +1,9 @@
 from private_splight_lib.settings import setup
+from private_splight_models import BuildSpec
 from splight_models import HubComponentVersion
 from splight_models.constants import BuildStatus
 from splight_lib import logging
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
 import docker
@@ -17,16 +18,6 @@ class Context(BaseSettings):
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
-
-
-class BuildSpec(BaseModel):
-    name: str
-    type: str
-    version: str
-    access_id: str
-    secret_key: str
-    cli_version: str
-    api_host: str
 
 
 class Builder:
