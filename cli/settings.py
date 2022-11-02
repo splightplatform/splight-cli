@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from pydantic import BaseSettings, Extra, Field
 
@@ -15,9 +16,8 @@ class SplightCLISettings(BaseSettings):
     COMMUNICATION_CLIENT: str = (
         "remote_splight_lib.communication.CommunicationClient"
     )
-    DEFAULT_COMPONENT_ID: str = Field(
-        str(uuid.uuid4()), env="COMPONENT_ID"
-    )
+    # COMPONENT_ID: str = Field(default_factory=uuid.uuid4)
+    COMPONENT_ID: Optional[str] = Field(default=str(uuid.uuid4()))
 
     class Config:
         extra = Extra.ignore
@@ -27,5 +27,5 @@ ALL_CONFIG_VARS = SplightCLISettings.__fields__
 CONFIG_VARS = [
     "SPLIGHT_ACCESS_ID",
     "SPLIGHT_SECRET_KEY",
-    "DEFAULT_COMPONENT_ID",
+    "COMPONENT_ID",
 ]
