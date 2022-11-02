@@ -16,7 +16,6 @@ class SplightCLISettings(BaseSettings):
     COMMUNICATION_CLIENT: str = (
         "remote_splight_lib.communication.CommunicationClient"
     )
-    # COMPONENT_ID: str = Field(default_factory=uuid.uuid4)
     COMPONENT_ID: Optional[str] = Field(default=str(uuid.uuid4()))
 
     class Config:
