@@ -37,6 +37,7 @@ class Builder:
             self._push_component()
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
+            logger.info('Build failed: ', e)
             self._update_component_build_status(BuildStatus.FAILED)
 
     def delete_credentials(self):
