@@ -23,11 +23,13 @@ if __name__ == '__main__':
     access_id = run_spec.get("access_id", None)
     secret_key = run_spec.get("secret_key", None)
     api_host = run_spec.get("api_host", None)
+    component_id = run_spec.get("component_id", None)
 
     json_configuration = {
         "SPLIGHT_ACCESS_ID": access_id,
         "SPLIGHT_SECRET_KEY": secret_key,
         "SPLIGHT_PLATFORM_API_HOST": api_host,
+        "COMPONENT_ID": component_id,
     }
     logger.info(f"Configure with {access_id} to run {hub_type} {hub_name} {hub_version}. Remote set to {api_host}")
     subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
