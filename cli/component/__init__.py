@@ -150,8 +150,6 @@ def run(context: Context, type: str, path: str, run_spec: str = None, reset_inpu
         click.secho("Running component...", fg="green")
         component.run(type, run_spec, reset_input)
     except Exception as e:
-        import sys, traceback
-        traceback.print_exc(file=sys.stdout)
         click.secho(f"Error running component: {str(e)}", fg="red")
         sys.exit(1)
 
