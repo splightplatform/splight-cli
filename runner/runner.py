@@ -16,6 +16,9 @@ class RunnerConfig(BaseSettings):
     SPLIGHT_PLATFORM_API_HOST: str
     COMPONENT_ID: str
 
+    class Config:
+        secrets_dir: str = "/etc/config"
+
     @validator("SPLIGHT_PLATFORM_API_HOST")
     def remove_trailing_slash(cls, value):
         return value.rstrip("/")
