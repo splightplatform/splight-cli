@@ -2,6 +2,7 @@ import uuid
 from typing import Optional
 
 from pydantic import BaseSettings, Extra, Field
+from version import __version__
 
 
 class SplightCLISettings(BaseSettings):
@@ -28,3 +29,4 @@ CONFIG_VARS = [
     "SPLIGHT_SECRET_KEY",
     "COMPONENT_ID",
 ]
+SPLIGHT_CLI_VERSION = __version__

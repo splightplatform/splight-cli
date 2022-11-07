@@ -19,7 +19,6 @@ if __name__ == '__main__':
     # TODO remove this overparsing
     hub_type = run_spec["type"].lower()
     hub_descriptor = run_spec["version"]
-    hub_name, hub_version = hub_descriptor.split("-")
     access_id = run_spec.get("access_id", None)
     secret_key = run_spec.get("secret_key", None)
     api_host = run_spec.get("api_host", None)
@@ -31,8 +30,11 @@ if __name__ == '__main__':
         "SPLIGHT_PLATFORM_API_HOST": api_host,
         "COMPONENT_ID": component_id,
     }
-    logger.info(f"Configure with {access_id} to run {hub_type} {hub_name} {hub_version}. Remote set to {api_host}")
-    subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
-    subprocess.run(["splightcli", "component", "pull", hub_type, hub_name, hub_version], check=True)
-    subprocess.run(["splightcli", "component", "install-requirements", hub_type, hub_descriptor], check=True)
-    subprocess.run(["splightcli", "component", "run", hub_type, hub_descriptor, "--run-spec", json.dumps(run_spec)], check=True)
+    try:
+        subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
+        subprocess.run(["splightcli", "component", "run", hub_type, hub_descriptor, "--run-spec", json.dumps(run_spec)], check=True)
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error running component: {e}")
+        logger.error(f"Stdout: {e.stdout}")
+        logger.error(f"Stderr: {e.stderr}")
+        exit(1)

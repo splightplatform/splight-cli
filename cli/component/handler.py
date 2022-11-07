@@ -9,6 +9,7 @@ from cli.constants import *
 from cli.utils.loader import Loader
 from cli.utils.api_requests import *
 from splight_lib import logging
+from cli.settings import SPLIGHT_CLI_VERSION
 
 logger = logging.getLogger()
 
@@ -76,6 +77,7 @@ class ComponentHandler:
                     'output': json.dumps(output),
                     'commands': json.dumps(commands),
                     'type': type,
+                    'splight_cli_version': SPLIGHT_CLI_VERSION,
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
