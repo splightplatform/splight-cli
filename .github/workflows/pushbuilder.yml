@@ -21,11 +21,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: build and push builder image
-        working-directory: ./builder
+        working-directory: .
         run: |
           export VERSION=$(python ../setup.py --version)
           export BRANCH=${GITHUB_REF##*/}
-          JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS docker-compose build
+          JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS docker-compose -f builder/docker-compose.yml build
           docker tag splight-builder $AWS_ECR/splight-jobs:splight-builder-${BRANCH}-${VERSION}
           docker push $AWS_ECR/splight-jobs:splight-builder-${BRANCH}-${VERSION}
         env:

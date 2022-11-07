@@ -21,11 +21,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: build and push runner image
-        working-directory: ./runner
+        working-directory: .
         run: |
-          export VERSION=$(python ../setup.py --version)
+          export VERSION=$(python setup.py --version)
           export BRANCH=${GITHUB_REF##*/}
-          JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS VERSION=$VERSION docker-compose build
+          JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS VERSION=$VERSION docker-compose -f runner/docker-compose.yml build
           docker tag splight-runner $AWS_ECR/splight-runner:${BRANCH}-${VERSION}
           docker push $AWS_ECR/splight-runner:${BRANCH}-${VERSION}
         env:
