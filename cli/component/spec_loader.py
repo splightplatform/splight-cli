@@ -22,7 +22,7 @@ class InvalidComponentID(Exception):
 
 class ComponentConfigLoader:
 
-    _EXTRA_SPEC_FIELDS = ["namespace", "type", "external_id"]
+    _EXTRA_SPEC_FIELDS = ["namespace", "type"]
 
     def __init__(
         self,
@@ -45,8 +45,6 @@ class ComponentConfigLoader:
         full_spec = {}
         full_spec["type"] = self._component_type.title()
         full_spec["namespace"] = DEFAULT_NAMESPACE
-        external_id = variables.get("external_id")
-        full_spec["external_id"] = external_id
 
         replaced_input = self._replace_input_values(spec_dict, variables)
         spec_dict["input"] = replaced_input
@@ -60,10 +58,6 @@ class ComponentConfigLoader:
         return full_spec
 
     def _reset_all_values(self, spec: Dict) -> Dict:
-        spec["external_id"] = self._refresh_external_id(
-            spec["name"], spec["version"], spec["external_id"]
-        )
-
         simple_params, custom_params = self._split_custom_params(spec)
 
         reseted_input = []
@@ -89,14 +83,6 @@ class ComponentConfigLoader:
         return spec
 
     def _fill_missing_parameter(self, spec: Dict) -> Dict:
-        external_id = spec.get("external_id")
-        if not external_id:
-            external_id = self._refresh_external_id(
-                spec["name"], spec["version"], None
-            )
-            spec["external_id"] = external_id
-        click.secho(f"Using external_id: {external_id}")
-
         simple_params, custom_params = self._split_custom_params(spec)
         simple_params = self._fill_missing_simple_input(simple_params)
 
@@ -295,27 +281,6 @@ class ComponentConfigLoader:
         }
         value = input_single(param)
         return value
-
-    def _refresh_external_id(
-        self, name: str, version: str, default: Optional[str] = None
-    ) -> str:
-        create_component = click.prompt(
-            click.style(
-                "Do you want to create a component in Splight Platform? (y/n)",
-                fg="yellow",
-            ),
-            type=str,
-            default="n"
-        )
-        if create_component in ["y", "Y", "yes"]:
-            external_id = self._create_new_component(
-                name=name, version=version
-            )
-        else:
-            external_id = self._read_single_str(
-                "external_id", default=default
-            )
-        return external_id
 
     def _create_new_component(self, name: str, version: str) -> str:
         handler = ComponentHandler(self._context)

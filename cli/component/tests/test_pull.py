@@ -75,8 +75,12 @@ class TestPull(SplightCLITest):
                         args[0],
                         f"{self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST}/hub/download/",
                     )
-                    self.assertDictContainsSubset(kwargs["data"], data)
-                    self.assertDictContainsSubset(kwargs["headers"], headers)
+                    self.assertEqual(
+                        kwargs["data"], {**kwargs["data"], **data}
+                    )
+                    self.assertEqual(
+                        kwargs["headers"], {**kwargs["headers"], **headers}
+                    )
 
                     self.assertTrue(
                         os.path.exists(self.extracted_component_path)
