@@ -7,5 +7,6 @@ services:
       args:
         - JFROG_BOT_USERNAME=$JFROG_BOT_USERNAME
         - JFROG_BOT_PASS=$JFROG_BOT_PASS
+        - VERSION=$VERSION
     command: bash
     tty: true
