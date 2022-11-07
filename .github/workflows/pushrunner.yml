@@ -23,7 +23,7 @@ jobs:
       - name: build and push runner image
         working-directory: ./runner
         run: |
-          export VERSION=$(python setup.py --version)
+          export VERSION=$(python ../setup.py --version)
           export BRANCH=${GITHUB_REF##*/}
           JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS VERSION=$VERSION docker-compose build
           docker tag splight-runner $AWS_ECR/splight-runner:${BRANCH}-${VERSION}
