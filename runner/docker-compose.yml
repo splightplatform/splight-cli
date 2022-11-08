@@ -1,6 +1,6 @@
 version: "3.3"
 services:
-  algorithms:
+  runner:
     image: splight-runner:latest
     build:
       context: .
@@ -9,4 +9,7 @@ services:
         - JFROG_BOT_PASS=$JFROG_BOT_PASS
         - VERSION=$VERSION
     command: bash
+    env_file: ./env_file
     tty: true
+    volumes:
+      - .:/code
