@@ -20,7 +20,12 @@ setup(
     py_modules=['splightcli'],
     install_requires=install_requires,
     packages=find_packages(),
-    package_data={'cli': ['component/templates/*', 'datalake/dump_example.csv']},
+    package_data={
+        'cli': [
+            'component/templates/*',
+            'datalake/dump_example.csv',
+        ],
+    },
     include_package_data=True,
     dependency_links=dependency_links,
     entry_points={

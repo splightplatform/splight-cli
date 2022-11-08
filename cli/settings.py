@@ -2,7 +2,7 @@ import uuid
 from typing import Optional
 
 from pydantic import BaseSettings, Extra, Field
-from version import __version__
+from cli.version import __version__
 
 
 class SplightCLISettings(BaseSettings):
