@@ -14,7 +14,7 @@ def list_of(input_value: Union[List, str], param_type: Type = str):
 def input_single(param: dict):
     default = (
         "None"
-        if param["value"] is None and not param["required"]
+        if param.get("value") is None and not param["required"]
         else param["value"]
     )
     name = (
