@@ -33,6 +33,7 @@ from cli.component.handler import ComponentHandler, UserHandler
 from cli.component.exception import InvalidComponentType
 from cli.component.spec import Spec
 from cli.component.spec_loader import ComponentConfigLoader
+from cli.component.loaders import SpecJSONLoader
 
 logger = logging.getLogger()
 
@@ -277,15 +278,19 @@ class Component:
         if run_spec:
             self.run_spec = json.loads(run_spec)
         else:
-            spec_dict = deepcopy(self.spec)
-            loader = ComponentConfigLoader(
-                context=self.context,
-                vars_file_path=self.vars_file,
-                component_type=component_type,
-                reset_values=reset_input
-            )
-            self.run_spec = loader.load_values(spec_dict=spec_dict)
+            # spec_dict = deepcopy(self.spec)
+            # loader = ComponentConfigLoader(
+            #     context=self.context,
+            #     vars_file_path=self.vars_file,
+            #     component_type=component_type,
+            #     reset_values=reset_input
+            # )
+            # self.run_spec = loader.load_values(spec_dict=spec_dict)
+            loader = SpecJSONLoader()
+            loader.load_spec(self.spec_file)
 
+
+        __import__('ipdb').set_trace()
         self._load_component()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
