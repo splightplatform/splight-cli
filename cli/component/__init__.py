@@ -142,13 +142,12 @@ def versions(context: Context, type: str, name: str) -> None:
 @click.argument("type", nargs=1, type=str)
 @click.argument("path", nargs=1, type=str)
 @click.option('--run-spec', '-rs', help="Run spec")
-@click.option('--reset-input', '-r', is_flag=True, help="Set or Reset input parameters")
 @pass_context
-def run(context: Context, type: str, path: str, run_spec: str = None, reset_input: str = None) -> None:
+def run(context: Context, type: str, path: str, run_spec: str = None) -> None:
     try:
         component = Component(path, context)
         click.secho("Running component...", fg="green")
-        component.run(type, run_spec, reset_input)
+        component.run(type, run_spec)
     except Exception as e:
         click.secho(f"Error running component: {str(e)}", fg="red")
         sys.exit(1)
