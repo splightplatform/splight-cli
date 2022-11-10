@@ -3,8 +3,7 @@ import importlib
 import json
 import sys
 import os
-from copy import deepcopy
-from typing import List, Type
+from typing import Dict, List, Type
 from jinja2 import Template
 from tempfile import NamedTemporaryFile
 from cli.context import PrivacyPolicy
@@ -25,15 +24,13 @@ from cli.constants import (
 )
 from cli.utils import (
     api_get,
-    get_json_from_file,
     get_template,
     validate_path_isdir,
 )
 from cli.component.handler import ComponentHandler, UserHandler
 from cli.component.exception import InvalidComponentType
 from cli.component.spec import Spec
-from cli.component.spec_loader import ComponentConfigLoader
-from cli.component.loaders import SpecJSONLoader
+from cli.component.loaders import SpecJSONLoader, SpecArgumentLoader
 
 logger = logging.getLogger()
 
@@ -98,8 +95,8 @@ class Component:
             self.component = self._import_component()
             self._validate_component()
 
-    def _load_spec(self):
-        self.spec = get_json_from_file(self.spec_file)
+    def _load_spec(self, raw_spec):
+        self.spec = raw_spec
         self.name = self.spec["name"]
         self.tags = self.spec["tags"]
         self.version = self.spec["version"]
@@ -161,6 +158,13 @@ class Component:
             raise Exception(
                 f"Failed importing component {component_directory_name}: {str(e)}"
             )
+
+    def _reset_input(self):
+        for param in self.input:
+            param_type = param["type"]
+            if param_type in ["str", "int", "bool", "float"]:
+                continue
+            param["value"] = None
 
     def initialize(self):
         # TODO this should be removed from here. But it is present
@@ -230,7 +234,14 @@ class Component:
         component_type = self._validate_type(type)
         privacy_policy = PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value
         self._validate_component_structure()
-        self._load_spec()
+        loader = SpecJSONLoader(
+            spec_file_path=self.spec_file,
+            component_type=component_type,
+            check_input=False
+        )
+        self.run_spec = loader.load_spec()
+        self._load_spec(self.run_spec)
+        self._reset_input()
         self._load_component()
 
         handler = ComponentHandler(self.context)
@@ -270,27 +281,23 @@ class Component:
         handler = ComponentHandler(self.context)
         handler.delete_component(component_type, name, version)
 
-    def run(self, type, run_spec, reset_input):
+    def run(self, type: str, run_spec: str):
         component_type = self._validate_type(type)
         self._validate_component_structure()
-        self._load_spec()
 
         if run_spec:
-            self.run_spec = json.loads(run_spec)
+            loader = SpecArgumentLoader(
+                spec_json=run_spec, component_type=component_type
+            )
         else:
-            # spec_dict = deepcopy(self.spec)
-            # loader = ComponentConfigLoader(
-            #     context=self.context,
-            #     vars_file_path=self.vars_file,
-            #     component_type=component_type,
-            #     reset_values=reset_input
-            # )
-            # self.run_spec = loader.load_values(spec_dict=spec_dict)
-            loader = SpecJSONLoader()
-            loader.load_spec(self.spec_file)
+            loader = SpecJSONLoader(
+                spec_file_path=self.spec_file,
+                component_type=component_type,
+                check_input=True
+            )
+        self.run_spec = loader.load_spec()
 
-
-        __import__('ipdb').set_trace()
+        self._load_spec(self.run_spec)
         self._load_component()
 
         component_class = getattr(self.component, MAIN_CLASS_NAME)
