@@ -15,13 +15,11 @@ class TestRun(SplightCLITest):
         run_spec = {
             "name": self.name,
             "type": self.type,
-            "version": run_version,
+            "version": self.version,
             "tags": self.tags,
             "custom_types": self.custom_types,
             "input": self.input,
             "output": self.output,
-            "component_id": component_id,
-            "namespace": namespace,
         }
         self.configure()
         result = self.runner.invoke(
