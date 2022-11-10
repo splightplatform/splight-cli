@@ -18,7 +18,7 @@ class SplightCLISettings(BaseSettings):
         "remote_splight_lib.communication.CommunicationClient"
     )
     COMPONENT_ID: Optional[str] = Field(default=str(uuid.uuid4()))
-    NAMESPACE: str = "default"
+    NAMESPACE: str = "NO_NAMESPACE"
 
     class Config:
         extra = Extra.ignore
