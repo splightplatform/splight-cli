@@ -90,12 +90,10 @@ def main(
     run_spec = json.loads(run_spec_str)
 
     hub_type = run_spec["type"].lower()
-    hub_descriptor = run_spec["version"]
-    hub_name, hub_version = hub_descriptor.split("-")
 
     runner = SplightComponentRunner(
-        component_name=hub_name,
-        component_version=hub_version,
+        component_name=run_spec["name"],
+        component_version=run_spec["version"],
         component_type=hub_type,
     )
     runner.configure(config.json())
