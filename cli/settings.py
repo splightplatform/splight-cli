@@ -13,6 +13,7 @@ class SplightCLISettings(BaseSettings):
     DATABASE_CLIENT: str = "remote_splight_lib.database.DatabaseClient"
     DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"
     STORAGE_CLIENT: str = "remote_splight_lib.storage.StorageClient"
+    BLOCKCHAIN_CLIENT: str = "remote_splight_lib.blockchain.BlockchainClient"
     DEPLOYMENT_CLIENT: str = "remote_splight_lib.deployment.DeploymentClient"
     COMMUNICATION_CLIENT: str = (
         "remote_splight_lib.communication.CommunicationClient"
