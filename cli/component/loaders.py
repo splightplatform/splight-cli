@@ -22,6 +22,7 @@ class SpecJSONLoader:
     _CT_KEY: str = "custom_types"
     _INPUT_KEY: str = "input"
     _OUTPUT_KEY: str = "output"
+    _COMMANDS_KEY: str = "commands"
 
     def __init__(
         self,
@@ -35,60 +36,30 @@ class SpecJSONLoader:
 
     def load_spec(self) -> Dict:
         raw_spec = get_json_from_file(self._spec_file_path)
-        custom_types = [value["name"] for value in raw_spec[self._CT_KEY]]
         input_parameters = raw_spec[self._INPUT_KEY]
 
         if self._check_input:
-            input_parameters = self._check_input_values(
-                input_parameters, custom_types
-            )
+            input_parameters = self._load_or_prompt_input(input_parameters)
 
         full_spec = raw_spec
         full_spec["type"] = self._component_type
         full_spec["input"] = input_parameters
         return full_spec
 
-    def _check_input_values(
+    def _load_or_prompt_input(
         self,
         input_params: List[Dict],
-        custom_types: List[str],
         prefix: str = "",
     ):
         for param in input_params:
-            param_type = param["type"]
             value = param.get("value")
             if not value:
-                new_value = self._read_value_from_prompt(param, prefix=prefix)
+                new_value = self._prompt_param(param, prefix=prefix)
                 param["value"] = new_value
-
-            if param_type in custom_types:
-                self._check_custom_type_input(
-                    param, custom_types, prefix=prefix
-                )
 
         return input_params
 
-    def _check_custom_type_input(
-        self,
-        param: Union[List[Dict], Dict],
-        custom_types: List[str],
-        prefix: str = "",
-    ):
-        multiple = param["multiple"]
-        param_name = param["name"]
-        if multiple:
-            for idx, sub_param in enumerate(param["value"]):
-                self._check_input_values(
-                    sub_param,
-                    custom_types,
-                    prefix=f"{prefix}.{param_name}[{idx}]",
-                )
-        else:
-            self._check_input_values(
-                param["value"], custom_types, prefix=f"{prefix}.{param_name}"
-            )
-
-    def _read_value_from_prompt(
+    def _prompt_param(
         self, param: Dict, prefix: str = ""
     ) -> Primitive:
         param_name = param["name"]
