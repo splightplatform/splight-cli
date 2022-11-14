@@ -19,7 +19,7 @@ RUN pip config set global.index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && ./aws/install
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && ./aws/install --update
 
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
