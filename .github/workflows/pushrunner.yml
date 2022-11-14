@@ -1,4 +1,4 @@
-name: Push ECR image
+name: Push runner image to ECR
 on:
   push:
     branches:
