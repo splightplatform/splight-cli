@@ -1,4 +1,4 @@
-FROM docker:20.10.21-cli
+FROM 609067598877.dkr.ecr.us-east-1.amazonaws.com/splight-jobs:builder-base
 
 RUN apk update && \
     apk add \
@@ -10,7 +10,6 @@ RUN apk update && \
     libpq-dev \
     gcc \
     build-base
-
 
 ARG JFROG_BOT_USERNAME
 ARG JFROG_BOT_PASS
@@ -27,7 +26,6 @@ ARG AWS_SECRET_ACCESS_KEY
 
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-
 
 RUN mkdir -p /code
 WORKDIR /code
