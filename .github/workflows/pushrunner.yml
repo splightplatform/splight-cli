@@ -27,9 +27,9 @@ jobs:
           export BRANCH=${GITHUB_REF##*/}
           if [ ${BRANCH} -eq "master" ];
           then
-              TAG="production"
+              export TAG="production"
           else
-              TAG="integration"
+              export TAG="integration"
           fi
           JFROG_BOT_USERNAME=$JFROG_USERNAME JFROG_BOT_PASS=$JFROG_PASS VERSION=$VERSION docker-compose -f runner/docker-compose.yml build
           docker tag splight-runner $AWS_ECR/splight-runner:${TAG}-${VERSION}
