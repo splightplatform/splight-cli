@@ -5,6 +5,7 @@ from cli.context import *
 from cli.constants import *
 from cli.settings import *
 from cli.utils import *
+from cli.version import __version__
 
 
 @click.group()
@@ -80,3 +81,10 @@ def configure(ctx: Context, from_json=False) -> None:
     except Exception as e:
         click.secho(f"Error configuring Splight CLI: {str(e)}", fg="red")
         sys.exit(1)
+
+
+@click.group(invoke_without_command=True)
+@click.version_option(version=__version__)
+@click.pass_context
+def cli(ctc: Context):
+    pass
