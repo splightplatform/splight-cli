@@ -47,8 +47,6 @@ class Parameter(ModelParameter, ChoiceMixin):
 
         # UUIDs and Date must be None
         if VALID_PARAMETER_VALUES[type_] is None:
-            if v is not None:
-                raise ValueError(f"value must be None")
             return v
 
         if values["required"] and v is None:

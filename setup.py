@@ -1,5 +1,6 @@
 import os
 from setuptools import setup, find_packages
+from version import __version__
 
 with open('requirements.txt') as fp:
     install_requires = fp.readlines()
@@ -12,14 +13,19 @@ os.system("cat ~/.pypirc")
 
 setup(
     name='splight-cli',
-    version='0.2.4',
+    version=__version__,
     author='Splight',
     author_email='factory@splight-ae.com',
     description='Splight developer CLI tool. Splight.',
     py_modules=['splightcli'],
     install_requires=install_requires,
     packages=find_packages(),
-    package_data={'cli': ['component/templates/*', 'datalake/dump_example.csv']},
+    package_data={
+        'cli': [
+            'component/templates/*',
+            'datalake/dump_example.csv',
+        ],
+    },
     include_package_data=True,
     dependency_links=dependency_links,
     entry_points={

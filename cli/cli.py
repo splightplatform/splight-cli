@@ -5,9 +5,11 @@ from cli.context import *
 from cli.constants import *
 from cli.settings import *
 from cli.utils import *
+from cli.version import __version__
 
 
 @click.group()
+@click.version_option(version=__version__, message="%(version)s")
 @click.pass_context
 def cli(ctx):
     ctx.obj = Context()

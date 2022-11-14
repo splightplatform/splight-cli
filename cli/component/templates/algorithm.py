@@ -1,7 +1,6 @@
-
 from splight_lib import logging
 from splight_lib.component.algorithms import AbstractAlgorithmComponent
-
+from splight_lib.execution import Task
 
 
 logger = logging.getLogger()
