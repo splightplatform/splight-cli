@@ -84,7 +84,7 @@ def configure(ctx: Context, from_json=False) -> None:
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version=__version__)
+@click.version_option(version=__version__, message="%(version)s")
 @click.pass_context
 def cli(ctc: Context):
     pass
