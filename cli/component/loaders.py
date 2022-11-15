@@ -68,7 +68,7 @@ class SpecJSONLoader:
                 "name": f"{prefix}.{param_name}",
                 "type": param["type"],
                 "required": param["required"],
-                "multiple": param["multiple"],
+                "multiple": param.get("multiple", False),
                 "value": param.get("value"),
             }
         )
