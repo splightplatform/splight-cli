@@ -33,7 +33,11 @@ class WorkspaceManager:
             "current_workspace", DEFAULT_WORKSPACE_NAME
         )
         if workspace_name not in config["workspaces"]:
-            workspace_name = DEFAULT_WORKSPACE_NAME
+            workspace_name = (
+                DEFAULT_WORKSPACE_NAME
+                if DEFAULT_WORKSPACE_NAME in config["workspaces"]
+                else list(config["workspaces"].keys())[0]
+            )
         config["current_workspace"] = workspace_name
         save_yaml_to_file(config, self.config_file)
         return config
