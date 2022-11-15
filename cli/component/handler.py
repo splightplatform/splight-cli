@@ -219,3 +219,25 @@ class ComponentHandler:
         response = api_post(endpoint, headers=headers, data=data)
         response.raise_for_status()
         return response.json()
+
+    def get_component_info(
+        self,
+        component_type: str,
+        component_name: str,
+        component_version: str
+    ) -> Dict:
+        endpoint = f"{self.user_handler.host}/hub/all/component-versions/"
+        headers = self.user_handler.authorization_header
+        params = {
+            "type": component_type,
+            "name": component_name,
+            "version": component_version,
+        }
+        response = api_get(
+            endpoint,
+            headers=headers,
+            params=params,
+        )
+        response.raise_for_status()
+        component = response.json()["results"][0]
+        return component
