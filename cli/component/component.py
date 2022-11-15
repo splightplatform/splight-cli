@@ -255,7 +255,7 @@ class Component:
         )
         current_policy = component["privacy_policy"]
 
-        privacy_policy = public if public else current_policy
+        privacy_policy = "public" if public else current_policy
 
         handler.upload_component(
             component_type,
