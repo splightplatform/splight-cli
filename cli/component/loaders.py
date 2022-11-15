@@ -37,7 +37,6 @@ class SpecJSONLoader:
     def load_spec(self) -> Dict:
         raw_spec = get_json_from_file(self._spec_file_path)
         input_parameters = raw_spec[self._INPUT_KEY]
-
         if self._check_input:
             input_parameters = self._load_or_prompt_input(input_parameters)
 

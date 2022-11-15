@@ -1,9 +1,8 @@
 import subprocess
 import importlib
-import json
 import sys
 import os
-from typing import Dict, List, Type
+from typing import List, Type
 from jinja2 import Template
 from tempfile import NamedTemporaryFile
 from cli.context import PrivacyPolicy
