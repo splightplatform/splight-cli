@@ -253,9 +253,11 @@ class Component:
             self.name,
             self.version
         )
-        current_policy = component["privacy_policy"]
+        current_policy = PrivacyPolicy.PRIVATE.value
+        if component:
+            current_policy = component["privacy_policy"]
 
-        privacy_policy = "public" if public else current_policy
+        privacy_policy = PrivacyPolicy.PUBLIC.value if public else current_policy
 
         handler.upload_component(
             component_type,
