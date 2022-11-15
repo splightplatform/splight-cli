@@ -149,7 +149,6 @@ def run(context: Context, type: str, path: str, run_spec: str = None) -> None:
         click.secho("Running component...", fg="green")
         component.run(type, run_spec)
     except Exception as e:
-        raise e
         click.secho(f"Error running component: {str(e)}", fg="red")
         sys.exit(1)
 
