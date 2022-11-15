@@ -43,7 +43,7 @@ def delete(context: Context, name: str) -> None:
         context.workspace.delete_workspace(name)
         click.secho(f"Deleted workspace {name}", fg="green")
     except Exception as e:
-        click.secho(e, fg="red", header="WORKSPACES")
+        click.secho(e, fg="red")
         return
 
 
