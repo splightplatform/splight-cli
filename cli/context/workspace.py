@@ -5,6 +5,17 @@ from cli.utils.yaml import get_yaml_from_file, save_yaml_to_file
 from cli.constants import CONFIG_FILE, DEFAULT_WORKSPACE, DEFAULT_WORKSPACE_NAME, DEFAULT_WORKSPACES
 
 
+class WorkspaceDeleteError(Exception):
+    def __init__(self, workspace: str):
+        self._msg = (
+            f"Workspace '{workspace}' is your active workspace\n\n"
+            "You cannot delete the currently active workspaceo"
+        )
+
+    def __str__(self) -> str:
+        return self._msg
+
+
 class WorkspaceManager:
     def __init__(self):
         self.config_file = CONFIG_FILE
@@ -50,6 +61,9 @@ class WorkspaceManager:
     def delete_workspace(self, workspace_name):
         if workspace_name not in self._settings['workspaces']:
             raise Exception('Not a valid namespace name')
+
+        if workspace_name == self._current_workspace:
+            raise WorkspaceDeleteError(workspace_name)
         del self._settings['workspaces'][workspace_name]
         save_yaml_to_file(self._settings, self.config_file)
 
