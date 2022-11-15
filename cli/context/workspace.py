@@ -18,7 +18,12 @@ class WorkspaceManager:
         config = get_yaml_from_file(self.config_file)
         # Default values
         config['workspaces'] = config.get('workspaces', DEFAULT_WORKSPACES)
-        config['current_workspace'] = config.get('current_workspace', DEFAULT_WORKSPACE_NAME)
+        workspace_name = config.get(
+            "current_workspace", DEFAULT_WORKSPACE_NAME
+        )
+        if workspace_name not in config["workspaces"]:
+            workspace_name = DEFAULT_WORKSPACE_NAME
+        config["current_workspace"] = workspace_name
         save_yaml_to_file(config, self.config_file)
         return config
 
