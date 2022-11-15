@@ -9,7 +9,7 @@ class WorkspaceDeleteError(Exception):
     def __init__(self, workspace: str):
         self._msg = (
             f"Workspace '{workspace}' is your active workspace\n\n"
-            "You cannot delete the currently active workspaceo"
+            "You cannot delete the currently active workspace"
         )
 
     def __str__(self) -> str:
