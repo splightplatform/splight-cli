@@ -232,7 +232,6 @@ class Component:
 
     def push(self, type, force, public):
         component_type = self._validate_type(type)
-        privacy_policy = PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value
         self._validate_component_structure()
         loader = SpecJSONLoader(
             spec_file_path=self.spec_file,
@@ -249,6 +248,15 @@ class Component:
             component_type, self.name, self.version
         ):
             raise ComponentAlreadyExistsException
+        component = handler.get_component_info(
+            component_type,
+            self.name,
+            self.version
+        )
+        current_policy = component["privacy_policy"]
+
+        privacy_policy = public if public else current_policy
+
         handler.upload_component(
             component_type,
             privacy_policy,
