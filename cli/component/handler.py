@@ -3,7 +3,7 @@
 import json
 import os
 import py7zr
-from typing import List, Dict
+from typing import List, Dict, Optional
 from functools import cached_property
 from cli.constants import *
 from cli.utils.loader import Loader
@@ -225,7 +225,7 @@ class ComponentHandler:
         component_type: str,
         component_name: str,
         component_version: str
-    ) -> Dict:
+    ) -> Optional[Dict]:
         endpoint = f"{self.user_handler.host}/hub/all/component-versions/"
         headers = self.user_handler.authorization_header
         params = {
@@ -239,5 +239,6 @@ class ComponentHandler:
             params=params,
         )
         response.raise_for_status()
-        component = response.json()["results"][0]
+        component_list = response.json()["results"]
+        component = component_list[0] if component_list else None
         return component
