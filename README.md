@@ -42,15 +42,6 @@ publishing components.
 pip install splight-cli
 ```
 
-At this date, the package is stored in a private repository so in order to 
-install it you need to configure `pip` to download packages from JFROG. With your 
-JFROG username and pasword you can run the following command so that `pip` is able 
-to look for packages stored there
-
-```sh
-pip config set global.extra-index-url https://<your JFROG username>:<your JFROG password>@splight.jfrog.io/artifactory/api/pypi/splight/simple
-```
-
 Once you have installed `splight-cli` you can check the installation with 
 ```bash
 splightcli 

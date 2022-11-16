@@ -11,13 +11,10 @@ RUN apk update && \
     gcc \
     build-base
 
-ARG JFROG_BOT_USERNAME
-ARG JFROG_BOT_PASS
 
-RUN pip config set global.index-url https://$JFROG_BOT_USERNAME:$JFROG_BOT_PASS@splight.jfrog.io/artifactory/api/pypi/splight/simple
-
+ARG GITHUB_TOKEN
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN GITHUB_TOKEN=${GITHUB_TOKEN} pip install -r requirements.txt
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && ./aws/install --update
 
