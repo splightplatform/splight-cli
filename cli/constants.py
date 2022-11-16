@@ -45,6 +45,7 @@ VALID_PARAMETER_VALUES = {
     "Graph": None,  # UUID,
     "Network": None,  # UUID,
     "Rule": None,  # UUID,
+    "Query": None, # UUID,
 }
 
 VALID_DEPENDS_ON = [
