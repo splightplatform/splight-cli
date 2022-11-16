@@ -7,7 +7,6 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     name: running tests
-    env:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v3
