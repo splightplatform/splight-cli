@@ -1,6 +1,6 @@
 {
-    "name": "MSComponentToRemove",
-    "version": "0_1",
+    "name": "{{component_name}}",
+    "version": "{{version}}",
     "tags": [],
     "custom_types": [
         {
