@@ -7,9 +7,7 @@ with open('requirements.txt') as fp:
 
 dependency_links = [
     # External repositories different from pypi
-    #     "https://splight.jfrog.io/artifactory/api/pypi/splight-local/simple"
 ]
-# os.system("cat ~/.pypirc")
 
 setup(
     name='splight-cli',
