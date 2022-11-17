@@ -1,14 +1,42 @@
 {
-    "name": "{{component_name}}",
-    "version": "{{version}}",
+    "name": "MSComponentToRemove",
+    "version": "0_1",
     "tags": [],
-    "custom_types": [],
+    "custom_types": [
+        {
+            "name": "MyAsset",
+            "fields": [
+                {
+                    "name": "asset",
+                    "type": "Asset",
+                    "required": true
+                },
+                {
+                    "name": "alias",
+                    "type": "str",
+                    "required": true
+                }
+            ]
+        }
+    ],
     "input": [
         {
             "name": "period",
             "type": "int",
             "required": false,
             "value": 10
+        },
+        {
+            "name": "min",
+            "type": "int",
+            "required": false,
+            "value": 1
+        },
+        {
+            "name": "max",
+            "type": "int",
+            "required": false,
+            "value": 150
         }
     ],
     "output": [
@@ -20,6 +48,36 @@
                     "type": "int"
                 }
             ]
+        }
+    ],
+    "commands": [
+        {
+            "name": "command_myasset_print",
+            "fields": [
+                {
+                    "name": "asset",
+                    "type": "MyAsset",
+                    "required": true,
+                    "value": null
+                }
+            ]
+        }
+    ],
+    "bindings": [
+        {
+            "name": "handle_myasset_create",
+            "object_type": "MyAsset",
+            "object_action": "CREATE"
+        },
+        {
+            "name": "handle_myasset_create",
+            "object_type": "MyAsset",
+            "object_action": "UPDATE"
+        },
+        {
+            "name": "handle_myasset_delete",
+            "object_type": "MyAsset",
+            "object_action": "DELETE"
         }
     ]
 }
