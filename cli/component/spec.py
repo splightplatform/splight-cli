@@ -116,8 +116,6 @@ class FieldMixin:
             raise ValueError("fields must not be empty")
 
         _check_unique_names(fields, "fields")
-
-        # depends on
         _check_parameter_depends_on(fields)
 
         return fields
@@ -180,6 +178,8 @@ class Spec(ModelDeployment):
             for field in custom_type.fields:
                 if field.type not in valid_types and field.type not in custom_type_names:
                     raise ValueError(f"custom_type {field.type} not defined")
+                if field.name in CustomType._reserved_names:
+                    raise ValueError(f"custom_type {field.name} not allowed. Reserved names are: {CustomType._reserved_names}")
             custom_type_names.append(custom_type.name)
 
         return custom_types
