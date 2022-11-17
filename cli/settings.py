@@ -20,6 +20,7 @@ class SplightCLISettings(BaseSettings):
     )
     COMPONENT_ID: Optional[str] = Field(default=str(uuid.uuid4()))
     NAMESPACE: str = "NO_NAMESPACE"
+    SPLIGHT_ENCRYPTION_KEY: str = ""
 
     class Config:
         extra = Extra.ignore
