@@ -21,13 +21,14 @@ class MyAsset(BaseModel):
 
 class Main(AbstractAlgorithmComponent):
 
+    # Init
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.my_assets = {}
         logger.info(f"Starting randomizer in range {self.input.min} - {self.input.max}")
 
+    # Starting point
     def start(self):
-        # Starting point
         self.execution_client.start(
             Task(handler=self._give_a_random_number, args=(self.input.min, self.input.max), period=self.input.period)
         )
@@ -35,7 +36,7 @@ class Main(AbstractAlgorithmComponent):
             Task(handler=self._list_assets, args=(), period=self.input.period)
         )
 
-    # Tasks
+    # Periodic Tasks
     def _give_a_random_number(self, min, max):
         chosen_number = random.randint(min, max)
         logger.info(f"Random number: {chosen_number}")
