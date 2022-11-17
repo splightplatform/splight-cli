@@ -15,6 +15,7 @@ class RunnerConfig(BaseSettings):
     SPLIGHT_SECRET_KEY: str
     SPLIGHT_PLATFORM_API_HOST: str
     COMPONENT_ID: str
+    SPLIGHT_ENCRYPTION_KEY: str
 
     class Config:
         secrets_dir: str = "/etc/config"
