@@ -8,5 +8,4 @@ RUN pip install splight-cli==$VERSION && \
     pip install -r requirements.txt
 
 WORKDIR /code
-RUN mkdir /code/.config; cp -R /root/.config/pip /code/.config/pip
 COPY runner.py  /code
