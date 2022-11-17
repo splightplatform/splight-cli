@@ -1,4 +1,5 @@
 import random
+from typing import TypeVar
 from splight_lib.component.algorithms import AbstractAlgorithmComponent
 from splight_lib.execution import Task
 from splight_lib import logging
@@ -7,16 +8,17 @@ from splight_lib import logging
 logger = logging.getLogger()
 
 
+# Custom Types
+## NOTE: In case you want to create new instances of this Class
+## You can find this model in self.custom_model.MyAsset inside the Main class
+MyAsset = TypeVar('MyAsset')
+
+
 class Main(AbstractAlgorithmComponent):
-
-    # Init
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.my_assets = {}
-        logger.info(f"Starting randomizer in range {self.input.min} - {self.input.max}")
-
     # Starting point
     def start(self):
+        self.my_assets = {}
+        logger.info(f"Starting randomizer in range {self.input.min} - {self.input.max}")
         self.execution_client.start(
             Task(handler=self._give_a_random_number, args=(self.input.min, self.input.max), period=self.input.period)
         )
@@ -24,7 +26,7 @@ class Main(AbstractAlgorithmComponent):
             Task(handler=self._list_assets, args=(), period=self.input.period)
         )
 
-    # Periodic Tasks
+    # Tasks
     def _give_a_random_number(self, min, max):
         chosen_number = random.randint(min, max)
         logger.info(f"Random number: {chosen_number}")
@@ -32,21 +34,21 @@ class Main(AbstractAlgorithmComponent):
         self.datalake_client.save(instances=[out], collection=self.collection_name)
 
     def _list_assets(self):
-        logger.info(f"My List[self.custom_type.MyAsset]: {self.my_assets}")
+        print(self.my_assets)
 
     # Bindings
-    def handle_myasset_create(self, my_asset):
+    def handle_myasset_create(self, my_asset: MyAsset):
         self.my_assets[my_asset.id] = my_asset
-        logger.info(f"CREATED self.custom_type.MyAsset: {my_asset}")
+        print("CREATED")
 
-    def handle_myasset_delete(self, my_asset):
+    def handle_myasset_delete(self, my_asset: MyAsset):
         try:
-            logger.info(f"DELETED self.custom_type.MyAsset: {my_asset}")
             del self.my_assets[my_asset.id]
         except KeyError:
             pass
+        print("DELETED")
 
     # Commands
-    def command_myasset_print(self, myasset):
-        logger.info(f"PRINTED self.custom_type.MyAsset: {myasset}")
-        return myasset.dict()
+    def command_myasset_print(self, my_asset: MyAsset):
+        print(my_asset)
+        return my_asset.dict()
