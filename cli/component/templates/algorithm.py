@@ -1,32 +1,58 @@
-from splight_lib import logging
+import random
+from typing import TypeVar
 from splight_lib.component.algorithms import AbstractAlgorithmComponent
 from splight_lib.execution import Task
+from splight_lib import logging
 
-
+# Logging tool
 logger = logging.getLogger()
+
+# Custom Types
+## NOTE: In case you want to create new instances of this Class
+## You can find this model in self.custom_model.MyAsset inside the Main class
+MyAsset = TypeVar('MyAsset')
 
 
 class Main(AbstractAlgorithmComponent):
 
+    # Init
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        logger.info(f"It worked!")
+        self.my_assets = {}
+        logger.info(f"Starting randomizer in range {self.input.min} - {self.input.max}")
 
+    # Starting point
     def start(self):
-        pass
-        # To start a periodic function uncomment this
-        # self.execution_client.start(
-        #     Task(handler=self._my_periodic_function, args=tuple(), period=self.period)
-        # )
+        self.execution_client.start(
+            Task(handler=self._give_a_random_number, args=(self.input.min, self.input.max), period=self.input.period)
+        )
+        self.execution_client.start(
+            Task(handler=self._list_assets, args=(), period=self.input.period)
+        )
 
-    def _my_periodic_function(self):
-        logger.info(f"It worked!")
-        # To ingest in datalake uncomment the following
-        # args = {
-        #     "value": chosen_number,
-        # }
-        # self.datalake_client.save(
-        #     Variable,
-        #     instances=[Variable(args=args)],
-        #     collection=self.collection_name
-        # )
+    # Periodic Tasks
+    def _give_a_random_number(self, min, max):
+        chosen_number = random.randint(min, max)
+        logger.info(f"Random number: {chosen_number}")
+        out = self.output.Value(value=chosen_number)
+        self.datalake_client.save(instances=[out], collection=self.collection_name)
+
+    def _list_assets(self):
+        logger.info(f"List of myassets: List[MyAsset] {self.my_assets}")
+
+    # Bindings
+    def handle_myasset_create(self, my_asset: MyAsset):
+        self.my_assets[my_asset.id] = my_asset
+        logger.info(f"CREATED MyAsset: {my_asset}")
+
+    def handle_myasset_delete(self, my_asset: MyAsset):
+        try:
+            logger.info(f"DELETED MyAsset: {my_asset}")
+            del self.my_assets[my_asset.id]
+        except KeyError:
+            pass
+
+    # Commands
+    def command_myasset_print(self, myasset: MyAsset):
+        logger.info(f"PRINTED MyAsset: {myasset}")
+        return myasset.dict()
