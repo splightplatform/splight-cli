@@ -18,7 +18,10 @@ class Main(AbstractAlgorithmComponent):
     # Init
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.my_assets = {}
+        self.my_assets = {
+            item.id: item
+            for item in self.database_client.get(self.custom_types.MyAsset)
+        }
         logger.info(f"Starting randomizer in range {self.input.min} - {self.input.max}")
 
     # Starting point
