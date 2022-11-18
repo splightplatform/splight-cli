@@ -14,7 +14,7 @@ setup(
     version=__version__,
     author='Splight',
     author_email='factory@splight-ae.com',
-    description='Splight developer CLI tool. Splight.',
+    description='CLI tool to build and run Splight components',
     py_modules=['splightcli'],
     install_requires=install_requires,
     packages=find_packages(),
