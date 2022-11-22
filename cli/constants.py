@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from splight_models import ComponentType
+from pydantic import AnyUrl
 
 from cli.settings import SplightCLISettings
 
@@ -36,6 +37,7 @@ VALID_PARAMETER_VALUES = {
     "bool": bool,
     "str": str,
     "float": float,
+    "url": AnyUrl,
     "Date": None,
     "file": None,  # UUID
     "Asset": None,  # UUID,
