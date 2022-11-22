@@ -38,7 +38,7 @@ VALID_PARAMETER_VALUES = {
     "str": str,
     "float": float,
     "url": AnyUrl,
-    "Date": None,
+    "datetime": None,
     "file": None,  # UUID
     "Asset": None,  # UUID,
     "Algorithm": None,  # UUID,
