@@ -40,13 +40,14 @@ VALID_PARAMETER_VALUES = {
     "url": AnyUrl,
     "datetime": None,
     "file": None,  # UUID
+    "File": None,  # UUID
     "Asset": None,  # UUID,
     "Algorithm": None,  # UUID,
     "Attribute": None,  # UUID,
     "Connector": None,  # UUID,
     "Graph": None,  # UUID,
     "Network": None,  # UUID,
-    "Query": None, # UUID,
+    "Query": None,  # UUID,
 }
 
 VALID_DEPENDS_ON = [
