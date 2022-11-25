@@ -47,7 +47,8 @@ VALID_PARAMETER_VALUES = {
     "Connector": None,  # UUID,
     "Graph": None,  # UUID,
     "Network": None,  # UUID,
-    "Query": None,  # UUID,
+    "Query": None, # UUID,
+    "Mapping": None, # UUID
 }
 
 VALID_DEPENDS_ON = [
