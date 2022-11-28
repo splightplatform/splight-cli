@@ -1,7 +1,7 @@
-from splight_lib.component import AbstractAlgorithmComponent
+from splight_lib.component import AbstractComponent
 
 
-class Main(AbstractAlgorithmComponent):
+class Main(AbstractComponent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
