@@ -42,11 +42,9 @@ VALID_PARAMETER_VALUES = {
     "file": None,  # UUID
     "File": None,  # UUID
     "Asset": None,  # UUID,
-    "Algorithm": None,  # UUID,
     "Attribute": None,  # UUID,
-    "Connector": None,  # UUID,
+    "Component": None,  # UUID,
     "Graph": None,  # UUID,
-    "Network": None,  # UUID,
     "Query": None, # UUID,
     "Mapping": None, # UUID
 }

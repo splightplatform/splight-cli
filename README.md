@@ -233,7 +233,7 @@ splightcli database list <resource>
 ```
 
 Where `<resource>` is the type of the resource to be listed. For example, can be
-`Algorithm`, `Connector`, `Network`, `Asset`, `Attribute` and many more.
+`Component`, `Asset`, `Attribute` and many more.
 
 ### Datalake
 

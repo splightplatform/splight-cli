@@ -1,6 +1,6 @@
-from splight_lib.component.io import AbstractNetworkComponent
+from splight_lib.component.abstract import AbstractComponent
 
-class Main(AbstractNetworkComponent):
+class Main(AbstractComponent):
 
     def __init__(self, *args, **kwargs):
         super(Main, self).__init__(*args, **kwargs)
