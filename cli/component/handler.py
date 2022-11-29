@@ -48,7 +48,6 @@ class ComponentHandler:
         self.user_handler = UserHandler(context)
 
     def upload_component(self,
-                         type: str,
                          privacy_policy: str,
                          name: str,
                          version: str,
@@ -76,7 +75,6 @@ class ComponentHandler:
                     'input': json.dumps(input),
                     'output': json.dumps(output),
                     'commands': json.dumps(commands),
-                    'type': type,
                     'splight_cli_version': SPLIGHT_CLI_VERSION,
                 }
                 files = {
@@ -102,13 +100,12 @@ class ComponentHandler:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
 
-    def download_component(self, type, name, version, local_path):
+    def download_component(self, name, version, local_path):
         with Loader("Pulling component from Splight Hub..."):
             headers = self.user_handler.authorization_header
             data = {
                 'name': name,
                 'version': version,
-                'type': type,
             }
             response = api_post(
                 f"{self.user_handler.host}/hub/download/",
@@ -133,11 +130,11 @@ class ComponentHandler:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
 
-    def delete_component(self, type, name, version):
+    def delete_component(self, name, version):
         with Loader("Deleting component from Splight Hub..."):
             headers = self.user_handler.authorization_header
             response = api_get(
-                f"{self.user_handler.host}/hub/mine/component-versions/?type={type}&name={name}&version={version}",
+                f"{self.user_handler.host}/hub/mine/component-versions/?name={name}&version={version}",
                 headers=headers
             )
             response = response.json()
@@ -151,12 +148,12 @@ class ComponentHandler:
                         "Failed to delete the component from splight hub"
                     )
 
-    def list_components(self, type):
+    def list_components(self):
         with Loader("Listing components.."):
             headers = self.user_handler.authorization_header
             list_ = []
             page = api_get(
-                f"{self.user_handler.host}/hub/mine/components/?type={type}",
+                f"{self.user_handler.host}/hub/mine/components/",
                 headers=headers
             )
             page = page.json()
@@ -169,12 +166,12 @@ class ComponentHandler:
                     list_.extend(page["results"])
         return list_
 
-    def list_component_versions(self, type, name):
+    def list_component_versions(self, name):
         with Loader("Listing component versions.."):
             headers = self.user_handler.authorization_header
             list_ = []
             page = api_get(
-                f"{self.user_handler.host}/hub/mine/component-versions/?type={type}&name={name}",
+                f"{self.user_handler.host}/hub/mine/component-versions/?name={name}",
                 headers=headers
             )
             page = page.json()
@@ -187,7 +184,7 @@ class ComponentHandler:
                     list_.extend(page["results"])
         return list_
 
-    def exists_in_hub(self, type, name, version):
+    def exists_in_hub(self, name, version):
         headers = self.user_handler.authorization_header
         endpoints = [
             f"{self.user_handler.host}/hub/private/component-versions/?name={name}&version={version}"
@@ -202,11 +199,10 @@ class ComponentHandler:
 
     def create_component(
         self,
-        component_type: str,
         component_name: str,
         component_version: str,
     ) -> Dict:
-        endpoint = f"{self.user_handler.host}/{component_type.lower()}/"
+        endpoint = f"{self.user_handler.host}/"
         headers = self.user_handler.authorization_header
         data = {
             "name": f"CLI: {component_name}",
@@ -222,14 +218,12 @@ class ComponentHandler:
 
     def get_component_info(
         self,
-        component_type: str,
         component_name: str,
         component_version: str
     ) -> Optional[Dict]:
         endpoint = f"{self.user_handler.host}/hub/all/component-versions/"
         headers = self.user_handler.authorization_header
         params = {
-            "type": component_type,
             "name": component_name,
             "version": component_version,
         }

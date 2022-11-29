@@ -7,13 +7,11 @@ Primitive = Union[int, str, float, bool]
 
 
 class SpecArgumentLoader:
-    def __init__(self, spec_json: str, component_type: str):
-        self._component_type = component_type.title()
+    def __init__(self, spec_json: str):
         self._spec_json = spec_json
 
     def load_spec(self) -> Dict:
         run_spec = json.loads(self._spec_json)
-        run_spec["type"] = self._component_type
         return run_spec
 
 
@@ -27,10 +25,8 @@ class SpecJSONLoader:
     def __init__(
         self,
         spec_file_path: str,
-        component_type: str,
         check_input: bool = True,
     ):
-        self._component_type = component_type.title()
         self._spec_file_path = spec_file_path
         self._check_input = check_input
 
@@ -41,7 +37,6 @@ class SpecJSONLoader:
             input_parameters = self._load_or_prompt_input(input_parameters)
 
         full_spec = raw_spec
-        full_spec["type"] = self._component_type
         full_spec["input"] = input_parameters
         return full_spec
 

@@ -20,7 +20,6 @@
     - [Workspace](#workspace)
   - [Developing Components](#developing-components)
     - [What is a component?](#what-is-a-component)
-    - [Component types](#component-types)
     - [Creating a Component](#creating-a-component)
       - [Component Core](#component-core)
       - [Component Initialization](#component-initialization)
@@ -119,13 +118,12 @@ component, here we will only cover the different sub-commands you can use
   To create a new component the command is
 
   ```bash
-  splightcli component create <component_type> <name> <version>
+  splightcli component create <name> <version>
   ```
 
-  where `<component_type>` is the type of component to be created, can be one of
-  `algorithm`, `connector`, `network` or `system`. The parameters `<name>` and
+  The parameters `<name>` and
   `<version>` are the name and version of the component to be created.
-  The three commands parameters `<component_type>`, `<name>` and `<version>` are
+  The three commands parameters `<name>` and `<version>` are
   commong between all the sub-commands.
 
   The command creates a new folder with the name `<name>-<version>` in the same
@@ -137,7 +135,7 @@ component, here we will only cover the different sub-commands you can use
   You can delete an existing component with the command
 
   ```bash
-  splightcli component delete <component_type> <name> <version>
+  splightcli component delete <name> <version>
   ```
 
   This command deletes the component in _Splight Hub_ so it can't be used any more.
@@ -147,7 +145,7 @@ component, here we will only cover the different sub-commands you can use
   The command
 
   ```bash
-  splightcli component install-requirements <component_type> <path>
+  splightcli component install-requirements <path>
   ```
 
   Where the parameter `<path>` is the path to the component that will be installed
@@ -161,7 +159,7 @@ component, here we will only cover the different sub-commands you can use
   before push it and for development a new component. The command is the following
 
   ```bash
-  splightcli component run <component_type> <path> [-r] [-rs]
+  splightcli component run <path> [-r] [-rs]
   ```
 
   This command will run a component locally. Optionally you can use the flag
@@ -174,10 +172,10 @@ component, here we will only cover the different sub-commands you can use
 
 - List component
 
-  You can list all the component of given type with the command
+  You can list all the components with the command
 
   ```bash
-  splightcli component list <component_type>
+  splightcli component list
   ```
 
 - Pull or download a component
@@ -185,7 +183,7 @@ component, here we will only cover the different sub-commands you can use
   For downloading an existing component in _Splight Hub_ you can use
 
   ```bash
-  splightcli component pull <component_type> <name> <version>
+  splightcli component pull <name> <version>
   ```
 
   This will download the component source code to your machine.
@@ -195,7 +193,7 @@ component, here we will only cover the different sub-commands you can use
   For pushing a new component or component version to _Splight Hub_ the command is
 
   ```bash
-  splightcli component push <component_type> <path>
+  splightcli component push <path>
   ```
 
   Where `<path>` is the path (relative or absolute) for the source code of the
@@ -206,7 +204,7 @@ component, here we will only cover the different sub-commands you can use
   You can also list all the version of given component with
 
   ```bash
-  splightcli component versions <component_type> <name>
+  splightcli component versions <name>
   ```
 
 ### Configure
@@ -314,14 +312,6 @@ The expected flow for your component is the following:
 - Upload it to Splight Hub
 - Use your component in Splight, where all your data is available
 
-### Component types
-
-In Splight Hub, there are three different types of components.
-
-- Algorithm: Components that execute a custom coded algorithm
-- Network: Components that serve as connectivity tool and allow to access a particular computer network
-- Connector: Components that execute and interact with real life hardware
-
 ### Creating a Component
 
 To create a component with the Splight Hub CLI, open a terminal and change the directory to the one where you want to work.
@@ -329,10 +319,8 @@ To create a component with the Splight Hub CLI, open a terminal and change the d
 Execute the following command:
 
 ```bash
-splightcli component create <type> <name> <version>
+splightcli component create <name> <version>
 ```
-
-where type can be one of the following: `algorithm` , `connector` or `network`
 
 This will create a directory with the following structure:
 
@@ -359,7 +347,7 @@ For example, when you create an algorithm component, in `__init__.py` will have 
 import random
 
 from splight_lib import logging
-from splight_lib.component.algorithms import AbstractAlgorithmComponent
+from splight_lib.component.abstract import AbstractComponent
 from splight_lib.execution import Task
 
 from splight_models import Variable
@@ -368,7 +356,7 @@ from splight_models import Variable
 logger = logging.getLogger()
 
 
-class Main(AbstractAlgorithmComponent):
+class Main(AbstractComponent):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

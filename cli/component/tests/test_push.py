@@ -25,15 +25,14 @@ class TestPush(SplightCLITest):
         return_value={"privacy_policy": "private"}
     )
     def test_push(self, retriever, exists_in_hub, uploader):
-        self.component.push(self.type, force=False, public=False)
+        self.component.push(force=False, public=False)
         exists_in_hub.assert_called_with(
-            self.type.lower(), self.name, self.version
+            self.name, self.version
         )
         retriever.assert_called_with(
-            self.type.lower(), self.name, self.version
+            self.name, self.version
         )
         uploader.assert_called_with(
-            self.type.lower(),
             'private',
             self.name,
             self.version,
@@ -53,9 +52,9 @@ class TestPush(SplightCLITest):
                 ComponentHandler, "upload_component"
             ) as uploader:
                 with self.assertRaises(ComponentAlreadyExistsException):
-                    self.component.push(self.type, force=False, public=False)
+                    self.component.push(force=False, public=False)
                 exists_in_hub.assert_called_with(
-                    self.type.lower(), self.name, self.version
+                    self.name, self.version
                 )
                 uploader.assert_not_called()
 
@@ -66,12 +65,11 @@ class TestPush(SplightCLITest):
         return_value={"privacy_policy": "private"}
     )
     def test_push_forced(self, retriever, uploader):
-        self.component.push(self.type, force=True, public=False)
+        self.component.push(force=True, public=False)
         retriever.assert_called_with(
-            self.type.lower(), self.name, self.version
+            self.name, self.version
         )
         uploader.assert_called_with(
-            self.type.lower(),
             'private',
             self.name,
             self.version,
@@ -94,7 +92,6 @@ class TestPush(SplightCLITest):
             "Authorization": f"Splight {self.context.workspace.settings.SPLIGHT_ACCESS_ID} {self.context.workspace.settings.SPLIGHT_SECRET_KEY}"
         }
         data = {
-            "type": self.type.lower(),
             "name": self.name,
             "version": self.version,
             "privacy_policy": "private",
@@ -110,7 +107,7 @@ class TestPush(SplightCLITest):
         response.status_code = 201
         with patch.object(requests, "post", return_value=response) as post:
             with patch.object(py7zr.SevenZipFile, "writeall") as writeall:
-                self.component.push(self.type, force=False, public=False)
+                self.component.push(force=False, public=False)
                 writeall.assert_called_with(
                     self.path, f"{self.name}-{self.version}"
                 )
