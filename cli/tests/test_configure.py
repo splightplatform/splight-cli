@@ -10,7 +10,7 @@ class TestConfigure(SplightCLITest):
     def test_configure_requested(self):
         result = self.runner.invoke(
             component,
-            ["list", self.type],
+            ["list"],
             obj=self.context,
             catch_exceptions=False
         )
@@ -22,7 +22,7 @@ class TestConfigure(SplightCLITest):
         with patch.object(ComponentHandler, "list_components", return_value=[]):
             result = self.runner.invoke(
                 component,
-                ["list", self.type],
+                ["list"],
                 obj=self.context,
                 catch_exceptions=False
             )

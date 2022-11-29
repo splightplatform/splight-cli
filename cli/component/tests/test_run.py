@@ -14,7 +14,6 @@ class TestRun(SplightCLITest):
         namespace = DEFAULT_NAMESPACE
         run_spec = {
             "name": self.name,
-            "type": self.type,
             "version": self.version,
             "tags": self.tags,
             "custom_types": self.custom_types,
@@ -24,7 +23,7 @@ class TestRun(SplightCLITest):
         self.configure()
         result = self.runner.invoke(
             run,
-            [self.type, self.path, "--run-spec", json.dumps(run_spec)],
+            [self.path, "--run-spec", json.dumps(run_spec)],
             obj=self.context,
             catch_exceptions=False,
         )

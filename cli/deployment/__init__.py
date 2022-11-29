@@ -17,7 +17,7 @@ def list(context: Context) -> None:
         client = DeploymentHandler(context)
         items = client.list()
         Printer.print_dict(
-            items=items, headers=["type", "component_id", "version"]
+            items=items, headers=["component_id", "version"]
         )
 
     except Exception as e:

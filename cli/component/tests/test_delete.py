@@ -21,7 +21,7 @@ class TestDelete(SplightCLITest):
         with patch.object(
             ComponentHandler, "delete_component"
         ) as call:
-            self.component.delete(self.name, self.type, self.version)
+            self.component.delete(self.name, self.version)
             call.assert_called_with(
-                self.type.lower(), self.name, self.version
+                self.name, self.version
             )

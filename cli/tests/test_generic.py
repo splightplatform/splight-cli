@@ -73,7 +73,6 @@ class SplightCLITest(TestCase):
     def setUp(self):
         self.path = os.path.join(os.path.dirname(__file__), "TestHub")
         self.component_json = get_json_from_file(os.path.join(self.path, SPEC_FILE))
-        self.type = "Component"
         self.name = self.component_json['name']
         self.version = self.component_json['version']
         self.custom_types = self.component_json['custom_types']
