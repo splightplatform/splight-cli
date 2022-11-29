@@ -9,7 +9,8 @@ RUN apk update && \
     unzip \
     libpq-dev \
     gcc \
-    build-base
+    build-base \
+    git
 
 
 ARG GITHUB_TOKEN
