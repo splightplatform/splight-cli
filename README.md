@@ -431,8 +431,8 @@ The structure of the file `spec.json` is the following
 
 A component can have different inputs and outputs that are previously defined, these
 parameters can any or primite Python types like `str`, `int`, `float`, `bool` or `file`,
-can also take the value of any Splight parameter like `Asset`, `Attribute`, `Network`,
-`Algorithm`, `Connector`, `Query`, but also can be custom type defined in the
+can also take the value of any Splight parameter like `Asset`, `Attribute`,
+`Component`, `Mapping`, `Query`, but also can be custom type defined in the
 `"custom_types"` key.
 A parameter have the structure
 
