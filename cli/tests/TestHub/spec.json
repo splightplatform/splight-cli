@@ -55,5 +55,10 @@
         "tag2",
         "tag3"
     ],
-    "bindings": []
+    "bindings": [],
+    "endpoints": [
+        {
+            "port": 1080
+        }
+    ]
 }

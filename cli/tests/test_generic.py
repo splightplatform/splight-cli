@@ -81,6 +81,7 @@ class SplightCLITest(TestCase):
         self.bindings = self.component_json["bindings"]
         self.tags = self.component_json['tags']
         self.commands = self.component_json['commands']
+        self.endpoints = self.component_json['endpoints']
         self.context = FakeContext()
         self.runner = CliRunner()
 

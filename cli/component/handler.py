@@ -57,6 +57,7 @@ class ComponentHandler:
                          output: List[Dict],
                          commands: List[Dict],
                          bindings: List[Dict],
+                         endpoints: List[Dict],
                          local_path):
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
@@ -76,7 +77,11 @@ class ComponentHandler:
                     'input': json.dumps(input),
                     'output': json.dumps(output),
                     'commands': json.dumps(commands),
+                    << << << < HEAD
                     'bindings': json.dumps(bindings),
+                    == == == =
+                    'endpoints': json.dumps(endpoints),
+                    >>>>>> > cc31af4(endpoints in spec)
                     'splight_cli_version': SPLIGHT_CLI_VERSION,
                 }
                 files = {
@@ -88,6 +93,7 @@ class ComponentHandler:
                         os.path.join(local_path, PICTURE_FILE), 'rb'
                     ),
                 }
+                print('DATA', data)
                 response = api_post(
                     f"{self.user_handler.host}/hub/upload/",
                     files=files,
