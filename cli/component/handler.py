@@ -93,7 +93,6 @@ class ComponentHandler:
                         os.path.join(local_path, PICTURE_FILE), 'rb'
                     ),
                 }
-                print('DATA', data)
                 response = api_post(
                     f"{self.user_handler.host}/hub/upload/",
                     files=files,
