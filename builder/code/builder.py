@@ -20,6 +20,7 @@ class Context(BaseSettings):
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
+    MIN_EXTRA_SPACE: float = 0.5
 
 
 class Builder:
@@ -35,6 +36,7 @@ class Builder:
             self._update_component_build_status(BuildStatus.BUILDING)
             self._build_component()
             self._push_component()
+            self._update_component_image_size(save=False)
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
             logger.info('Build failed: ', e)
@@ -57,6 +59,10 @@ class Builder:
     @property
     def repository_name(self):
         return self.context.REPOSITORY_NAME
+
+    @property
+    def min_extra_space(self):
+        return self.context.MIN_EXTRA_SPACE
 
     @property
     def repository(self):
@@ -142,10 +148,23 @@ class Builder:
             logger.error(f"Error pushing component: {e}")
             raise e
 
-    def _update_component_build_status(self, build_status: BuildStatus):
+    def _update_component_build_status(self, build_status: BuildStatus, save: bool = True):
         # TODO: Update this to use a webhook
         logger.info(f"Updating component build status to {build_status}")
         self.hub_component.build_status = build_status
+        if save:
+            self._save_component()
+
+    def _update_component_image_size(self, save: bool = True):
+        logger.info("Saving image size")
+        image = self.docker_client.images.get(self.tag)
+        # get image size in GB
+        self.hub_component.image_size = round(image.attrs["Size"] / 10**9 + self.min_extra_space, 2)
+        if save:
+            self._save_component()
+
+    def _save_component(self):
+        logger.info("Saving component")
         try:
             self.hub_client.mine.update(
                 HubComponentVersion,
@@ -153,7 +172,7 @@ class Builder:
                 data=self.hub_component.dict()
             )
         except Exception as e:
-            logger.error(f"Error updating component build status: {e}")
+            logger.error(f"Error saving component: {e}")
 
 
 @app.command()
