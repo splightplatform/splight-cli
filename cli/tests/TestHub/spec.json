@@ -58,6 +58,7 @@
     "bindings": [],
     "endpoints": [
         {
+            "name": "proxy",
             "port": 1080
         }
     ]
