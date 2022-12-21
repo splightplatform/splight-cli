@@ -111,7 +111,6 @@ class Builder:
         logger.info("Getting hub component")
         return self.hub_client.mine.get(
             HubComponentVersion,
-            type=self.build_spec.type,
             name=self.build_spec.name,
             version=self.build_spec.version,
             first=True

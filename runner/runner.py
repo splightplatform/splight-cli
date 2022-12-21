@@ -29,11 +29,10 @@ class SplightComponentRunner:
     _BASE_CMD = "splightcli"
 
     def __init__(
-        self, component_name: str, component_version: str, component_type: str
+        self, component_name: str, component_version: str
     ):
         self._name = component_name
         self._version = component_version
-        self._type = component_type
 
         logging.basicConfig(
             level=logging.INFO, format="%(asctime)s - %(name)s - %(message)s"
@@ -70,7 +69,6 @@ class SplightComponentRunner:
                 self._BASE_CMD,
                 "component",
                 "run",
-                self._type,
                 f"{self._name}-{self._version}",
                 "--run-spec",
                 json.dumps(component_spec),
@@ -89,12 +87,9 @@ def main(
 
     run_spec = json.loads(run_spec_str)
 
-    hub_type = run_spec["type"].lower()
-
     runner = SplightComponentRunner(
         component_name=run_spec["name"],
         component_version=run_spec["version"],
-        component_type=hub_type,
     )
     runner.configure(config.json())
     runner.run(run_spec)

@@ -17,7 +17,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     configure_spec = json.loads(args.configure_spec[0])
     # TODO remove this overparsing
-    hub_type = configure_spec["type"].lower()
     hub_name = configure_spec["name"]
     hub_version = configure_spec["version"]
     hub_descriptor = f"{hub_name}-{hub_version}"
@@ -31,12 +30,12 @@ if __name__ == '__main__':
         "SPLIGHT_PLATFORM_API_HOST": api_host,
     }
 
-    logger.info(f"Configure with {access_id} to configure {hub_type} {hub_name} {hub_version}. Remote set to {api_host}")
+    logger.info(f"Configure with {access_id} to configure {hub_name} {hub_version}. Remote set to {api_host}")
 
     try:
         subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
-        subprocess.run(["splightcli", "component", "pull", hub_type, hub_name, hub_version], check=True)
-        subprocess.run(["splightcli", "component", "install-requirements", hub_type, hub_descriptor], check=True)
+        subprocess.run(["splightcli", "component", "pull", hub_name, hub_version], check=True)
+        subprocess.run(["splightcli", "component", "install-requirements", hub_descriptor], check=True)
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Error configuring component: {e}")

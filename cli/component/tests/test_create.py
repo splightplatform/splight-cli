@@ -14,7 +14,7 @@ class TestCreate(SplightCLITest):
             shutil.rmtree(self.path)
         os.mkdir(self.path)
         self.component = Component(self.path, self.context)
-        self.component.create(self.name, self.type, self.version)
+        self.component.create(self.name, self.version)
         component_path = os.path.join(self.path, f"{self.name}-{self.version}")
         for (dirname, _, filenames) in os.walk(component_path):
             for filename in filenames:
@@ -31,5 +31,5 @@ class TestCreate(SplightCLITest):
         os.mkdir(os.path.join(self.path, f"{self.name}-{self.version}"))
         self.component = Component(self.path, self.context)
         with self.assertRaises(Exception):
-            self.component.create(self.name, self.type, self.version)
+            self.component.create(self.name, self.version)
         shutil.rmtree(self.path)

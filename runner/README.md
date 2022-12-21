@@ -3,7 +3,7 @@
 ### Build for _module_
 ```
 $ export DIR=module
-$ JFROG_BOT_USERNAME=$JFROG_BOT_USERNAME JFROG_BOT_PASS=$JFROG_BOT_PASS DIR=$DIR docker-compose build
+$ DIR=$DIR docker-compose build
 ```
 
 ### Environment variables

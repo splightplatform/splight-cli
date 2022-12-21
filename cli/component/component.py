@@ -1,9 +1,8 @@
 import subprocess
 import importlib
-import json
 import sys
 import os
-from typing import Dict, List, Type
+from typing import List, Type
 from jinja2 import Template
 from tempfile import NamedTemporaryFile
 from cli.context import PrivacyPolicy
@@ -19,7 +18,6 @@ from cli.constants import (
     PICTURE_FILE,
     REQUIRED_FILES,
     SPEC_FILE,
-    VALID_TYPES,
     VARS_FILE,
 )
 from cli.utils import (
@@ -28,7 +26,6 @@ from cli.utils import (
     validate_path_isdir,
 )
 from cli.component.handler import ComponentHandler, UserHandler
-from cli.component.exception import InvalidComponentType
 from cli.component.spec import Spec
 from cli.component.loaders import SpecJSONLoader, SpecArgumentLoader
 
@@ -41,7 +38,6 @@ class ComponentAlreadyExistsException(Exception):
 
 class Component:
     name = None
-    type = None
     version = None
 
     def __init__(self, path, context):
@@ -76,13 +72,6 @@ class Component:
         except Exception as e:
             raise Exception(f"Failed to validate component: {str(e)}")
 
-    @staticmethod
-    def _validate_type(type: str) -> str:
-        if type.title() not in VALID_TYPES:
-            raise InvalidComponentType(f"Invalid component type: {type}")
-        # Return value in lower case
-        return type.lower()
-
     def _load_component(self) -> None:
         self.component = self._import_component()
         self._validate_component()
@@ -104,6 +93,7 @@ class Component:
         self.input = self.spec["input"]
         self.output = self.spec["output"]
         self.commands = self.spec.get("commands", [])
+        self.bindings = self.spec.get("bindings", [])
 
     def _command_run(self, command: List[str]) -> None:
         command: str = " ".join(command)
@@ -189,21 +179,16 @@ class Component:
             raise e
 
     @classmethod
-    def list(cls, context, type):
-        component_type = cls._validate_type(type)
+    def list(cls, context):
         handler = ComponentHandler(context)
-        return handler.list_components(component_type)
+        return handler.list_components()
 
     @classmethod
-    def versions(cls, context, type, name):
-        component_type = cls._validate_type(type)
+    def versions(cls, context, name):
         handler = ComponentHandler(context)
-        return handler.list_component_versions(component_type, name)
+        return handler.list_component_versions(name)
 
-    def create(self, name, type, version):
-        component_type = self._validate_type(type)
-
-        self._validate_type(type)
+    def create(self, name, version):
         Spec.verify({
             "name": name,
             "version": version,
@@ -222,21 +207,18 @@ class Component:
                 self._get_random_picture(file_path)
                 continue
             if file_name == COMPONENT_FILE:
-                template_name = f"{component_type}.py"
+                template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
-                component_type=type, component_name=name, version=version
+                component_name=name, version=version
             )
             with open(file_path, "w+") as f:
                 f.write(file)
 
-    def push(self, type, force, public):
-        component_type = self._validate_type(type)
-        privacy_policy = PrivacyPolicy.PUBLIC.value if public else PrivacyPolicy.PRIVATE.value
+    def push(self, force, public):
         self._validate_component_structure()
         loader = SpecJSONLoader(
             spec_file_path=self.spec_file,
-            component_type=component_type,
             check_input=False
         )
         self.run_spec = loader.load_spec()
@@ -246,11 +228,20 @@ class Component:
 
         handler = ComponentHandler(self.context)
         if not force and handler.exists_in_hub(
-            component_type, self.name, self.version
+            self.name, self.version
         ):
             raise ComponentAlreadyExistsException
+        component = handler.get_component_info(
+            self.name,
+            self.version
+        )
+        current_policy = PrivacyPolicy.PRIVATE.value
+        if component:
+            current_policy = component["privacy_policy"]
+
+        privacy_policy = PrivacyPolicy.PUBLIC.value if public else current_policy
+
         handler.upload_component(
-            component_type,
             privacy_policy,
             self.name,
             self.version,
@@ -259,11 +250,11 @@ class Component:
             self.input,
             self.output,
             self.commands,
+            self.bindings,
             self.path
         )
 
-    def pull(self, name, type, version):
-        component_type = self._validate_type(type)
+    def pull(self, name, version):
 
         versioned_name = f"{name}-{version}"
         component_path = os.path.join(self.path, versioned_name)
@@ -274,25 +265,22 @@ class Component:
             )
 
         handler = ComponentHandler(self.context)
-        handler.download_component(component_type, name, version, self.path)
+        handler.download_component(name, version, self.path)
 
-    def delete(self, name, type, version):
-        component_type = self._validate_type(type)
+    def delete(self, name, version):
         handler = ComponentHandler(self.context)
-        handler.delete_component(component_type, name, version)
+        handler.delete_component(name, version)
 
-    def run(self, type: str, run_spec: str):
-        component_type = self._validate_type(type)
+    def run(self, run_spec: str):
         self._validate_component_structure()
 
         if run_spec:
             loader = SpecArgumentLoader(
-                spec_json=run_spec, component_type=component_type
+                spec_json=run_spec
             )
         else:
             loader = SpecJSONLoader(
                 spec_file_path=self.spec_file,
-                component_type=component_type,
                 check_input=True
             )
         self.run_spec = loader.load_spec()

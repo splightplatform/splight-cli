@@ -24,9 +24,9 @@ class TestPull(SplightCLITest):
         with patch.object(
             ComponentHandler, "download_component"
         ) as downloader:
-            self.component.pull(self.name, self.type, self.version)
+            self.component.pull(self.name, self.version)
             downloader.assert_called_with(
-                self.type.lower(), self.name, self.version, self.path
+                self.name, self.version, self.path
             )
 
     def test_pull_already_exists_in_local(self):
@@ -35,7 +35,7 @@ class TestPull(SplightCLITest):
         )
         os.mkdir(already_component)
         with self.assertRaises(Exception):
-            self.component.pull(self.name, self.type, self.version)
+            self.component.pull(self.name, self.version)
         shutil.rmtree(already_component)
 
     def test_component_download(self):
@@ -44,7 +44,6 @@ class TestPull(SplightCLITest):
                 "Authorization": f"Splight {self.context.workspace.settings.SPLIGHT_ACCESS_ID} {self.context.workspace.settings.SPLIGHT_SECRET_KEY}"
             }
             data = {
-                "type": self.type.lower(),
                 "name": self.name,
                 "version": self.version,
             }
@@ -69,7 +68,7 @@ class TestPull(SplightCLITest):
                     requests, "post", return_value=response
                 ) as post:
                     os.chdir(self.path)
-                    self.component.pull(self.name, self.type, self.version)
+                    self.component.pull(self.name, self.version)
                     _, args, kwargs = post.mock_calls[0]
                     self.assertEqual(
                         args[0],

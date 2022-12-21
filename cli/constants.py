@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from splight_models import ComponentType
+from pydantic import AnyUrl
 
 from cli.settings import SplightCLISettings
 
@@ -30,21 +30,21 @@ REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE, PICTURE_FIL
 
 MAIN_CLASS_NAME = "Main"
 
-VALID_TYPES = [component.value for component in ComponentType]
 VALID_PARAMETER_VALUES = {
     "int": int,
     "bool": bool,
     "str": str,
     "float": float,
-    "Date": None,
+    "url": AnyUrl,
+    "datetime": None,
     "file": None,  # UUID
+    "File": None,  # UUID
     "Asset": None,  # UUID,
-    "Algorithm": None,  # UUID,
     "Attribute": None,  # UUID,
-    "Connector": None,  # UUID,
+    "Component": None,  # UUID,
     "Graph": None,  # UUID,
-    "Network": None,  # UUID,
-    "Rule": None,  # UUID,
+    "Query": None, # UUID,
+    "Mapping": None, # UUID
 }
 
 VALID_DEPENDS_ON = [

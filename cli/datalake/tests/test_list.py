@@ -12,11 +12,11 @@ class TestList(SplightCLITest):
         self.remote_collections = [
             {
                 'source': 'default',
-                'algorithm': '-'
+                'component': '-'
             },
             {
                 'source': 'default1',
-                'algorithm': '-'
+                'component': '-'
             }
         ]
         self.configure()
