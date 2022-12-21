@@ -41,6 +41,7 @@ class TestPush(SplightCLITest):
             self.input,
             self.output,
             self.commands,
+            self.bindings,
             self.path,
         )
 
@@ -78,6 +79,7 @@ class TestPush(SplightCLITest):
             self.input,
             self.output,
             self.commands,
+            self.bindings,
             self.path,
         )
 
