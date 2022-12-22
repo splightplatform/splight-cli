@@ -251,11 +251,8 @@ class Component:
             self.input,
             self.output,
             self.commands,
-            << << << < HEAD
             self.bindings,
-            == == == =
             self.endpoints,
-            >>>>>> > cc31af4(endpoints in spec)
             self.path
         )
 

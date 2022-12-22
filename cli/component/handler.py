@@ -77,11 +77,8 @@ class ComponentHandler:
                     'input': json.dumps(input),
                     'output': json.dumps(output),
                     'commands': json.dumps(commands),
-                    << << << < HEAD
                     'bindings': json.dumps(bindings),
-                    == == == =
                     'endpoints': json.dumps(endpoints),
-                    >>>>>> > cc31af4(endpoints in spec)
                     'splight_cli_version': SPLIGHT_CLI_VERSION,
                 }
                 files = {
