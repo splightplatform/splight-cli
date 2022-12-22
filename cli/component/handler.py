@@ -57,6 +57,7 @@ class ComponentHandler:
                          output: List[Dict],
                          commands: List[Dict],
                          bindings: List[Dict],
+                         endpoints: List[Dict],
                          local_path):
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
@@ -77,6 +78,7 @@ class ComponentHandler:
                     'output': json.dumps(output),
                     'commands': json.dumps(commands),
                     'bindings': json.dumps(bindings),
+                    'endpoints': json.dumps(endpoints),
                     'splight_cli_version': SPLIGHT_CLI_VERSION,
                 }
                 files = {

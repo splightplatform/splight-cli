@@ -79,5 +79,11 @@
             "object_type": "MyAsset",
             "object_action": "DELETE"
         }
+    ],
+    "endpoints": [
+        {
+            "name": "proxy",
+            "port": 1080
+        }
     ]
 }
