@@ -3,6 +3,7 @@
 import json
 import os
 import py7zr
+import shutil
 from typing import List, Dict, Optional
 from functools import cached_property
 from cli.constants import *
@@ -124,12 +125,17 @@ class ComponentHandler:
 
             versioned_name = f"{name}-{version}"
             compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
+
+            component_path = f"{local_path}/{name}/{version}"
+            if os.path.exists(component_path):
+                shutil.rmtree(component_path)
             try:
                 with open(compressed_filename, "wb") as f:
                     f.write(response.content)
 
                 with py7zr.SevenZipFile(compressed_filename, "r") as z:
                     z.extractall(path=local_path)
+                shutil.move(f"{local_path}/{versioned_name}", component_path)
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
