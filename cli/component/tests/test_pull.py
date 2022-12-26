@@ -16,7 +16,7 @@ class TestPull(SplightCLITest):
         self.original_component_path = self.path
         self.path = os.path.dirname(os.path.abspath(__file__))
         self.extracted_component_path = os.path.join(
-            self.path, f"{self.name}-{self.version}"
+            self.path, f"{self.name}/{self.version}"
         )
         self.component = Component(self.path, self.context)
 
