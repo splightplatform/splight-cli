@@ -163,7 +163,7 @@ class Builder:
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
         image_size = float(image.attrs["Size"] / 10**9)
-        self.hub_component.image_size = self._get_min_component_capacity(image_size)
+        self.hub_component.min_component_capacity = self._get_min_component_capacity(image_size)
         if save:
             self._save_component()
 
