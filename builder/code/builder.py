@@ -20,7 +20,6 @@ class Context(BaseSettings):
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
-    MIN_EXTRA_SPACE: float = 0.25  # 0.25 GB
 
 
 class Builder:
@@ -66,10 +65,6 @@ class Builder:
     @property
     def repository_name(self):
         return self.context.REPOSITORY_NAME
-
-    @property
-    def min_extra_space(self):
-        return self.context.MIN_EXTRA_SPACE
 
     @property
     def repository(self):
@@ -166,7 +161,7 @@ class Builder:
         logger.info("Saving image size")
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
-        image_size = round(image.attrs["Size"] / 10**9 + self.min_extra_space, 2)
+        image_size = float(image.attrs["Size"] / 10**9)
         self.hub_component.image_size = self._get_min_component_capacity(image_size)
         if save:
             self._save_component()
