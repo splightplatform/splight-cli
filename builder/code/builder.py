@@ -6,7 +6,6 @@ from splight_lib import logging
 from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
-from collections import OrderedDict
 import docker
 import base64
 import boto3
@@ -25,7 +24,7 @@ class Context(BaseSettings):
 
 
 class Builder:
-    _min_size_required = [
+    _component_capacity = [
         ("small", 0.5),
         ("medium", 4),
         ("large", 8),
@@ -44,7 +43,7 @@ class Builder:
             self._update_component_build_status(BuildStatus.BUILDING)
             self._build_component()
             self._push_component()
-            self._update_component_image_size(save=False)
+            self._update_min_component_capacity(save=False)
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
             logger.info('Build failed: ', e)
@@ -163,18 +162,18 @@ class Builder:
         if save:
             self._save_component()
 
-    def _update_component_image_size(self, save: bool = True):
+    def _update_min_component_capacity(self, save: bool = True):
         logger.info("Saving image size")
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
         image_size = round(image.attrs["Size"] / 10**9 + self.min_extra_space, 2)
-        self.hub_component.image_size = self._get_min_image_size(image_size)
+        self.hub_component.image_size = self._get_min_component_capacity(image_size)
         if save:
             self._save_component()
 
-    def _get_min_image_size(self, image_size: float) -> str:
-        for size, req in self._min_image_sizes.items():
-            if image_size <= req:
+    def _get_min_component_capacity(self, image_size: float) -> str:
+        for size, cap in self._component_capacity:
+            if image_size <= cap:
                 return size
         return "very_large"
 
