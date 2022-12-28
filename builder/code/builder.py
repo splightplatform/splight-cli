@@ -6,6 +6,7 @@ from splight_lib import logging
 from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
+from collections import OrderedDict
 import docker
 import base64
 import boto3
@@ -20,10 +21,17 @@ class Context(BaseSettings):
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
-    MIN_EXTRA_SPACE: float = 0.5
+    MIN_EXTRA_SPACE: float = 0.25  # 0.25 GB
 
 
 class Builder:
+    _min_size_required = [
+        ("small", 0.5),
+        ("medium", 4),
+        ("large", 8),
+        ("very_large", 16)
+    ]
+
     _docker_client = None
 
     def __init__(self, build_spec: BuildSpec):
@@ -159,9 +167,16 @@ class Builder:
         logger.info("Saving image size")
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
-        self.hub_component.image_size = round(image.attrs["Size"] / 10**9 + self.min_extra_space, 2)
+        image_size = round(image.attrs["Size"] / 10**9 + self.min_extra_space, 2)
+        self.hub_component.image_size = self._get_min_image_size(image_size)
         if save:
             self._save_component()
+
+    def _get_min_image_size(self, image_size: float) -> str:
+        for size, req in self._min_image_sizes.items():
+            if image_size <= req:
+                return size
+        return "very_large"
 
     def _save_component(self):
         logger.info("Saving component")
