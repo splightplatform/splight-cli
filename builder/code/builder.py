@@ -136,6 +136,7 @@ class Builder:
                 },
                 network_mode="host",
                 pull=True,
+                vervose=True
             )
         except BuildError as e:
             logger.error(f"Error building component: {e}")
