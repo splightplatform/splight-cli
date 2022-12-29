@@ -25,7 +25,7 @@ jobs:
         with:
           max_attempts: 2
           timeout_minutes: 10
-          retry_wait_seconds: 60
+          retry_wait_seconds: 600
           command: |
             export VERSION=$(python setup.py --version)
             export BRANCH=${GITHUB_REF##*/}
