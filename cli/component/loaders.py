@@ -47,7 +47,7 @@ class SpecJSONLoader:
     ):
         for param in input_params:
             value = param.get("value")
-            if not value:
+            if value is None:
                 new_value = self._prompt_param(param, prefix=prefix)
                 param["value"] = new_value
 
