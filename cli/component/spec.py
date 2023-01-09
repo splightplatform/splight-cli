@@ -4,6 +4,7 @@ from cli.utils import *
 from cli.constants import *
 from splight_models import (
     Parameter as ModelParameter,
+    InputParameter as ModelInputParameter,
     OutputParameter as ModelOutputParameter,
     CommandParameter as ModelCommandParameter,
     CustomType as ModelCustomType,
@@ -27,13 +28,15 @@ class ChoiceMixin:
         try:
             class_type = VALID_PARAMETER_VALUES[type_]
             [isinstance(c, class_type) for c in v]
-        except Exception as e:
-            raise ValueError(f"choices must be list of type {str(class_type)}")
+        except Exception as exc:
+            raise ValueError(
+                f"choices must be list of type {str(class_type)}"
+            ) from exc
 
         return v
 
 
-class Parameter(ModelParameter, ChoiceMixin):
+class Parameter(ModelInputParameter, ChoiceMixin):
     @validator("value", check_fields=False)
     def validate_value(cls, v, values, field):
         if not set(values.keys()).issuperset({"type", "required", "multiple", "choices"}):
@@ -50,11 +53,11 @@ class Parameter(ModelParameter, ChoiceMixin):
             return v
 
         if values["required"] and v is None:
-            raise ValueError(f"value must be set")
+            raise ValueError("value must be set")
 
         if values["multiple"]:
             if not isinstance(v, list):
-                raise ValueError(f"value must be a list")
+                raise ValueError("value must be a list")
 
         list_v = v if isinstance(v, list) else [v]
 
@@ -62,8 +65,10 @@ class Parameter(ModelParameter, ChoiceMixin):
         try:
             class_type = VALID_PARAMETER_VALUES[type_]
             [isinstance(v_, class_type) for v_ in list_v]
-        except Exception as e:
-            raise ValueError(f"value must be of type {str(class_type)}")
+        except Exception as exc:
+            raise ValueError(
+                f"value must be of type {str(class_type)}"
+            ) from exc
 
         if values["choices"] is not None and not all([v_ in values["choices"] for v_ in list_v]):
             raise ValueError(f"value must be one of {values['choices']}")
@@ -122,7 +127,7 @@ class FieldMixin:
 
 
 class CustomType(ModelCustomType, FieldMixin):
-    fields: List[Parameter]
+    fields: List[ModelParameter]
 
 
 class Output(ModelOutput, FieldMixin):
@@ -140,7 +145,7 @@ class Spec(ModelDeployment):
     def validate_name(cls, name):
         invalid_characters = ["/", "-"]
         if not name[0].isupper():
-            raise ValueError(f"value's first letter must be capitalized")
+            raise ValueError("value's first letter must be capitalized")
         if any(x in name for x in invalid_characters):
             raise Exception(f"name cannot contain any of these characters: {invalid_characters}")
         return name
@@ -149,7 +154,7 @@ class Spec(ModelDeployment):
     def validate_version(cls, version):
         invalid_characters = ["/", "-"]
         if len(version) > 20:
-            raise Exception(f"value must be 20 characters maximum")
+            raise Exception("value must be 20 characters maximum")
 
         if any(x in version for x in invalid_characters):
             raise Exception(f"version cannot contain any of these characters: {invalid_characters}")
