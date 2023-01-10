@@ -42,6 +42,7 @@ class TestPush(SplightCLITest):
             self.output,
             self.commands,
             self.bindings,
+            self.endpoints,
             self.path,
         )
 
@@ -80,6 +81,7 @@ class TestPush(SplightCLITest):
             self.output,
             self.commands,
             self.bindings,
+            self.endpoints,
             self.path,
         )
 
@@ -102,6 +104,7 @@ class TestPush(SplightCLITest):
             "input": json.dumps(self.input),
             "output": json.dumps(self.output),
             "commands": json.dumps(self.commands),
+            "endpoints": json.dumps(self.endpoints),
             "splight_cli_version": SPLIGHT_CLI_VERSION,
         }
 

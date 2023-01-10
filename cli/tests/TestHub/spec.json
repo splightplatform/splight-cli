@@ -55,5 +55,11 @@
         "tag2",
         "tag3"
     ],
-    "bindings": []
+    "bindings": [],
+    "endpoints": [
+        {
+            "name": "proxy",
+            "port": 1080
+        }
+    ]
 }

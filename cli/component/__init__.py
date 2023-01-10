@@ -136,6 +136,7 @@ def run(context: Context, path: str, run_spec: str = None) -> None:
         click.secho("Running component...", fg="green")
         component.run(run_spec)
     except Exception as e:
+        logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")
         sys.exit(1)
 
@@ -148,7 +149,6 @@ def install_requirements(context: Context, path: str) -> None:
         component = Component(path, context)
         click.secho("Installing component requirements...", fg="green")
         component.initialize()
-
     except Exception as e:
         click.secho(f"Error installing component requirements: {str(e)}", fg="red")
         sys.exit(1)

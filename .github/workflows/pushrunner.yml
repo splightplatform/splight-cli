@@ -21,13 +21,17 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
       - name: build and push runner image
-        working-directory: .
-        run: |
-          export VERSION=$(python setup.py --version)
-          export BRANCH=${GITHUB_REF##*/}
-          if [ ${BRANCH} = "master" ]; then export TAG="production"; else export TAG="integration"; fi;
-          VERSION=$VERSION docker-compose -f runner/docker-compose.yml build
-          docker tag splight-runner $AWS_ECR/splight-runner:${TAG}-${VERSION}
-          docker push $AWS_ECR/splight-runner:${TAG}-${VERSION}
+        uses: nick-fields/retry@v2
+        with:
+          max_attempts: 2
+          timeout_minutes: 10
+          retry_wait_seconds: 600
+          command: |
+            export VERSION=$(python setup.py --version)
+            export BRANCH=${GITHUB_REF##*/}
+            if [ ${BRANCH} = "master" ]; then export TAG="production"; else export TAG="integration"; fi;
+            VERSION=$VERSION docker-compose -f runner/docker-compose.yml build
+            docker tag splight-runner $AWS_ECR/splight-runner:${TAG}-${VERSION}
+            docker push $AWS_ECR/splight-runner:${TAG}-${VERSION}
         env:
-          AWS_ECR: ${{secrets.AWS_ECR}}
+          AWS_ECR: ${{ secrets.AWS_ECR }}

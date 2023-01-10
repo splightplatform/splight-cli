@@ -94,6 +94,7 @@ class Component:
         self.output = self.spec["output"]
         self.commands = self.spec.get("commands", [])
         self.bindings = self.spec.get("bindings", [])
+        self.endpoints = self.spec.get("endpoints", [])
 
     def _command_run(self, command: List[str]) -> None:
         command: str = " ".join(command)
@@ -251,6 +252,7 @@ class Component:
             self.output,
             self.commands,
             self.bindings,
+            self.endpoints,
             self.path
         )
 

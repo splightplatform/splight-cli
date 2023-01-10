@@ -69,7 +69,7 @@ class SplightComponentRunner:
                 self._BASE_CMD,
                 "component",
                 "run",
-                f"{self._name}-{self._version}",
+                f"{self._name}/{self._version}",
                 "--run-spec",
                 json.dumps(component_spec),
             ],
