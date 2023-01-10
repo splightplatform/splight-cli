@@ -1,5 +1,7 @@
-import click
+from functools import wraps
 from enum import Enum
+
+import click
 from cli.context.workspace import WorkspaceManager
 from cli.context.framework import FrameworkManager
 
@@ -7,6 +9,7 @@ from cli.context.framework import FrameworkManager
 class PrivacyPolicy(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
+
 
 class Context:
     def __init__(self):
@@ -28,12 +31,17 @@ class Context:
 
 pass_context = click.make_pass_decorator(Context)
 
-from functools import wraps
+
 def needs_credentials(f):
     @wraps(f)
     def wrapper(ctx, *args, **kwargs):
-        if ctx.workspace.settings.SPLIGHT_ACCESS_ID is None or ctx.workspace.settings.SPLIGHT_SECRET_KEY is None:
-            click.secho(f"Please set your Splight credentials. Use \"splightcli configure\"", fg='red')
+        access_id = ctx.workspace.settings.SPLIGHT_ACCESS_ID
+        secret_key = ctx.workspace.settings.SPLIGHT_SECRET_KEY
+        if access_id is None or secret_key is None:
+            click.secho(
+                "Please set your Splight credentials. Use \"splightcli configure\"",
+                fg="red"
+            )
             exit(1)
         return f(ctx, *args, **kwargs)
     return wrapper
