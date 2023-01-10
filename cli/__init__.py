@@ -1,6 +1,7 @@
 import os
 from cli.cli import cli
 from cli.context import *
+from cli.config import config, get_variable, set_variable
 from cli.component import *
 from cli.database import *
 from cli.datalake import *
