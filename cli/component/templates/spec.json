@@ -1,6 +1,7 @@
 {
     "name": "{{component_name}}",
     "version": "{{version}}",
+    "component_id": "{{component_id}}",
     "tags": [],
     "custom_types": [
         {
