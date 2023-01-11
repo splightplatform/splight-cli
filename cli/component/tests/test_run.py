@@ -9,13 +9,11 @@ from cli.tests.test_generic import SplightCLITest
 class TestRun(SplightCLITest):
     def test_run(self):
         self.component = Component(self.path, self.context)
-        run_version = f"{self.name}-{self.version}"
-        component_id = DEFAULT_COMPONENT_ID
-        namespace = DEFAULT_NAMESPACE
         run_spec = {
             "name": self.name,
             "version": self.version,
             "tags": self.tags,
+            "component_id": self.component_id,
             "custom_types": self.custom_types,
             "input": self.input,
             "output": self.output,
