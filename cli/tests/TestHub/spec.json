@@ -2,6 +2,7 @@
     "name": "TestHub",
     "version": "0_1",
     "custom_types": [],
+    "component_id": "ee21534f-b80b-4f84-a84f-53ce3812fa4c", 
     "input": [
         {
             "name": "Int",

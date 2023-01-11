@@ -75,6 +75,7 @@ class SplightCLITest(TestCase):
         self.component_json = get_json_from_file(os.path.join(self.path, SPEC_FILE))
         self.name = self.component_json['name']
         self.version = self.component_json['version']
+        self.component_id = self.component_json["component_id"]
         self.custom_types = self.component_json['custom_types']
         self.input = self.component_json['input']
         self.output = self.component_json['output']
