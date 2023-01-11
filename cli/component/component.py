@@ -1,3 +1,4 @@
+import uuid
 import subprocess
 import importlib
 import sys
@@ -198,12 +199,13 @@ class Component:
             "output": [],
         })
 
-        self.path = os.path.join(self.path, f"{name}-{version}")
-        os.mkdir(self.path)
+        component_path = os.path.join(self.path, f"{name}", f"{version}")
+        os.makedirs(component_path)
 
         for file_name in REQUIRED_FILES:
             template_name = file_name
-            file_path = os.path.join(self.path, file_name)
+            file_path = os.path.join(component_path, file_name)
+            component_id = str(uuid.uuid4())
             if file_name == PICTURE_FILE:
                 self._get_random_picture(file_path)
                 continue
@@ -211,7 +213,7 @@ class Component:
                 template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
-                component_name=name, version=version
+                component_name=name, version=version, component_id=component_id
             )
             with open(file_path, "w+") as f:
                 f.write(file)
