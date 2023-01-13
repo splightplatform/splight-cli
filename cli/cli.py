@@ -4,6 +4,7 @@ import typer
 
 from cli.config import config_app
 from cli.context import Context
+from cli.engine import engine_app
 from cli.version import __version__
 from cli.workspace import workspace_app
 
@@ -15,6 +16,7 @@ app = typer.Typer(
 
 app.add_typer(config_app, name="configure")
 app.add_typer(workspace_app, name="workspace")
+app.add_typer(engine_app, name="engine")
 
 
 def version_callback(version: bool):
