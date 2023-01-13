@@ -1,9 +1,14 @@
 from pathlib import Path
 from typing import Dict, List
 
-from cli.settings import SplightCLISettings, SplightCLIConfig
+from cli.constants import (
+    CONFIG_FILE,
+    DEFAULT_WORKSPACE,
+    DEFAULT_WORKSPACE_NAME,
+    DEFAULT_WORKSPACES,
+)
+from cli.settings import SplightCLIConfig, SplightCLISettings
 from cli.utils.yaml import get_yaml_from_file, save_yaml_to_file
-from cli.constants import CONFIG_FILE, DEFAULT_WORKSPACE, DEFAULT_WORKSPACE_NAME, DEFAULT_WORKSPACES
 
 
 class WorkspaceDeleteError(Exception):
@@ -29,7 +34,7 @@ class WorkspaceManager:
     def __load_config(self):
         config = get_yaml_from_file(self.config_file)
         # Default values
-        config['workspaces'] = config.get('workspaces', DEFAULT_WORKSPACES)
+        config["workspaces"] = config.get("workspaces", DEFAULT_WORKSPACES)
         workspace_name = config.get(
             "current_workspace", DEFAULT_WORKSPACE_NAME
         )
@@ -56,29 +61,29 @@ class WorkspaceManager:
         self._workspaces[self._current_workspace] = new_settings
         save_yaml_to_file(self._config.dict(), self.config_file)
 
-    # def select_workspace(self, value):
-    #     self._settings['current_workspace'] = value
-    #     save_yaml_to_file(self._settings, self.config_file)
-    #
-    # def list_workspaces(self):
-    #     workspaces = self._settings.get('workspaces').keys()
-    #     return [f"{key}*" if key == self._current_workspace else f"{key}" for key in workspaces]
-    #
-    # def delete_workspace(self, workspace_name):
-    #     if workspace_name not in self._settings['workspaces']:
-    #         raise Exception('Not a valid namespace name')
-    #
-    #     if workspace_name == self._current_workspace:
-    #         raise WorkspaceDeleteError(workspace_name)
-    #     del self._settings['workspaces'][workspace_name]
-    #     save_yaml_to_file(self._settings, self.config_file)
-    #
-    # def create_workspace(self, workspace_name):
-    #     if workspace_name in self._settings['workspaces']:
-    #         raise Exception('Name already exists')
-    #     self._settings['workspaces'].update({
-    #         workspace_name: DEFAULT_WORKSPACE
-    #     })
-    #     self._settings['current_workspace'] = workspace_name
-    #     self._current_workspace = workspace_name
-    #     save_yaml_to_file(self._settings, self.config_file)
+    def select_workspace(self, workspace_name: str):
+        self._config.current_workspace = workspace_name
+        save_yaml_to_file(self._config.dict(), self.config_file)
+
+    def list_workspaces(self) -> List[str]:
+        return [
+            f"{key}*" if key == self._current_workspace else f"{key}"
+            for key in self._config.workspaces.keys()
+        ]
+
+    def delete_workspace(self, workspace_name: str):
+        if workspace_name not in self._config.workspaces:
+            raise Exception("Not a valid namespace name")
+
+        if workspace_name == self._current_workspace:
+            raise WorkspaceDeleteError(workspace_name)
+        del self._config.workspaces[workspace_name]
+        save_yaml_to_file(self._config.dict(), self.config_file)
+
+    def create_workspace(self, workspace_name: str):
+        if workspace_name in self._config.workspaces:
+            raise Exception("Name already exists")
+        self._config.workspaces.update({workspace_name: DEFAULT_WORKSPACE})
+        self._config.current_workspace = workspace_name
+        self._current_workspace = workspace_name
+        save_yaml_to_file(self._config.dict(), self.config_file)
