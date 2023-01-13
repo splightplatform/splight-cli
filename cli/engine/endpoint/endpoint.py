@@ -1,56 +1,29 @@
-from typing import Dict, List, Optional, Type
+from typing import List, Type
 
-import requests
-from furl import furl
+from splight_abstract import AbstractDatabaseClient
 from splight_models import SplightBaseModel
+
+SplightModel = Type[SplightBaseModel]
 
 
 class APIEndpoint:
     def __init__(
         self,
-        url: str,
-        path: str,
-        model: Type[SplightBaseModel],
-        headers: Optional[Dict[str, str]] = None,
+        client: AbstractDatabaseClient,
+        model: SplightModel,
     ):
-        self._base_url = furl(url)
-        self._path = path if path.endswith("/") else f"{path}/"
-        self._session = requests.Session()
+        self._client = client
         self._model = model
-        if headers:
-            self._session.headers.update(headers)
 
-    def get(self, instance_id: str) -> Type[SplightBaseModel]:
-        url = self._base_url / self._path / f"{instance_id}/"
-        response = self._session.get(url)
-        response.raise_for_status()
-        return self._model.parse_obj(response.json())
+    def get(self, instance_id: str) -> SplightModel:
+        instance = self._client.get(self._model, id=instance_id, first=True)
+        return instance
 
-    def list(self) -> List:
-        url = self._base_url / self._path
-        instances = []
-        for new_instances in self._list(url):
-            instances.extend(
-                [self._model.parse_obj(item) for item in new_instances]
-            )
-        return instances
+    def list(self, skip: int = 0, limit: int = -1) -> List[SplightModel]:
+        return self._client.get(self._model, skip_=skip, limit_=limit)
 
     def create(self, data):
         return
 
     def delete(self, instance_id: str):
         return instance_id
-
-    def _list(self, url: furl):
-        page_url = str(url)
-
-        while page_url:
-            response = self._session.get(page_url)
-            response.raise_for_status()
-            data = response.json()
-            if data["next"]:
-                page_url = data["next"]
-            else:
-                page_url = None
-
-            yield data["results"]
