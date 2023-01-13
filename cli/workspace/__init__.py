@@ -1,14 +1,6 @@
-# import click
-# import logging
 import typer
 
 from cli.utils.pprint import Printer
-
-# from cli.cli import workspace as workspace_app
-# from cli.utils import *
-# from cli.context import Context, pass_context
-
-# logger = logging.getLogger()
 
 workspace_app = typer.Typer(
     name="Splight CLI Workspace",
