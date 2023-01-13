@@ -2,10 +2,10 @@ from typing import Optional
 
 import typer
 
-from cli.version import __version__
-from cli.context import Context
 from cli.config import config_app
-
+from cli.context import Context
+from cli.version import __version__
+from cli.workspace import workspace_app
 
 app = typer.Typer(
     name="Splight Command Line",
@@ -14,6 +14,7 @@ app = typer.Typer(
 )
 
 app.add_typer(config_app, name="configure")
+app.add_typer(workspace_app, name="workspace")
 
 
 def version_callback(version: bool):
@@ -26,12 +27,8 @@ def version_callback(version: bool):
 def main(
     ctx: typer.Context,
     version: Optional[bool] = typer.Option(
-        None,
-        "--version",
-        "-v",
-        callback=version_callback,
-        is_eager=True
-    )
+        None, "--version", "-v", callback=version_callback, is_eager=True
+    ),
 ):
     ctx.obj = Context()
 
