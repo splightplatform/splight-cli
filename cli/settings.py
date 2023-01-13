@@ -1,7 +1,6 @@
-import uuid
-from typing import Optional
+from typing import Dict
 
-from pydantic import BaseSettings, Extra, Field
+from pydantic import BaseSettings, Extra, BaseModel
 from cli.version import __version__
 
 
@@ -22,6 +21,11 @@ class SplightCLISettings(BaseSettings):
 
     class Config:
         extra = Extra.ignore
+
+
+class SplightCLIConfig(BaseModel):
+    current_workspace: str
+    workspaces: Dict[str, SplightCLISettings]
 
 
 ALL_CONFIG_VARS = SplightCLISettings.__fields__
