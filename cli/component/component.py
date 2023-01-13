@@ -149,7 +149,7 @@ class Component:
         except Exception as e:
             raise Exception(
                 f"Failed importing component {component_directory_name}: {str(e)}"
-            )
+            ) from e
 
     def _reset_input(self):
         for param in self.input:
