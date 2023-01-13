@@ -15,14 +15,20 @@ PATH = "asset/"
 
 
 @asset_app.command()
-def list(ctx: typer.Context):
+def list(
+    ctx: typer.Context,
+    skip: int = typer.Option(
+        0, "--skip", "-s", help="Number of element to skip"
+    ),
+    limit: int = typer.Option(
+        -1, "--limit", "-l", help="Limit the number of listed elements"
+    ),
+):
     endpoint = APIEndpoint(
-        url=ctx.obj.workspace.settings.SPLIGHT_PLATFORM_API_HOST,
-        path=PATH,
+        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=Asset,
-        headers=extract_headers(ctx.obj.workspace.settings),
     )
-    instances = endpoint.list()
+    instances = endpoint.list(limit=limit)
     table = tabulate(
         [[item.id, item.name] for item in instances],
         headers=["id", "name"],
@@ -38,10 +44,8 @@ def get(
     instance_id: str = typer.Argument(..., help="The Asset's ID"),
 ):
     endpoint = APIEndpoint(
-        url=ctx.obj.workspace.settings.SPLIGHT_PLATFORM_API_HOST,
-        path=PATH,
+        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=Asset,
-        headers=extract_headers(ctx.obj.workspace.settings),
     )
     instance = endpoint.get(instance_id)
     print(tabulate([[key, value] for key, value in instance.dict().items()]))
