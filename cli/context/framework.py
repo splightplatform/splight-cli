@@ -1,7 +1,7 @@
-from typing import TypeVar, Callable
+from typing import Callable, TypeVar
+
 from splight_lib import logging
 from splight_lib.settings import setup
-
 
 logger = logging.getLogger()
 RetType = TypeVar("RetType")
@@ -11,7 +11,7 @@ DecoratedFunc = Callable[..., RetType]
 
 class MissingConfiguration(Exception):
     pass
-    
+
 
 class FrameworkManager:
     @property
@@ -19,7 +19,11 @@ class FrameworkManager:
         return setup
 
     def configure(self, environment):
-        empty_keys = [key for key, value in environment.items() if value is None]
+        empty_keys = [
+            key for key, value in environment.items() if value is None
+        ]
         if empty_keys:
-            raise MissingConfiguration(f"Please run `splightcli configure` and set keys {empty_keys}")
+            raise MissingConfiguration(
+                f"Please run `splightcli configure` and set keys {empty_keys}"
+            )
         setup.configure(environment)
