@@ -1,59 +1,79 @@
-import click
-import logging
+# import click
+# import logging
+import typer
 
 from cli.utils.pprint import Printer
-from cli.cli import workspace as workspace_cli
-from cli.utils import *
-from cli.context import Context, pass_context
+
+# from cli.cli import workspace as workspace_app
+# from cli.utils import *
+# from cli.context import Context, pass_context
+
+# logger = logging.getLogger()
+
+workspace_app = typer.Typer(
+    name="Splight CLI Workspace",
+    add_completion=True,
+    rich_markup_mode="rich",
+)
 
 
-logger = logging.getLogger()
-
-@workspace_cli.command()
-@pass_context
-def list(context: Context) -> None:
+@workspace_app.command()
+def list(ctx: typer.Context) -> None:
     try:
-        results = context.workspace.list_workspaces()
-        results_colors = ['green' if '*' in item else Printer.DEFAULT_COLOR for item in results]
-        Printer.print_list(items=results, items_colors=results_colors, header="WORKSPACES")
+        results = ctx.obj.workspace.list_workspaces()
+        results_colors = [
+            "green" if "*" in item else Printer.DEFAULT_COLOR
+            for item in results
+        ]
+        Printer.print_list(
+            items=results, items_colors=results_colors, header="WORKSPACES"
+        )
     except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
+        typer.echo(f"Error configuring Splight Hub: {str(e)}", color="red")
         return
 
 
-@workspace_cli.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def create(context: Context, name: str) -> None:
+@workspace_app.command()
+def create(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace's name"),
+) -> None:
     try:
-        context.workspace.create_workspace(name)
-        results = context.workspace.list_workspaces()
-        results_colors = ['green' if '*' in item else Printer.DEFAULT_COLOR for item in results]
-        Printer.print_list(items=results, items_colors=results_colors, header="WORKSPACES")
+        ctx.obj.workspace.create_workspace(name)
+        results = ctx.obj.workspace.list_workspaces()
+        results_colors = [
+            "green" if "*" in item else Printer.DEFAULT_COLOR
+            for item in results
+        ]
+        Printer.print_list(
+            items=results, items_colors=results_colors, header="WORKSPACES"
+        )
     except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
+        typer.echo(f"Error configuring Splight Hub: {str(e)}", color="red")
         return
 
 
-@workspace_cli.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def delete(context: Context, name: str) -> None:
+@workspace_app.command()
+def delete(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace's name"),
+) -> None:
     try:
-        context.workspace.delete_workspace(name)
-        click.secho(f"Deleted workspace {name}", fg="green")
+        ctx.obj.workspace.delete_workspace(name)
+        typer.echo(f"Deleted workspace {name}", color="green")
     except Exception as e:
-        click.secho(e, fg="red")
+        typer.echo(e, color="red")
         return
 
 
-@workspace_cli.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def select(context: Context, name: str) -> None:
+@workspace_app.command()
+def select(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace's name"),
+) -> None:
     try:
-        context.workspace.select_workspace(name)
-        click.secho(f"Current workspace: {name}", fg="green")
+        ctx.obj.workspace.select_workspace(name)
+        typer.echo(f"Current workspace: {name}", color="green")
     except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
+        typer.echo(f"Error configuring Splight Hub: {str(e)}", color="red")
         return
