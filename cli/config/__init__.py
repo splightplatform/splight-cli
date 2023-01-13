@@ -1,23 +1,28 @@
 import sys
 import json
-from typing import Any
 
-import click
+import typer
 
-from cli.cli import configure as cli_config
-from cli.context import pass_context
-from cli.context import Context
 from cli.settings import SplightCLISettings, CONFIG_VARS
 
-
-@cli_config.command()
-@click.option(
-    "-j",
-    "--from-json",
-    help="Configuration by json instaed of prompt."
+config_app = typer.Typer(
+    name="Splight CLI Configure",
+    add_completion=True,
 )
-@pass_context
-def config(ctx: Context, from_json: str = False) -> None:
+
+
+@config_app.callback(invoke_without_command=True)
+def config(
+    ctx: typer.Context,
+    from_json: str = typer.Option(
+        None,
+        "--from-json",
+        help="Configuration by json instaed of prompt")
+):
+    if ctx.invoked_subcommand:
+        return
+
+    cli_context = ctx.obj
     try:
         if from_json:
             from_json = json.loads(from_json)
@@ -25,28 +30,29 @@ def config(ctx: Context, from_json: str = False) -> None:
         else:
             new_settings_data = {}
             for config_var in CONFIG_VARS:
-                default = getattr(ctx.workspace.settings, config_var, None)
-                value = click.prompt(
-                    click.style(config_var, fg='yellow'),
+                default = getattr(
+                    cli_context.workspace.settings, config_var, None
+                )
+                value = typer.prompt(
+                    typer.style(config_var, fg='yellow'),
                     type=str,
                     default=default,
                     show_default=True
                 )
                 new_settings_data.update({config_var: value})
             new_settings = SplightCLISettings.parse_obj(new_settings_data)
-        ctx.workspace.update_workspace(new_settings)
-        click.secho("Configuration saved successfully", fg="green")
+        cli_context.workspace.update_workspace(new_settings)
+        typer.echo("Configuration saved successfully", color="green")
     except Exception as e:
-        click.secho(f"Error configuring Splight CLI: {str(e)}", fg="red")
+        typer.echo(f"Error configuring Splight CLI: {str(e)}", color="red")
         sys.exit(1)
 
 
-@cli_config.command(name="get")
-@click.argument(
-    "var_name"
-)
-@pass_context
-def get_variable(ctx: Context, var_name: str) -> None:
+@config_app.command(name="get")
+def get_variable(
+    ctx: typer.Context,
+    var_name: str = typer.Argument(..., help="The variable name to get value")
+):
     """Prints the value of the requested variable.
 
     Parameters
@@ -57,22 +63,19 @@ def get_variable(ctx: Context, var_name: str) -> None:
         The variable name to get the value
     """
     variable_name = var_name.upper()
-    settings = ctx.workspace.settings
+    settings = ctx.obj.workspace.settings
 
     if hasattr(settings, variable_name):
         value = getattr(settings, variable_name)
-        click.secho(value)
+        typer.echo(value)
 
 
-@cli_config.command(name="set")
-@click.argument(
-    "var_name"
-)
-@click.argument(
-    "value"
-)
-@pass_context
-def set_variable(ctx: Context, var_name: str, value: Any) -> None:
+@config_app.command(name="set")
+def set_variable(
+    ctx: typer.Context,
+    var_name: str = typer.Argument(..., help="The variable name to update"),
+    value: str = typer.Argument(..., help="The new value")
+):
     """Sets a value of a variable in the current workspace.
 
     Parameters
@@ -85,8 +88,8 @@ def set_variable(ctx: Context, var_name: str, value: Any) -> None:
         The new value
     """
     variable_name = var_name.upper()
-    settings = ctx.workspace.settings
+    settings = ctx.obj.workspace.settings
 
     if hasattr(settings, variable_name):
         setattr(settings, variable_name, value)
-        ctx.workspace.update_workspace(settings)
+        ctx.obj.workspace.update_workspace(settings)
