@@ -1,9 +1,14 @@
 import os
 from pathlib import Path
 from pydantic import AnyUrl
+from rich.style import Style
 
 from cli.settings import SplightCLISettings
 
+
+error_style = Style(color="red", bold=True)
+success_style = Style(color="green")
+warning_style = Style(color="yellow")
 
 SPLIGHT_PATH = os.path.join(os.path.expanduser("~"), '.splight')
 BASE_DIR = Path(__file__).resolve().parent.parent
