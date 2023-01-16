@@ -2,6 +2,7 @@ from typing import Optional
 
 import typer
 
+from cli.component import component_app
 from cli.config import config_app
 from cli.context import Context
 from cli.engine import engine_app
@@ -12,11 +13,13 @@ app = typer.Typer(
     name="Splight Command Line",
     add_completion=True,
     rich_markup_mode="rich",
+    no_args_is_help=True,
 )
 
 app.add_typer(config_app, name="configure")
 app.add_typer(workspace_app, name="workspace")
 app.add_typer(engine_app, name="engine")
+app.add_typer(component_app, name="component")
 
 
 def version_callback(version: bool):
