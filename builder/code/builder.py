@@ -1,25 +1,58 @@
-from private_splight_lib.settings import setup
 from private_splight_models import BuildSpec
-from splight_models import HubComponentVersion
+from splight_models import HubComponent
 from splight_models.constants import BuildStatus
 from splight_lib import logging
+from splight_lib.webhook import Webhook
 from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
+import requests
 import docker
 import base64
 import boto3
 import typer
-
+import json
 
 app = typer.Typer(name="Splight Component Builder")
 logger = logging.getLogger(__name__)
 
 
 class Context(BaseSettings):
+    SPLIGHT_API_URL: str
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
+
+
+class ComponentManager:
+    def __init__(self, url):
+        self.url = "/".join([url, "hub", "component", "webhook"])
+
+    def _compute_signature(self, data: dict) -> str:
+        return Webhook.get_signature(json.dumps(data).encode("ascii"))
+
+    def get(self, **kwargs) -> HubComponent:
+        request = requests.Request("GET", self.url, params=kwargs)
+        prepped = request.prepare()
+        prepped.headers['Splight-Signature'] = self._compute_signature(kwargs)
+        with requests.Session() as session:
+            response = session.send(prepped)
+        if response.status_code != 200:
+            raise Exception(f"Error getting component: {response.status_code} - {response.content}")
+        logger.info(f"{response.status_code} - {response.content}")
+        return HubComponent(**response.json()["results"][0])
+
+    def update(self, component: HubComponent):
+        url = f"{self.url}/{component.id}/"
+        request = requests.Request("PUT", url, json=component.dict())
+        prepped = request.prepare()
+        prepped.headers['Splight-Signature'] = self._compute_signature(json.loads(prepped.body))
+        with requests.Session() as session:
+            response = session.send(prepped)
+        if response.status_code != 200:
+            raise Exception(f"Error updating component: {response.status_code} - {response.content}")
+
+        logger.info(f"{response.status_code} - {response.content}")
 
 
 class Builder:
@@ -48,12 +81,6 @@ class Builder:
             logger.info('Build failed: ', e)
             self._update_component_build_status(BuildStatus.FAILED)
 
-    def delete_credentials(self):
-        logger.info("Deleting credentials")
-        AuthClient = setup.AUTH_CLIENT
-        auth_client = AuthClient(headers=self.credentials)
-        auth_client.deployment.destroy(self.build_spec.access_id)
-
     @property
     def registry(self):
         return self.context.REGISTRY
@@ -69,13 +96,6 @@ class Builder:
     @property
     def repository(self):
         return f"{self.registry}/{self.repository_name}"
-
-    @property
-    def credentials(self):
-        headers = {
-            "Authorization": f"Splight {self.build_spec.access_id} {self.build_spec.secret_key}"
-        }
-        return headers
 
     @property
     def runner_image(self):
@@ -95,10 +115,9 @@ class Builder:
         return base64.b64decode(token["authorizationData"][0]["authorizationToken"]).decode().split(":")[1]
 
     @cached_property
-    def hub_client(self):
-        logger.info("Creating hub client")
-        HubClient = setup.HUB_CLIENT
-        return HubClient(headers=self.credentials)
+    def component_manager(self):
+        logger.info("Creating commponent manager")
+        return ComponentManager(self.context.SPLIGHT_API_URL)
 
     @property
     def docker_client(self):
@@ -117,11 +136,9 @@ class Builder:
     @cached_property
     def hub_component(self):
         logger.info("Getting hub component")
-        return self.hub_client.mine.get(
-            HubComponentVersion,
+        return self.component_manager.get(
             name=self.build_spec.name,
             version=self.build_spec.version,
-            first=True
         )
 
     def _build_component(self):
@@ -152,7 +169,6 @@ class Builder:
             raise e
 
     def _update_component_build_status(self, build_status: BuildStatus, save: bool = True):
-        # TODO: Update this to use a webhook
         logger.info(f"Updating component build status to {build_status}")
         self.hub_component.build_status = build_status
         if save:
@@ -176,10 +192,8 @@ class Builder:
     def _save_component(self):
         logger.info("Saving component")
         try:
-            self.hub_client.mine.update(
-                HubComponentVersion,
-                id=self.hub_component.id,
-                data=self.hub_component.dict()
+            self.component_manager.update(
+                component=self.hub_component
             )
         except Exception as e:
             logger.error(f"Error saving component: {e}")
@@ -194,7 +208,6 @@ def main(
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
-    builder.delete_credentials()
 
 
 if __name__ == "__main__":
