@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Context(BaseSettings):
-    SPLIGHT_API_URL: str
+    SPLIGHT_API_HOST: str
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
@@ -117,7 +117,7 @@ class Builder:
     @cached_property
     def component_manager(self):
         logger.info("Creating commponent manager")
-        return ComponentManager(self.context.SPLIGHT_API_URL)
+        return ComponentManager(self.context.SPLIGHT_API_HOST)
 
     @property
     def docker_client(self):
