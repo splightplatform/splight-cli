@@ -1,4 +1,3 @@
-import os
 from setuptools import setup, find_packages
 from version import __version__
 
