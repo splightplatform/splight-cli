@@ -42,13 +42,6 @@ def deployment(ctx):
 
 @cli.group()
 @pass_context
-@needs_credentials
-def storage(ctx):
-    ctx.obj = Context()
-
-
-@cli.group()
-@pass_context
 def workspace(ctx):
     ctx.obj = Context()
 

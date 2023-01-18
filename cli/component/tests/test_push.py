@@ -9,7 +9,6 @@ from cli.component.component import Component, ComponentAlreadyExistsException
 from cli.component.handler import ComponentHandler
 from cli.constants import COMPRESSION_TYPE, README_FILE
 from cli.tests.test_generic import SplightCLITest
-from cli.settings import SPLIGHT_CLI_VERSION
 
 
 class TestPush(SplightCLITest):
@@ -105,7 +104,7 @@ class TestPush(SplightCLITest):
             "output": json.dumps(self.output),
             "commands": json.dumps(self.commands),
             "endpoints": json.dumps(self.endpoints),
-            "splight_cli_version": SPLIGHT_CLI_VERSION,
+            "splight_cli_version": '1.2.0',
         }
 
         response = requests.Response()

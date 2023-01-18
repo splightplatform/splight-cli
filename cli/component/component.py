@@ -11,22 +11,19 @@ from cli.context import PrivacyPolicy
 from splight_lib.component import AbstractComponent
 from splight_lib.execution import Thread
 from splight_lib import logging
-
+from cli.version import __version__
 from cli.constants import (
     COMPONENT_FILE,
     INIT_FILE,
     MAIN_CLASS_NAME,
-    PICTURE_FILE,
     REQUIRED_FILES,
-    SPEC_FILE,
-    VARS_FILE,
+    SPEC_FILE
 )
 from cli.utils import (
-    api_get,
     get_template,
     validate_path_isdir,
 )
-from cli.component.handler import ComponentHandler, UserHandler
+from cli.component.handler import ComponentHandler
 from cli.component.spec import Spec
 from cli.component.loaders import SpecJSONLoader, SpecArgumentLoader
 
@@ -43,7 +40,6 @@ class Component:
 
     def __init__(self, path, context):
         self.path = validate_path_isdir(os.path.abspath(path))
-        self.vars_file = os.path.join(self.path, VARS_FILE)
         self.spec_file = os.path.join(self.path, SPEC_FILE)
         self.context = context
 
@@ -96,6 +92,7 @@ class Component:
         self.commands = self.spec.get("commands", [])
         self.bindings = self.spec.get("bindings", [])
         self.endpoints = self.spec.get("endpoints", [])
+        self.splight_cli_version = self.spec["splight_cli_version"]
 
     def _command_run(self, command: List[str]) -> None:
         command: str = " ".join(command)
@@ -118,17 +115,6 @@ class Component:
                     continue
                 lines.append(line.split(" "))
         return lines
-
-    def _get_random_picture(self, path):
-        # TODO REMOVE THIS.. MOVE TO HUBCLIENT IMPLEMENTATION
-        user_handler = UserHandler(self.context)
-        base_url = self.context.workspace.settings.SPLIGHT_PLATFORM_API_HOST
-        file_data = api_get(
-            f"{base_url}/hub/random_picture/",
-            headers=user_handler.authorization_header,
-        )
-        with open(path, "wb+") as f:
-            f.write(file_data.content)
 
     def _import_component(self):
         component_directory_name = self.path.split(os.sep)[-1]
@@ -194,6 +180,7 @@ class Component:
         Spec.verify({
             "name": name,
             "version": version,
+            "splight_cli_version": __version__,
             "custom_types": [],
             "input": [],
             "output": [],
@@ -206,14 +193,14 @@ class Component:
             template_name = file_name
             file_path = os.path.join(component_path, file_name)
             component_id = str(uuid.uuid4())
-            if file_name == PICTURE_FILE:
-                self._get_random_picture(file_path)
-                continue
             if file_name == COMPONENT_FILE:
                 template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
-                component_name=name, version=version, component_id=component_id
+                component_name=name,
+                version=version,
+                component_id=component_id,
+                splight_cli_version=__version__
             )
             with open(file_path, "w+") as f:
                 f.write(file)
@@ -255,6 +242,7 @@ class Component:
             self.commands,
             self.bindings,
             self.endpoints,
+            self.splight_cli_version,
             self.path
         )
 

@@ -59,11 +59,10 @@ class ComponentHandler:
                          commands: List[Dict],
                          bindings: List[Dict],
                          endpoints: List[Dict],
+                         splight_cli_version: str,
                          local_path):
         versioned_name = f"{name}-{version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
-        if os.path.exists(os.path.join(local_path, VARS_FILE)):
-            logger.warning(f"Remove {VARS_FILE} file before pushing")
         with Loader("Pushing component to Splight Hub..."):
             try:
                 with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
@@ -80,16 +79,13 @@ class ComponentHandler:
                     'commands': json.dumps(commands),
                     'bindings': json.dumps(bindings),
                     'endpoints': json.dumps(endpoints),
-                    'splight_cli_version': SPLIGHT_CLI_VERSION,
+                    'splight_cli_version': splight_cli_version,
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(
                         os.path.join(local_path, README_FILE), 'rb'
-                    ),
-                    'picture': open(
-                        os.path.join(local_path, PICTURE_FILE), 'rb'
-                    ),
+                    )
                 }
                 response = api_post(
                     f"{self.user_handler.host}/hub/upload/",

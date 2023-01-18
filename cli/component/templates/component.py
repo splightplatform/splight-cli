@@ -38,7 +38,7 @@ class Main(AbstractComponent):
         chosen_number = random.randint(min, max)
         logger.info(f"Random number: {chosen_number}")
         out = self.output.Value(value=chosen_number)
-        self.datalake_client.save(instances=[out], collection=self.collection_name)
+        self.datalake_client.save(instances=[out])
 
     def _list_assets(self):
         logger.info(f"List of myassets: List[MyAsset] {self.my_assets}")

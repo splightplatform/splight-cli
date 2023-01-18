@@ -7,8 +7,7 @@ from cli.tests.test_generic import SplightCLITest
 
 
 class TestCreate(SplightCLITest):
-    @patch.object(Component, "_get_random_picture")
-    def test_create(self, mock_requests):
+    def test_create(self):
         self.path = os.path.join(os.path.dirname(__file__), "test")
         if os.path.exists(self.path):
             shutil.rmtree(self.path)

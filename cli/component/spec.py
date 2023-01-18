@@ -1,4 +1,4 @@
-from pydantic import validator
+from pydantic import validator, Field
 from typing import List, Dict, Optional
 from cli.utils import *
 from cli.constants import *
@@ -135,6 +135,7 @@ class Output(ModelOutput, FieldMixin):
 
 
 class Spec(ModelDeployment):
+    splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
     type: Optional[str] = None
     tags: List[str] = []
     custom_types: List[CustomType] = []
