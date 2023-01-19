@@ -160,7 +160,7 @@ class Spec(ModelDeployment):
             if tag in tag_names:
                 raise Exception(f"Tag name {tag} is not unique")
             tag_names.add(tag)
-        return tag_names
+        return tags
 
     @validator("custom_types")
     def validate_custom_types(cls, custom_types):

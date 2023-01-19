@@ -44,16 +44,17 @@ class TestPush(SplightCLITest):
             "Authorization": f"Splight {self.context.workspace.settings.SPLIGHT_ACCESS_ID} {self.context.workspace.settings.SPLIGHT_SECRET_KEY}"
         }
         data = {
-            "name": self.name,
-            "version": self.version,
-            "splight_cli_version": self.splight_cli_version,
-            "privacy_policy": self.privacy_policy,
-            "tags": self.tags,
-            "custom_types": json.dumps(self.custom_types),
-            "input": json.dumps(self.input),
-            "output": json.dumps(self.output),
-            "commands": json.dumps(self.commands),
-            "endpoints": json.dumps(self.endpoints),
+            'name': self.spec.name,
+            'version': self.spec.version,
+            'splight_cli_version': self.spec.splight_cli_version,
+            'privacy_policy': self.spec.privacy_policy,
+            'tags': self.spec.tags,
+            'custom_types': json.dumps([x.dict() for x in self.spec.custom_types]),
+            'input': json.dumps([x.dict() for x in self.spec.input]),
+            'output': json.dumps([x.dict() for x in self.spec.output]),
+            'commands': json.dumps([x.dict() for x in self.spec.commands]),
+            'bindings': json.dumps([x.dict() for x in self.spec.bindings]),
+            'endpoints': json.dumps([x.dict() for x in self.spec.endpoints]),
         }
 
         response = requests.Response()
@@ -80,8 +81,8 @@ class TestPush(SplightCLITest):
                     os.path.join(self.path, README_FILE),
                 )
                 self.assertEqual(
-                    kwargs["data"], {**kwargs["data"], **data}
+                    kwargs["headers"], {**kwargs["headers"], **headers}
                 )
                 self.assertEqual(
-                    kwargs["headers"], {**kwargs["headers"], **headers}
+                    kwargs["data"], data
                 )
