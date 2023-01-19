@@ -1,5 +1,6 @@
+from enum import Enum
 from pydantic import validator, Field
-from typing import List, Dict, Optional
+from typing import List, Dict
 from cli.utils import *
 from cli.constants import *
 from splight_models import (
@@ -9,7 +10,8 @@ from splight_models import (
     CommandParameter as ModelCommandParameter,
     CustomType as ModelCustomType,
     Output as ModelOutput,
-    Deployment as ModelDeployment
+    Deployment as ModelDeployment,
+    Endpoint as ModelEndpoint
 )
 
 
@@ -51,14 +53,15 @@ class Parameter(ModelInputParameter, ChoiceMixin):
         # UUIDs and Date must be None
         if VALID_PARAMETER_VALUES[type_] is None:
             return v
+        
+        # if values["required"] and v is None:
+        #     raise ValueError("value must be set")
 
-        if values["required"] and v is None:
-            raise ValueError("value must be set")
+        # if values["multiple"]:
+        #     if not isinstance(v, list):
+        #         raise ValueError("value must be a list")
 
-        if values["multiple"]:
-            if not isinstance(v, list):
-                raise ValueError("value must be a list")
-
+        # Make all parameter values a list
         list_v = v if isinstance(v, list) else [v]
 
         # value type match type field
@@ -92,28 +95,6 @@ class CommandParameter(ModelCommandParameter, ChoiceMixin):
         return type
 
 
-def _check_parameter_depends_on(parameters: List[Parameter]):
-    parameter_map: Dict[str, Parameter] = {p.name: p for p in parameters}
-    for parameter in parameters:
-        if not parameter.depends_on:
-            continue
-
-        if parameter.depends_on not in parameter_map:
-            raise ValueError(f"depends_on must be one of {parameter_map.keys()}")
-
-        depend_parameter = parameter_map[parameter.depends_on]
-
-        if (parameter.type, depend_parameter.type) not in VALID_DEPENDS_ON:
-            raise ValueError(f"incompatible dependance: type {parameter.type} can not"
-                             f"depend on type {depend_parameter.type}")
-
-
-def _check_unique_names(parameters: List[Parameter], type: str):
-    parameters_names = [p.name for p in parameters]
-    if len(parameters) != len(set(parameters_names)):
-        raise ValueError(f"{type} must have unique names")
-
-
 class FieldMixin:
     @validator("fields")
     def validate_fields(cls, fields):
@@ -134,13 +115,24 @@ class Output(ModelOutput, FieldMixin):
     fields: List[OutputParameter]
 
 
+class Endpoint(ModelEndpoint):
+    name: str
+    port: int
+
+
+class PrivacyPolicy(str, Enum):
+    PUBLIC = "public"
+    PRIVATE = "private"
+
+
 class Spec(ModelDeployment):
     splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
-    type: Optional[str] = None
+    privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []
     custom_types: List[CustomType] = []
-    input: List[Parameter]
-    output: List[Output]
+    input: List[Parameter] = []
+    output: List[Output] = []
+    endpoints: List[Endpoint] = []
 
     @validator("name", check_fields=False)
     def validate_name(cls, name):
@@ -206,13 +198,35 @@ class Spec(ModelDeployment):
 
         # depends on
         _check_parameter_depends_on(v)
-
         return v
 
     @validator("output")
     def validate_output(cls, v, values, field):
         _check_unique_names(v, "output parameters")
+        return v
 
     @classmethod
     def verify(cls, dict: dict):
         cls(**dict)
+
+
+def _check_parameter_depends_on(parameters: List[Parameter]):
+    parameter_map: Dict[str, Parameter] = {p.name: p for p in parameters}
+    for parameter in parameters:
+        if not parameter.depends_on:
+            continue
+
+        if parameter.depends_on not in parameter_map:
+            raise ValueError(f"depends_on must be one of {parameter_map.keys()}")
+
+        depend_parameter = parameter_map[parameter.depends_on]
+
+        if (parameter.type, depend_parameter.type) not in VALID_DEPENDS_ON:
+            raise ValueError(f"incompatible dependance: type {parameter.type} can not"
+                             f"depend on type {depend_parameter.type}")
+
+
+def _check_unique_names(parameters: List[Parameter], type: str):
+    parameters_names = [p.name for p in parameters]
+    if len(parameters) != len(set(parameters_names)):
+        raise ValueError(f"{type} must have unique names")

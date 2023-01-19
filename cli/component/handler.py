@@ -10,7 +10,6 @@ from cli.constants import *
 from cli.utils.loader import Loader
 from cli.utils.api_requests import *
 from splight_lib import logging
-from cli.settings import SPLIGHT_CLI_VERSION
 
 logger = logging.getLogger()
 

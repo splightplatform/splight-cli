@@ -1,15 +1,7 @@
-from functools import wraps
-from enum import Enum
-
 import click
+from functools import wraps
 from cli.context.workspace import WorkspaceManager
 from cli.context.framework import FrameworkManager
-
-
-class PrivacyPolicy(str, Enum):
-    PUBLIC = "public"
-    PRIVATE = "private"
-
 
 class Context:
     def __init__(self):
