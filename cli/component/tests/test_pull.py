@@ -18,16 +18,14 @@ class TestPull(SplightCLITest):
         self.extracted_component_path = os.path.join(
             self.path, f"{self.name}/{self.version}"
         )
-        self.component = Component(self.path, self.context)
+        self.component = Component(self.context)
 
     def test_pull(self):
         with patch.object(
             ComponentHandler, "download_component"
         ) as downloader:
             self.component.pull(self.name, self.version)
-            downloader.assert_called_with(
-                self.name, self.version, self.path
-            )
+            downloader.assert_called_with(self.name, self.version)
 
     def test_pull_already_exists_in_local(self):
         already_component = os.path.join(

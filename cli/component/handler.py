@@ -1,16 +1,15 @@
 # THIS CLASS SHOULD NOT EXISTS
 # TODO MOVE THIS TO HUBCLIENT REMOTE_LIB IMPLEMENTATION
-import json
 import os
 import py7zr
 import shutil
-from typing import List, Dict, Optional
+from typing import Dict, Optional
 from functools import cached_property
 from cli.constants import *
 from cli.utils.loader import Loader
 from cli.utils.api_requests import *
+from cli.component.spec import Spec
 from splight_lib import logging
-from cli.settings import SPLIGHT_CLI_VERSION
 
 logger = logging.getLogger()
 
@@ -48,48 +47,32 @@ class ComponentHandler:
         self.context = context
         self.user_handler = UserHandler(context)
 
-    def upload_component(self,
-                         privacy_policy: str,
-                         name: str,
-                         version: str,
-                         tags: List[str],
-                         custom_types: List[Dict],
-                         input: List[Dict],
-                         output: List[Dict],
-                         commands: List[Dict],
-                         bindings: List[Dict],
-                         endpoints: List[Dict],
-                         local_path):
-        versioned_name = f"{name}-{version}"
+    def upload_component(self, spec: Spec, local_path):
+        versioned_name = f"{spec.name}-{spec.version}"
         compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
-        if os.path.exists(os.path.join(local_path, VARS_FILE)):
-            logger.warning(f"Remove {VARS_FILE} file before pushing")
         with Loader("Pushing component to Splight Hub..."):
             try:
                 with py7zr.SevenZipFile(compressed_filename, 'w') as archive:
                     archive.writeall(local_path, versioned_name)
                 headers = self.user_handler.authorization_header
                 data = {
-                    'name': name,
-                    'version': version,
-                    'privacy_policy': privacy_policy,
-                    'tags': tags,
-                    'custom_types': json.dumps(custom_types),
-                    'input': json.dumps(input),
-                    'output': json.dumps(output),
-                    'commands': json.dumps(commands),
-                    'bindings': json.dumps(bindings),
-                    'endpoints': json.dumps(endpoints),
-                    'splight_cli_version': SPLIGHT_CLI_VERSION,
+                    'name': spec.name,
+                    'version': spec.version,
+                    'splight_cli_version': spec.splight_cli_version,
+                    'privacy_policy': spec.privacy_policy,
+                    'tags': spec.tags,
+                    'custom_types': json.dumps([x.dict() for x in spec.custom_types]),
+                    'input': json.dumps([x.dict() for x in spec.input]),
+                    'output': json.dumps([x.dict() for x in spec.output]),
+                    'commands': json.dumps([x.dict() for x in spec.commands]),
+                    'bindings': json.dumps([x.dict() for x in spec.bindings]),
+                    'endpoints': json.dumps([x.dict() for x in spec.endpoints]),
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),
                     'readme': open(
                         os.path.join(local_path, README_FILE), 'rb'
-                    ),
-                    'picture': open(
-                        os.path.join(local_path, PICTURE_FILE), 'rb'
-                    ),
+                    )
                 }
                 response = api_post(
                     f"{self.user_handler.host}/hub/upload/",
@@ -105,7 +88,7 @@ class ComponentHandler:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)
 
-    def download_component(self, name, version, local_path):
+    def download_component(self, name, version):
         with Loader("Pulling component from Splight Hub..."):
             headers = self.user_handler.authorization_header
             data = {
@@ -126,7 +109,7 @@ class ComponentHandler:
             versioned_name = f"{name}-{version}"
             compressed_filename = f"{versioned_name}.{COMPRESSION_TYPE}"
 
-            component_path = f"{local_path}/{name}/{version}"
+            component_path = f"{name}/{version}"
             if os.path.exists(component_path):
                 shutil.rmtree(component_path)
             try:
@@ -134,8 +117,8 @@ class ComponentHandler:
                     f.write(response.content)
 
                 with py7zr.SevenZipFile(compressed_filename, "r") as z:
-                    z.extractall(path=local_path)
-                shutil.move(f"{local_path}/{versioned_name}", component_path)
+                    z.extractall(path='.')
+                shutil.move(f"{versioned_name}", component_path)
             finally:
                 if os.path.exists(compressed_filename):
                     os.remove(compressed_filename)

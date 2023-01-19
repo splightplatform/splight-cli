@@ -55,27 +55,24 @@ class SplightComponentRunner:
 
     def run(self, component_spec: Dict):
         try:
-            self._run_component(component_spec)
+            self._logger.info("Running component")
+            input_spec = component_spec['input']
+            subprocess.run(
+                [
+                    self._BASE_CMD,
+                    "component",
+                    "run",
+                    f"{self._name}/{self._version}",
+                    "--input",
+                    json.dumps(input_spec),
+                ],
+                check=True,
+            )
         except subprocess.CalledProcessError as exc:
             self._logger.error(f"Error running component: {exc}")
             self._logger.error(f"Stdout: {exc.stdout}")
             self._logger.error(f"Stderr: {exc.stderr}")
             exit(1)
-
-    def _run_component(self, component_spec: Dict):
-        self._logger.info("Running component")
-        subprocess.run(
-            [
-                self._BASE_CMD,
-                "component",
-                "run",
-                f"{self._name}/{self._version}",
-                "--run-spec",
-                json.dumps(component_spec),
-            ],
-            check=True,
-        )
-
 
 @app.command()
 def main(

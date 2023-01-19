@@ -15,7 +15,7 @@ class TestDelete(SplightCLITest):
         self.extracted_component_path = os.path.join(
             self.path, f"{self.name}-{self.version}"
         )
-        self.component = Component(self.path, self.context)
+        self.component = Component(self.context)
 
     def test_component_delete(self):
         with patch.object(

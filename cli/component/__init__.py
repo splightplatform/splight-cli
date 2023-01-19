@@ -3,6 +3,7 @@ import os
 import signal
 import sys
 import logging
+import json
 from cli.context import pass_context
 from cli.cli import component as cli_component
 from cli.utils import *
@@ -19,7 +20,6 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 logger = logging.getLogger()
-NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48804bb15ba7d04c131d01841c55722416428c094beb83037bac949fa207af5c91590dbf"
 
 
 @cli_component.command()
@@ -28,10 +28,9 @@ NO_IMPORT_PWD_HASH = "b9d7c258fce446158f0ad1779c4bdfb14e35b6e3f4768b4e3b59297a48
 @pass_context
 def create(context: Context, name: str, version: str) -> None:
     try:
-        path = os.path.abspath(".")
-        component = Component(path, context)
+        component = Component(context)
         component.create(name, version)
-        click.secho(f"Component {name} created successfully in {path}", fg="green")
+        click.secho(f"Component {name} created successfully", fg="green")
 
     except Exception as e:
         click.secho(f"Error creating component: {str(e)}", fg="red")
@@ -41,18 +40,17 @@ def create(context: Context, name: str, version: str) -> None:
 @cli_component.command()
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
-@click.option("-p", "--public", is_flag=True, default=False, help="Create a public component.")
 @pass_context
-def push(context: Context, path: str, force: bool, public: bool = False) -> None:
+def push(context: Context, path: str, force: bool) -> None:
     try:
-        component = Component(path, context)
+        component = Component(context)
         try:
-            component.push(force, public)
+            component.push(path, force)
             click.secho("Component pushed successfully to Splight Hub", fg="green")
         except ComponentAlreadyExistsException:
             value = click.prompt(click.style(f"This component already exists in Splight Hub (you can use -f to force pushing). Do you want to overwrite it? (y/n)", fg="yellow"), type=str)
             if value in ["y", "Y"]:
-                component.push(force=True, public=public)
+                component.push(force=True)
                 click.secho("Component pushed successfully to Splight Hub", fg="green")
             else:
                 click.secho("Component not pushed", fg="blue")
@@ -69,7 +67,7 @@ def push(context: Context, path: str, force: bool, public: bool = False) -> None
 def pull(context: Context, name: str, version: str) -> None:
     try:
         path = os.path.abspath(".")
-        component = Component(path, context)
+        component = Component(context)
         component.pull(name, version)
         click.secho(f"Component {name}-{version} pulled successfully in {path}", fg="green")
 
@@ -88,8 +86,7 @@ def delete(context: Context, name: str, version: str) -> None:
         if response not in ["y", "Y"]:
             click.secho("Component not deleted", fg="blue")
             sys.exit(1)
-        path = os.path.abspath(".")
-        component = Component(path, context)
+        component = Component(context)
         component.delete(name, version)
         click.secho(f"Component {name}-{version} deleted successfully", fg="green")
 
@@ -103,7 +100,7 @@ def delete(context: Context, name: str, version: str) -> None:
 @pass_context
 def list(context: Context) -> None:
     try:
-        results = Component.list(context)
+        results = Component(context).list()
         Printer.print_dict(items=results, headers=['name'])
         return list
 
@@ -117,7 +114,7 @@ def list(context: Context) -> None:
 @pass_context
 def versions(context: Context, name: str) -> None:
     try:
-        results = Component.versions(context, name)
+        results = Component(context).versions(name)
         Printer.print_dict(items=results, headers=['name', 'version', 'verification', 'privacy_policy'])
         return list
 
@@ -128,13 +125,14 @@ def versions(context: Context, name: str) -> None:
 
 @cli_component.command()
 @click.argument("path", nargs=1, type=str)
-@click.option('--run-spec', '-rs', help="Run spec")
+@click.option('--input', '-i', help="Input values")
 @pass_context
-def run(context: Context, path: str, run_spec: str = None) -> None:
+def run(context: Context, path: str, input: str = None) -> None:
     try:
-        component = Component(path, context)
+        component = Component(context)
         click.secho("Running component...", fg="green")
-        component.run(run_spec)
+        input = json.loads(input) if input else None
+        component.run(path, input_parameters=input)
     except Exception as e:
         logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")
@@ -146,9 +144,9 @@ def run(context: Context, path: str, run_spec: str = None) -> None:
 @pass_context
 def install_requirements(context: Context, path: str) -> None:
     try:
-        component = Component(path, context)
+        component = Component(context)
         click.secho("Installing component requirements...", fg="green")
-        component.initialize()
+        component.install_requirements(path)
     except Exception as e:
         click.secho(f"Error installing component requirements: {str(e)}", fg="red")
         sys.exit(1)

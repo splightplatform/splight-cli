@@ -8,12 +8,13 @@ from cli.component.handler import ComponentHandler
 class TestConfigure(SplightCLITest):
 
     def test_configure_requested(self):
-        result = self.runner.invoke(
-            component,
-            ["list"],
-            obj=self.context,
-            catch_exceptions=False
-        )
+        with patch.object(ComponentHandler, "list_components", return_value=[]):
+            result = self.runner.invoke(
+                component,
+                ["list"],
+                obj=self.context,
+                catch_exceptions=False
+            )
         self.assertEqual(result.exit_code, 1)
         self.assertIn("splightcli configure", result.output)
 

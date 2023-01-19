@@ -8,7 +8,7 @@ import subprocess
 class TestInitialize(SplightCLITest):
     
     def test_initialize(self):
-        self.component = Component(self.path, self.context)
+        self.component = Component(self.context)
         initialization_file_path = os.path.join(self.path, INIT_FILE)
         lines = []
 
@@ -22,7 +22,7 @@ class TestInitialize(SplightCLITest):
         run_commands = [" ".join(line.split(" ")[1:]) for line in lines if line.startswith("RUN")]
 
         with patch.object(subprocess, "run") as runs:
-            self.component.initialize()
+            self.component.install_requirements(self.path)
             commands = run_commands
             calls = []
             for command in commands:
