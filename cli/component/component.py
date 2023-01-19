@@ -14,7 +14,7 @@ from cli.utils import (
 )
 from cli.component.handler import ComponentHandler
 from cli.component.spec import Spec
-from cli.component.loaders import SpecLoader, ComponentLoader
+from cli.component.loaders import SpecLoader, ComponentLoader, InitLoader
 from cli.component.exceptions import ComponentAlreadyExistsException, ComponentDirectoryAlreadyExists
 
 
@@ -126,5 +126,5 @@ class Component:
         component.execution_client.start(Thread(target=component.start))
 
     def install_requirements(self, path: str):
-        #IMPORTANT THIS SHOULD BE OK FOR BUILD
-        raise NotImplementedError
+        loader = InitLoader(path=path)
+        loader.load()
