@@ -78,9 +78,6 @@ class Component:
         handler.delete_component(name, version)
 
     def push(self, path: str, force = False):
-        # Load py module and validate Splight Component structure 
-        loader = ComponentLoader(path=path)
-        _ = loader.load()
         # Load json and validate Spec structure 
         loader = SpecLoader(path=path)
         spec = loader.load(prompt_input=False)

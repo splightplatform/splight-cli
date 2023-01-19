@@ -8,7 +8,7 @@ from functools import cached_property
 from cli.constants import *
 from cli.utils.loader import Loader
 from cli.utils.api_requests import *
-from cli.component.spec import Spec
+from cli.component.spec import Spec, PrivacyPolicy
 from splight_lib import logging
 
 logger = logging.getLogger()
@@ -59,7 +59,7 @@ class ComponentHandler:
                     'name': spec.name,
                     'version': spec.version,
                     'splight_cli_version': spec.splight_cli_version,
-                    'privacy_policy': spec.privacy_policy.value,
+                    'privacy_policy': spec.privacy_policy.value if isinstance(spec.privacy_policy, PrivacyPolicy) else spec.privacy_policy,
                     'tags': spec.tags,
                     'custom_types': json.dumps([x.dict() for x in spec.custom_types]),
                     'input': json.dumps([x.dict() for x in spec.input]),
