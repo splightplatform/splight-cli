@@ -61,12 +61,12 @@ class ComponentHandler:
                     'splight_cli_version': spec.splight_cli_version,
                     'privacy_policy': spec.privacy_policy,
                     'tags': spec.tags,
-                    'custom_types': json.dumps([x.json() for x in spec.custom_types]),
-                    'input': json.dumps([x.json() for x in spec.input]),
-                    'output': json.dumps([x.json() for x in spec.output]),
-                    'commands': json.dumps([x.json() for x in spec.commands]),
-                    'bindings': json.dumps([x.json() for x in spec.bindings]),
-                    'endpoints': json.dumps([x.json() for x in spec.endpoints]),
+                    'custom_types': json.dumps([x.dict() for x in spec.custom_types]),
+                    'input': json.dumps([x.dict() for x in spec.input]),
+                    'output': json.dumps([x.dict() for x in spec.output]),
+                    'commands': json.dumps([x.dict() for x in spec.commands]),
+                    'bindings': json.dumps([x.dict() for x in spec.bindings]),
+                    'endpoints': json.dumps([x.dict() for x in spec.endpoints]),
                 }
                 files = {
                     'file': open(compressed_filename, 'rb'),

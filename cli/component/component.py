@@ -25,14 +25,12 @@ class Component:
     def __init__(self, context):
         self.context = context
 
-    @classmethod
-    def list(cls, context):
-        handler = ComponentHandler(context)
+    def list(self):
+        handler = ComponentHandler(self.context)
         return handler.list_components()
 
-    @classmethod
-    def versions(cls, context, name):
-        handler = ComponentHandler(context)
+    def versions(self, name):
+        handler = ComponentHandler(self.context)
         return handler.list_component_versions(name)
 
     def create(self, name, version):
@@ -89,10 +87,7 @@ class Component:
 
         # TODO simplify this
         handler = ComponentHandler(self.context)
-        if not force and handler.exists_in_hub(
-            spec.name,
-            spec.version
-        ):
+        if not force and handler.exists_in_hub(spec.name, spec.version):
             raise ComponentAlreadyExistsException(f'{spec.name}-{spec.version}')
         handler.upload_component(spec, local_path=path)
 

@@ -14,104 +14,53 @@ from cli.tests.test_generic import SplightCLITest
 class TestPush(SplightCLITest):
     def setUp(self):
         super().setUp()
-        self.component = Component(self.path, self.context)
+        self.component = Component(self.context)
 
     @patch.object(ComponentHandler, "upload_component", return_value=None)
     @patch.object(ComponentHandler, "exists_in_hub", return_value=False)
-    @patch.object(
-        ComponentHandler,
-        "get_component_info",
-        return_value={"privacy_policy": "private"}
-    )
-    def test_push(self, retriever, exists_in_hub, uploader):
-        self.component.push(force=False, public=False)
-        exists_in_hub.assert_called_with(
-            self.name, self.version
-        )
-        retriever.assert_called_with(
-            self.name, self.version
-        )
-        uploader.assert_called_with(
-            'private',
-            self.name,
-            self.version,
-            self.tags,
-            self.custom_types,
-            self.input,
-            self.output,
-            self.commands,
-            self.bindings,
-            self.endpoints,
-            self.path,
-        )
-
-    def test_push_already_exists(self):
-        with patch.object(
-            ComponentHandler, "exists_in_hub", return_value=True
-        ) as exists_in_hub:
-            with patch.object(
-                ComponentHandler, "upload_component"
-            ) as uploader:
-                with self.assertRaises(ComponentAlreadyExistsException):
-                    self.component.push(force=False, public=False)
-                exists_in_hub.assert_called_with(
-                    self.name, self.version
-                )
-                uploader.assert_not_called()
+    def test_push(self, exists_in_hub, uploader):
+        self.component.push(self.path, force=False)
+        exists_in_hub.assert_called_with(self.name, self.version)
+        uploader.assert_called_with(self.spec, local_path=self.path)
 
     @patch.object(ComponentHandler, "upload_component", return_value=None)
-    @patch.object(
-        ComponentHandler,
-        "get_component_info",
-        return_value={"privacy_policy": "private"}
-    )
-    def test_push_forced(self, retriever, uploader):
-        self.component.push(force=True, public=False)
-        retriever.assert_called_with(
-            self.name, self.version
-        )
-        uploader.assert_called_with(
-            'private',
-            self.name,
-            self.version,
-            self.tags,
-            self.custom_types,
-            self.input,
-            self.output,
-            self.commands,
-            self.bindings,
-            self.endpoints,
-            self.path,
-        )
+    @patch.object(ComponentHandler, "exists_in_hub", return_value=True)
+    def test_push_already_exists(self, exists_in_hub, uploader):
+        with self.assertRaises(ComponentAlreadyExistsException):
+            self.component.push(self.path, force=False)
+        exists_in_hub.assert_called_with(self.name, self.version)
+        uploader.assert_not_called()
+
+    @patch.object(ComponentHandler, "upload_component", return_value=None)
+    @patch.object(ComponentHandler, "exists_in_hub", return_value=True)
+    def test_push_forced(self, exists_in_hub, uploader):
+        self.component.push(path=self.path, force=True)
+        uploader.assert_called_with(self.spec, local_path=self.path)
 
     @patch.object(ComponentHandler, "exists_in_hub", return_value=False)
-    @patch.object(
-        ComponentHandler,
-        "get_component_info",
-        return_value={"privacy_policy": "private"}
-    )
-    def test_component_upload(self, retriever, exists_in_hub):
+    def test_component_upload(self, exists_in_hub):
+        self.maxDiff = None
         headers = {
             "Authorization": f"Splight {self.context.workspace.settings.SPLIGHT_ACCESS_ID} {self.context.workspace.settings.SPLIGHT_SECRET_KEY}"
         }
         data = {
             "name": self.name,
             "version": self.version,
-            "privacy_policy": "private",
+            "splight_cli_version": self.splight_cli_version,
+            "privacy_policy": self.privacy_policy,
             "tags": self.tags,
             "custom_types": json.dumps(self.custom_types),
             "input": json.dumps(self.input),
             "output": json.dumps(self.output),
             "commands": json.dumps(self.commands),
             "endpoints": json.dumps(self.endpoints),
-            "splight_cli_version": '1.2.0',
         }
 
         response = requests.Response()
         response.status_code = 201
         with patch.object(requests, "post", return_value=response) as post:
             with patch.object(py7zr.SevenZipFile, "writeall") as writeall:
-                self.component.push(force=False, public=False)
+                self.component.push(self.path, force=False)
                 writeall.assert_called_with(
                     self.path, f"{self.name}-{self.version}"
                 )
