@@ -59,7 +59,7 @@ class ComponentHandler:
                     'name': spec.name,
                     'version': spec.version,
                     'splight_cli_version': spec.splight_cli_version,
-                    'privacy_policy': spec.privacy_policy,
+                    'privacy_policy': spec.privacy_policy.value,
                     'tags': spec.tags,
                     'custom_types': json.dumps([x.dict() for x in spec.custom_types]),
                     'input': json.dumps([x.dict() for x in spec.input]),

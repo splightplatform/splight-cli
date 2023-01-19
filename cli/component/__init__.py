@@ -50,7 +50,7 @@ def push(context: Context, path: str, force: bool) -> None:
         except ComponentAlreadyExistsException:
             value = click.prompt(click.style(f"This component already exists in Splight Hub (you can use -f to force pushing). Do you want to overwrite it? (y/n)", fg="yellow"), type=str)
             if value in ["y", "Y"]:
-                component.push(force=True)
+                component.push(path, force=True)
                 click.secho("Component pushed successfully to Splight Hub", fg="green")
             else:
                 click.secho("Component not pushed", fg="blue")
