@@ -8,10 +8,7 @@ from cli.version import __version__
 from cli.constants import (
     COMPONENT_FILE,
 )
-from cli.utils import (
-    get_template,
-    validate_path_isdir,
-)
+from cli.utils import get_template
 from cli.component.handler import ComponentHandler
 from cli.component.spec import Spec
 from cli.component.loaders import SpecLoader, ComponentLoader, InitLoader
@@ -88,7 +85,7 @@ class Component:
         _ = loader.load()
         # Load json and validate Spec structure 
         loader = SpecLoader(path=path)
-        spec = loader.load()
+        spec = loader.load(prompt_input=False)
 
         # TODO simplify this
         handler = ComponentHandler(self.context)
@@ -97,20 +94,7 @@ class Component:
             spec.version
         ):
             raise ComponentAlreadyExistsException(f'{spec.name}-{spec.version}')
-        handler.upload_component(
-            privacy_policy=spec.privacy_policy,
-            name=spec.name,
-            version=spec.version,
-            tags=spec.tags,
-            custom_types=spec.custom_types,
-            input=spec.input,
-            output=spec.output,
-            commands=spec.commands,
-            bindings=spec.bindings,
-            endpoints=spec.endpoints,
-            splight_cli_version=spec.splight_cli_version,
-            path=path,
-        )
+        handler.upload_component(spec, local_path=path)
 
     def run(self, path: str, input_parameters: Optional[List[Dict]] = None):
         # Load py module and validate Splight Component structure 

@@ -40,7 +40,6 @@ def create(context: Context, name: str, version: str) -> None:
 @cli_component.command()
 @click.argument("path", nargs=1, type=str)
 @click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
-@click.option("-p", "--public", is_flag=True, default=False, help="Create a public component.")
 @pass_context
 def push(context: Context, path: str, force: bool) -> None:
     try:

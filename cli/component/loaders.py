@@ -79,25 +79,26 @@ class SpecLoader:
         self.raw_spec = get_json_from_file(os.path.join(path, SPEC_FILE))
         self._validate()
 
-    def load(self, input_parameters: Optional[List[Dict]] = None):
+    def load(self, input_parameters: Optional[List[Dict]] = None, prompt_input = True):
         input_parameters = input_parameters if input_parameters else self.raw_spec['input']
-        input_parameters = self._load_or_prompt_input(input_parameters)
+        if prompt_input:
+            input_parameters = self._load_or_prompt_input(input_parameters)
         self.raw_spec["input"] = input_parameters
         self._validate()
         return Spec.parse_obj(self.raw_spec)
 
     def _load_or_prompt_input(
         self,
-        input_params: List[Dict],
+        input_parameters: List[Dict],
         prefix: str = "",
     ):
-        for param in input_params:
+        for param in input_parameters:
             value = param.get("value")
             if value is None:
                 new_value = self._prompt_param(param, prefix=prefix)
                 param["value"] = new_value
 
-        return input_params
+        return input_parameters
 
     def _prompt_param(
         self, param: Dict, prefix: str = ""
