@@ -88,7 +88,7 @@ class Component:
             raise ComponentAlreadyExistsException(f'{spec.name}-{spec.version}')
         handler.upload_component(spec, local_path=path)
 
-    def run(self, path: str, input_parameters: Optional[List[Dict]] = None):
+    def run(self, path: str, input_parameters: Optional[List[Dict]] = None, component_id: str = None):
         # Load py module and validate Splight Component structure 
         loader = ComponentLoader(path=path)
         component_class = loader.load()
@@ -97,7 +97,8 @@ class Component:
         run_spec = loader.load(input_parameters=input_parameters)
         component = component_class(
             run_spec=run_spec.dict(),
-            initial_setup=self.context.workspace.settings.dict()
+            initial_setup=self.context.workspace.settings.dict(),
+            component_id=component_id
         )
         component.execution_client.start(Thread(target=component.start))
 

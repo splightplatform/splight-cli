@@ -126,13 +126,14 @@ def versions(context: Context, name: str) -> None:
 @cli_component.command()
 @click.argument("path", nargs=1, type=str)
 @click.option('--input', '-i', help="Input values")
+@click.option('--component-id', '-id', help="Component ID")
 @pass_context
-def run(context: Context, path: str, input: str = None) -> None:
+def run(context: Context, path: str, input: str = None, component_id: str = None) -> None:
     try:
         component = Component(context)
         click.secho("Running component...", fg="green")
         input = json.loads(input) if input else None
-        component.run(path, input_parameters=input)
+        component.run(path, input_parameters=input, component_id=component_id)
     except Exception as e:
         logger.exception(e)
         click.secho(f"Error running component: {str(e)}", fg="red")
