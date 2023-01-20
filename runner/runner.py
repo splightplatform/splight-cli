@@ -23,6 +23,7 @@ class RunnerConfig(BaseSettings):
     SPLIGHT_SECRET_KEY: str
     SPLIGHT_PLATFORM_API_HOST: str
     COMPONENT_ID: str
+    SPLIGHT_ENCRYPTION_KEY: str
 
     class Config:
         secrets_dir: str = "/etc/config"
@@ -80,6 +81,7 @@ class SplightComponentRunner:
             self._logger.error(f"Stdout: {exc.stdout}")
             self._logger.error(f"Stderr: {exc.stderr}")
             exit(1)
+
 
 @app.command()
 def main(
