@@ -1,12 +1,20 @@
 import json
+import typer
 import subprocess
 from asyncio.log import logging
-from typing import Dict
-
-import typer
-from pydantic import BaseSettings, validator
+from typing import Dict, List
+from pydantic import BaseModel, BaseSettings, validator, Extra
 
 app = typer.Typer(name="Splight Component Runner")
+
+
+class RunnerSpec(BaseModel):
+    name: str
+    version: str
+    input: List[Dict]
+
+    class Config:
+        extra = Extra.allow
 
 
 class RunnerConfig(BaseSettings):
@@ -28,22 +36,19 @@ class SplightComponentRunner:
 
     _BASE_CMD = "splightcli"
 
-    def __init__(
-        self, component_name: str, component_version: str
-    ):
-        self._name = component_name
-        self._version = component_version
-
+    def __init__(self):
         logging.basicConfig(
             level=logging.INFO, format="%(asctime)s - %(name)s - %(message)s"
         )
         self._logger = logging.getLogger("Splight Runner")
+        self._component_id = None
 
-    def configure(self, config: str):
+    def configure(self, config: RunnerConfig):
+        self._component_id = config.COMPONENT_ID
         try:
             self._logger.info("Configuring splightcli")
             subprocess.run(
-                [self._BASE_CMD, "configure", "--from-json", config],
+                [self._BASE_CMD, "configure", "--from-json", config.json()],
                 check=True,
             )
             self._logger.info(f"Runner configured with {config}")
@@ -53,18 +58,20 @@ class SplightComponentRunner:
             self._logger.error(f"Stderr: {exc.stderr}")
             exit(1)
 
-    def run(self, component_spec: Dict):
+    def run(self, component_spec: RunnerSpec):
         try:
             self._logger.info("Running component")
-            input_spec = component_spec['input']
+            component_name = f"{component_spec.name}/{component_spec.version}"
             subprocess.run(
                 [
                     self._BASE_CMD,
                     "component",
                     "run",
-                    f"{self._name}/{self._version}",
+                    component_name,
                     "--input",
-                    json.dumps(input_spec),
+                    json.dumps(component_spec.input),
+                    "--component-id",
+                    self._component_id
                 ],
                 check=True,
             )
@@ -81,14 +88,9 @@ def main(
     )
 ):
     config = RunnerConfig()
-
-    run_spec = json.loads(run_spec_str)
-
-    runner = SplightComponentRunner(
-        component_name=run_spec["name"],
-        component_version=run_spec["version"],
-    )
-    runner.configure(config.json())
+    run_spec = RunnerSpec.parse_obj(json.loads(run_spec_str))
+    runner = SplightComponentRunner()
+    runner.configure(config)
     runner.run(run_spec)
 
 
