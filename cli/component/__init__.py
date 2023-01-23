@@ -56,14 +56,9 @@ def push(
     ),
 ) -> None:
     try:
-        # <<<<<<< HEAD
-        # results = Component(context).list()
-        # Printer.print_dict(items=results, headers=['name'])
-        # return list
-        # =======
         component = Component(ctx.obj)
         try:
-            component.push(force, public)
+            component.push(path, force)
             console.print(
                 "Component pushed successfully to Splight Hub",
                 style=success_style,
@@ -84,7 +79,6 @@ def push(
                 )
             else:
                 typer.echo("Component not pushed", color="blue")
-    # >>>>>>> 03bbef0 (feat: component commands using typer)
     except Exception as e:
         console.print(f"Error pushing component: {str(e)}", style=error_style)
         typer.Exit(1)
