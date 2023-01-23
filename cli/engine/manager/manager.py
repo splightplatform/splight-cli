@@ -22,15 +22,19 @@ class ResourceManager:
     ):
         self._client = client
         self._model = model
+        self._resource_name = model.__name__
         self._console = Console()
 
     def get(self, instance_id: str):
         instance = self._client.get(self._model, id=instance_id, first=True)
         if not instance:
             raise ResourceManagerException(
-                f"No Asset found with ID = {instance_id}", style=warning_style
+                f"No {self._resources_name} found with ID = {instance_id}",
+                style=warning_style,
             )
-        table = Table(title=f"Asset = {instance.name}", show_header=False)
+        table = Table(
+            title=f"{self._resource_name} = {instance.name}", show_header=False
+        )
         _ = [
             table.add_row(key, str(value))
             for key, value in instance.dict().items()
@@ -50,8 +54,9 @@ class ResourceManager:
 
     def create(self, data: Dict[str, Any]):
         instance = self._client.save(instance=self._model.parse_obj(data))
-        resource = self._model.__name__
-        table = Table(title=f"{resource} = {instance.name}", show_header=False)
+        table = Table(
+            title=f"{self._resource_name} = {instance.name}", show_header=False
+        )
         _ = [
             table.add_row(key, str(value))
             for key, value in instance.dict().items()
@@ -60,7 +65,6 @@ class ResourceManager:
 
     def delete(self, instance_id: str):
         self._client.delete(resource_type=self._model, id=instance_id)
-        resource = self._model.__name__
         self._console.print(
-            f"{resource}={instance_id} deleted", style=warning_style
+            f"{self._resource_name}={instance_id} deleted", style=warning_style
         )
