@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -135,20 +136,20 @@ def delete(
     except Exception as e:
         logger.exception(e)
         console.print(f"Error deleting component: {str(e)}", style=error_style)
-        typer.exit(1)
+        typer.Exit(1)
 
 
 @component_app.command()
 def list(ctx: typer.Context) -> None:
     try:
-        results = Component.list(ctx.obj)
+        results = Component(ctx.obj).list()
         table = Table("Name")
         for item in results:
             table.add_row(item["name"])
         console.print(table)
     except Exception as e:
         console.print(f"Error listing component: {str(e)}", style=error_style)
-        typer.exit(1)
+        typer.Exit(1)
 
 
 @component_app.command()
@@ -170,7 +171,7 @@ def versions(
     except Exception as e:
         console.print(f"Error listing component: {str(e)}", style=error_style)
         logger.exception(e)
-        sys.exit(1)
+        typer.Exit(1)
 
 
 @component_app.command()
@@ -190,7 +191,7 @@ def run(
     except Exception as e:
         logger.exception(e)
         console.print(f"Error running component: {str(e)}", style=error_style)
-        sys.exit(1)
+        typer.Exit(1)
 
 
 @component_app.command()
@@ -200,11 +201,13 @@ def install_requirements(
 ) -> None:
     try:
         component = Component(ctx.obj)
-        click.secho("Installing component requirements...", fg="green")
+        console.print(
+            "Installing component requirements...", style=success_style
+        )
         component.install_requirements(path)
     except Exception as e:
         console.print(
             f"Error installing component requirements: {str(e)}",
             style=error_style,
         )
-        typer.exit(1)
+        typer.Exit(1)
