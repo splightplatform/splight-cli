@@ -22,6 +22,14 @@ class WorkspaceDeleteError(Exception):
         return self._msg
 
 
+class NotExistingWorkspace(Exception):
+    def __init__(self, workspace: str):
+        self._msg = f"Workspace {workspace} does not exist in your environment"
+
+    def __str__(self) -> str:
+        return self._msg
+
+
 class WorkspaceManager:
     def __init__(self):
         self.config_file = CONFIG_FILE
@@ -62,6 +70,8 @@ class WorkspaceManager:
         save_yaml_to_file(self._config.dict(), self.config_file)
 
     def select_workspace(self, workspace_name: str):
+        if workspace_name not in self._workspaces:
+            raise NotExistingWorkspace(workspace_name)
         self._config.current_workspace = workspace_name
         save_yaml_to_file(self._config.dict(), self.config_file)
 
