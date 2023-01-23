@@ -1,6 +1,7 @@
 import typer
 
 from cli.engine.asset import asset_app
+from cli.engine.attribute import attribute_app
 
 
 engine_app = typer.Typer(
@@ -11,3 +12,4 @@ engine_app = typer.Typer(
 )
 
 engine_app.add_typer(asset_app, name="asset")
+engine_app.add_typer(attribute_app, name="attribute")
