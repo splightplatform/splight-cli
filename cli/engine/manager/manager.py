@@ -32,8 +32,10 @@ class ResourceManager:
                 f"No {self._resources_name} found with ID = {instance_id}",
                 style=warning_style,
             )
+
+        name = instance.name if hasattr(instance, "name") else instance.title
         table = Table(
-            title=f"{self._resource_name} = {instance.name}", show_header=False
+            title=f"{self._resource_name} = {name}", show_header=False
         )
         _ = [
             table.add_row(key, str(value))
@@ -47,7 +49,11 @@ class ResourceManager:
         )
         table = Table("", "ID", "Name")
         _ = [
-            table.add_row(str(counter), item.id, item.name)
+            table.add_row(
+                str(counter),
+                item.id,
+                item.name if hasattr(item, "name") else item.title,
+            )
             for counter, item in enumerate(instances)
         ]
         self._console.print(table)
