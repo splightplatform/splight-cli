@@ -1,10 +1,13 @@
+import json
+
 import typer
 from rich.console import Console
 from rich.table import Table
 from splight_models import Asset
-from tabulate import tabulate
 
-from cli.engine.endpoint import APIEndpoint
+from cli.constants import error_style
+# from cli.engine.endpoint import APIEndpoint
+from cli.engine.manager import ResourceManager, ResourceManagerException
 
 asset_app = typer.Typer(
     name="Splight Engine Asset",
@@ -14,7 +17,7 @@ asset_app = typer.Typer(
 )
 
 console = Console()
-PATH = "asset/"
+MODEL = Asset
 
 
 @asset_app.command()
@@ -27,17 +30,11 @@ def list(
         -1, "--limit", "-l", help="Limit the number of listed elements"
     ),
 ):
-    endpoint = APIEndpoint(
+    manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
-        model=Asset,
+        model=MODEL,
     )
-    instances = endpoint.list(skip=skip, limit=limit)
-    table = Table("", "ID", "Name")
-    _ = [
-        table.add_row(str(counter), item.id, item.name)
-        for counter, item in enumerate(instances)
-    ]
-    console.print(table)
+    manager.list(skip=skip, limit=limit)
 
 
 @asset_app.command()
@@ -45,29 +42,41 @@ def get(
     ctx: typer.Context,
     instance_id: str = typer.Argument(..., help="The Asset's ID"),
 ):
-    endpoint = APIEndpoint(
+    manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
-        model=Asset,
+        model=MODEL,
     )
-    instance = endpoint.get(instance_id)
-    table = Table(title=f"Asset = {instance.name}", show_header=False)
-    _ = [
-        table.add_row(key, str(value))
-        for key, value in instance.dict().items()
-    ]
-    console.print(table)
+    try:
+        manager.get(instance_id)
+    except ResourceManagerException as exc:
+        console.print(exc, style=error_style)
 
 
 @asset_app.command()
-def create():
-    print("create")
+def create(
+    ctx: typer.Context,
+    path: str = typer.Argument(
+        ..., help="Path to JSON file with resource data"
+    ),
+):
+    manager = ResourceManager(
+        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
+        model=MODEL,
+    )
+    with open(path, "r") as fid:
+        body = json.load(fid)
+    manager.create(data=body)
 
 
 @asset_app.command()
-def delete():
-    print("delete")
-
-
-@asset_app.command()
-def update():
-    print("update")
+def delete(
+    ctx: typer.Context,
+    instance_id: str = typer.Argument(
+        ..., help="The ID of the instance to be removed"
+    ),
+):
+    manager = ResourceManager(
+        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
+        model=MODEL,
+    )
+    manager.delete(instance_id)
