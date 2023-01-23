@@ -1,153 +1,216 @@
-import click
-import os
-import signal
-import sys
 import logging
-import json
-from cli.context import pass_context
-from cli.cli import component as cli_component
-from cli.utils import *
-from cli.context import Context
-from cli.constants import *
+import os
+import shutil
+import sys
+
+import typer
+from rich.console import Console
+from rich.table import Table
+
 from cli.component.component import Component, ComponentAlreadyExistsException
+from cli.constants import error_style, success_style
 
-
-def signal_handler(sig, frame):
-    sys.exit(0)
-
-
-signal.signal(signal.SIGINT, signal_handler)
-
+component_app = typer.Typer(
+    name="Splight Component",
+    add_completion=True,
+    rich_markup_mode="rich",
+    no_args_is_help=True,
+)
 
 logger = logging.getLogger()
+console = Console()
 
 
-@cli_component.command()
-@click.argument("name", nargs=1, type=str)
-@click.argument("version", nargs=1, type=str)
-@pass_context
-def create(context: Context, name: str, version: str) -> None:
+@component_app.command()
+def create(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="Component's name"),
+    version: str = typer.Argument(..., help="Component's version"),
+) -> None:
     try:
-        component = Component(context)
+        component = Component(ctx.obj)
         component.create(name, version)
-        click.secho(f"Component {name} created successfully", fg="green")
+        console.print(
+            f"Component {name} created successfully", style=success_style
+        )
 
     except Exception as e:
-        click.secho(f"Error creating component: {str(e)}", fg="red")
-        sys.exit(1)
+        console.print(
+            f"Error creating component: {str(e)}", style=success_style
+        )
+        typer.Exit(1)
 
 
-@cli_component.command()
-@click.argument("path", nargs=1, type=str)
-@click.option("-f", "--force", is_flag=True, default=False, help="Force the component to be created even if it already exists.")
-@pass_context
-def push(context: Context, path: str, force: bool) -> None:
+@component_app.command()
+def push(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component source code"),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite existing component in Splight HUB",
+    ),
+    public: bool = typer.Option(
+        False, "--public", "-p", help="Make the component public"
+    ),
+) -> None:
     try:
-        component = Component(context)
+        # <<<<<<< HEAD
+        # results = Component(context).list()
+        # Printer.print_dict(items=results, headers=['name'])
+        # return list
+        # =======
+        component = Component(ctx.obj)
         try:
-            component.push(path, force)
-            click.secho("Component pushed successfully to Splight Hub", fg="green")
+            component.push(force, public)
+            console.print(
+                "Component pushed successfully to Splight Hub",
+                style=success_style,
+            )
         except ComponentAlreadyExistsException:
-            value = click.prompt(click.style(f"This component already exists in Splight Hub (you can use -f to force pushing). Do you want to overwrite it? (y/n)", fg="yellow"), type=str)
+            value = typer.prompt(
+                typer.style(
+                    "This component already exists in Splight Hub (you can use -f to force pushing). Do you want to overwrite it? (y/n)",
+                    fg="yellow",
+                ),
+                type=str,
+            )
             if value in ["y", "Y"]:
-                component.push(path, force=True)
-                click.secho("Component pushed successfully to Splight Hub", fg="green")
+                component.push(force=True, public=public)
+                typer.echo(
+                    "Component pushed successfully to Splight Hub",
+                    color="green",
+                )
             else:
-                click.secho("Component not pushed", fg="blue")
-
+                typer.echo("Component not pushed", color="blue")
+    # >>>>>>> 03bbef0 (feat: component commands using typer)
     except Exception as e:
-        click.secho(f"Error pushing component: {str(e)}", fg="red")
-        sys.exit(1)
+        console.print(f"Error pushing component: {str(e)}", style=error_style)
+        typer.Exit(1)
 
 
-@cli_component.command()
-@click.argument("name", nargs=1, type=str)
-@click.argument("version", nargs=1, type=str)
-@pass_context
-def pull(context: Context, name: str, version: str) -> None:
+@component_app.command()
+def pull(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The component's name"),
+    version: str = typer.Argument(..., help="The component's version"),
+) -> None:
+    path = os.path.abspath(".")
+    component = Component(ctx.obj)
     try:
-        path = os.path.abspath(".")
-        component = Component(context)
         component.pull(name, version)
-        click.secho(f"Component {name}-{version} pulled successfully in {path}", fg="green")
-
+        console.print(
+            f"Component {name}-{version} pulled successfully in {path}",
+            style=success_style,
+        )
     except Exception as e:
-        click.secho(f"Error pulling component: {str(e)}", fg="red")
-        sys.exit(1)
+        component_path = os.path.join(path, f"{name}/{version}/")
+        if os.path.exists(component_path):
+            shutil.rmtree(component_path)
+        console.print(f"Error pulling component: {str(e)}", style=error_style)
+        typer.Exit(1)
 
 
-@cli_component.command()
-@click.argument("name", nargs=1, type=str)
-@click.argument("version", nargs=1, type=str)
-@pass_context
-def delete(context: Context, name: str, version: str) -> None:
+@component_app.command()
+def delete(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The component's name"),
+    version: str = typer.Argument(..., help="The component's version"),
+) -> None:
     try:
-        response = click.prompt(click.style(f"Are you sure you want to delete {name}-{version}? This operation will delete the component from Splight Hub and it won't be recoverable. (y/n)", fg="yellow"), type=str, default="n", show_default=False)
+        response = typer.prompt(
+            typer.style(
+                f"Are you sure you want to delete {name}-{version}? This operation will delete the component from Splight Hub and it won't be recoverable. (y/n)",
+                fg="yellow",
+            ),
+            type=str,
+            default="n",
+            show_default=False,
+        )
         if response not in ["y", "Y"]:
-            click.secho("Component not deleted", fg="blue")
+            typer.echo("Component not deleted", color="blue")
             sys.exit(1)
-        component = Component(context)
+        # path = os.path.abspath(".")
+        component = Component(ctx.obj)
         component.delete(name, version)
-        click.secho(f"Component {name}-{version} deleted successfully", fg="green")
-
+        console.print(
+            f"Component {name}-{version} deleted successfully",
+            style=success_style,
+        )
     except Exception as e:
         logger.exception(e)
-        click.secho(f"Error deleting component: {str(e)}", fg="red")
-        sys.exit(1)
+        console.print(f"Error deleting component: {str(e)}", style=error_style)
+        typer.exit(1)
 
 
-@cli_component.command()
-@pass_context
-def list(context: Context) -> None:
+@component_app.command()
+def list(ctx: typer.Context) -> None:
     try:
-        results = Component(context).list()
-        Printer.print_dict(items=results, headers=['name'])
-        return list
-
+        results = Component.list(ctx.obj)
+        table = Table("Name")
+        for item in results:
+            table.add_row(item["name"])
+        console.print(table)
     except Exception as e:
-        click.secho(f"Error listing component: {str(e)}", fg="red")
-        sys.exit(1)
+        console.print(f"Error listing component: {str(e)}", style=error_style)
+        typer.exit(1)
 
 
-@cli_component.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def versions(context: Context, name: str) -> None:
+@component_app.command()
+def versions(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="Component's name"),
+) -> None:
     try:
-        results = Component(context).versions(name)
-        Printer.print_dict(items=results, headers=['name', 'version', 'verification', 'privacy_policy'])
-        return list
-
+        results = Component(ctx.obj).versions(name)
+        table = Table("Name", "Version", "Verification", "Privacy Policy")
+        for item in results:
+            table.add_row(
+                item["name"],
+                item["version"],
+                item["verification"],
+                item["privacy_policy"],
+            )
+        console.print(table)
     except Exception as e:
-        click.secho(f"Error listing component: {str(e)}", fg="red")
+        console.print(f"Error listing component: {str(e)}", style=error_style)
+        logger.exception(e)
         sys.exit(1)
 
 
-@cli_component.command()
-@click.argument("path", nargs=1, type=str)
-@click.option('--input', '-i', help="Input values")
-@click.option('--component-id', '-id', help="Component ID")
-@pass_context
-def run(context: Context, path: str, input: str = None, component_id: str = None) -> None:
+@component_app.command()
+def run(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component source code"),
+    input: str = typer.Option(None, "--input", "-i", help="Input Values"),
+    component_id: str = typer.Option(
+        None, "--component-id", "-id", help="Component's ID"
+    ),
+) -> None:
     try:
-        component = Component(context)
-        click.secho("Running component...", fg="green")
+        component = Component(ctx.obj)
+        console.print("Running component...", style=success_style)
         input = json.loads(input) if input else None
         component.run(path, input_parameters=input, component_id=component_id)
     except Exception as e:
         logger.exception(e)
-        click.secho(f"Error running component: {str(e)}", fg="red")
+        console.print(f"Error running component: {str(e)}", style=error_style)
         sys.exit(1)
 
 
-@cli_component.command()
-@click.argument("path", nargs=1, type=str)
-@pass_context
-def install_requirements(context: Context, path: str) -> None:
+@component_app.command()
+def install_requirements(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component source code"),
+) -> None:
     try:
-        component = Component(context)
+        component = Component(ctx.obj)
         click.secho("Installing component requirements...", fg="green")
         component.install_requirements(path)
     except Exception as e:
-        click.secho(f"Error installing component requirements: {str(e)}", fg="red")
-        sys.exit(1)
+        console.print(
+            f"Error installing component requirements: {str(e)}",
+            style=error_style,
+        )
+        typer.exit(1)
