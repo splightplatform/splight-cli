@@ -2,7 +2,7 @@ from private_splight_models import BuildSpec
 from splight_models import HubComponent
 from splight_models.constants import BuildStatus
 from splight_lib import logging
-from splight_lib.webhook import Webhook
+from splight_lib.webhook import WebhookClient
 from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
@@ -26,25 +26,14 @@ class Context(BaseSettings):
 
 class ComponentManager:
     def __init__(self, url):
-        self.url = "/".join([url, "hub", "component", "webhook"])
+        self.url = "/".join([url, "v2", "hub", "component", "webhook"])
+        self.webhook_client = WebhookClient()
 
     def _compute_signature(self, data: dict) -> str:
-        return Webhook.get_signature(json.dumps(data).encode("ascii"))
-
-    def get(self, **kwargs) -> HubComponent:
-        request = requests.Request("GET", self.url, params=kwargs)
-        prepped = request.prepare()
-        prepped.headers['Splight-Signature'] = self._compute_signature(kwargs)
-        with requests.Session() as session:
-            response = session.send(prepped)
-        if response.status_code != 200:
-            raise Exception(f"Error getting component: {response.status_code} - {response.content}")
-        logger.info(f"{response.status_code} - {response.content}")
-        return HubComponent(**response.json()["results"][0])
+        return WebhookClient.get_signature(json.dumps(data).encode("ascii"))
 
     def update(self, component: HubComponent):
-        url = f"{self.url}/{component.id}/"
-        request = requests.Request("PUT", url, json=component.dict())
+        request = requests.Request("PUT", self.url, json=component.dict())
         prepped = request.prepare()
         prepped.headers['Splight-Signature'] = self._compute_signature(json.loads(prepped.body))
         with requests.Session() as session:
@@ -68,6 +57,12 @@ class Builder:
     def __init__(self, build_spec: BuildSpec):
         self.build_spec = build_spec
         self.context = Context()
+        self.hub_component = HubComponent(
+            name=self.build_spec.name,
+            version=self.build_spec.version,
+            splight_cli_version=self.build_spec.cli_version,
+            build_status=BuildStatus.UNKNOWN
+        )
 
     def build_and_push_component(self):
         logger.info("Building and pushing component")
@@ -132,14 +127,6 @@ class Builder:
             logger.info(f"Login result: {result}")
             self._docker_client = docker_client
         return self._docker_client
-
-    @cached_property
-    def hub_component(self):
-        logger.info("Getting hub component")
-        return self.component_manager.get(
-            name=self.build_spec.name,
-            version=self.build_spec.version,
-        )
 
     def _build_component(self):
         logger.info("Building component")
