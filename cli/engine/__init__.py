@@ -6,6 +6,7 @@ from cli.engine.attribute import attribute_app
 from cli.engine.component import component_app
 from cli.engine.graph import graph_app
 from cli.engine.query import query_app
+from cli.engine.file import file_app
 
 engine_app = typer.Typer(
     name="Splight Engine",
@@ -19,6 +20,7 @@ engine_app.add_typer(attribute_app, name="attribute")
 engine_app.add_typer(component_app, name="component")
 engine_app.add_typer(graph_app, name="graph")
 engine_app.add_typer(query_app, name="query")
+engine_app.add_typer(file_app, name="file")
 
 
 @engine_app.callback(invoke_without_command=True)
