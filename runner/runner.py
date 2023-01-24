@@ -3,7 +3,7 @@ import typer
 import subprocess
 from asyncio.log import logging
 from typing import Dict, List
-from pydantic import BaseModel, BaseSettings, validator, Extra
+from pydantic import BaseModel, BaseSettings, validator, Extra, Field
 
 app = typer.Typer(name="Splight Component Runner")
 
@@ -19,11 +19,11 @@ class RunnerSpec(BaseModel):
 
 class RunnerConfig(BaseSettings):
     NAMESPACE: str
-    SPLIGHT_ACCESS_ID: str
-    SPLIGHT_SECRET_KEY: str
+    SPLIGHT_ACCESS_ID: str = Field(..., exclude=True)
+    SPLIGHT_SECRET_KEY: str = Field(..., exclude=True)
     SPLIGHT_PLATFORM_API_HOST: str
     COMPONENT_ID: str
-    SPLIGHT_ENCRYPTION_KEY: str
+    SPLIGHT_ENCRYPTION_KEY: str = Field(..., exclude=True)
 
     class Config:
         secrets_dir: str = "/etc/config"
