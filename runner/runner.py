@@ -19,11 +19,10 @@ class RunnerSpec(BaseModel):
 
 class RunnerConfig(BaseSettings):
     NAMESPACE: str
-    SPLIGHT_ACCESS_ID: str = Field(..., exclude=True)
-    SPLIGHT_SECRET_KEY: str = Field(..., exclude=True)
+    SPLIGHT_ACCESS_ID: str
+    SPLIGHT_SECRET_KEY: str
     SPLIGHT_PLATFORM_API_HOST: str
     COMPONENT_ID: str
-    SPLIGHT_ENCRYPTION_KEY: str = Field(..., exclude=True)
 
     class Config:
         secrets_dir: str = "/etc/config"
@@ -52,7 +51,6 @@ class SplightComponentRunner:
                 [self._BASE_CMD, "configure", "--from-json", config.json()],
                 check=True,
             )
-            self._logger.info(f"Runner configured with {config}")
         except subprocess.CalledProcessError as exc:
             self._logger.error(f"Error configuring component: {exc}")
             self._logger.error(f"Stdout: {exc.stdout}")
