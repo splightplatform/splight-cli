@@ -3,7 +3,7 @@ import typer
 import subprocess
 from asyncio.log import logging
 from typing import Dict, List
-from pydantic import BaseModel, BaseSettings, validator, Extra
+from pydantic import BaseModel, BaseSettings, validator, Extra, Field
 
 app = typer.Typer(name="Splight Component Runner")
 
@@ -23,7 +23,6 @@ class RunnerConfig(BaseSettings):
     SPLIGHT_SECRET_KEY: str
     SPLIGHT_PLATFORM_API_HOST: str
     COMPONENT_ID: str
-    SPLIGHT_ENCRYPTION_KEY: str
 
     class Config:
         secrets_dir: str = "/etc/config"
@@ -52,7 +51,6 @@ class SplightComponentRunner:
                 [self._BASE_CMD, "configure", "--from-json", config.json()],
                 check=True,
             )
-            self._logger.info(f"Runner configured with {config}")
         except subprocess.CalledProcessError as exc:
             self._logger.error(f"Error configuring component: {exc}")
             self._logger.error(f"Stdout: {exc.stdout}")
