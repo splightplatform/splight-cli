@@ -1,5 +1,6 @@
 import typer
 
+from cli.context import check_credentials
 from cli.engine.asset import asset_app
 from cli.engine.attribute import attribute_app
 from cli.engine.component import component_app
@@ -18,3 +19,8 @@ engine_app.add_typer(attribute_app, name="attribute")
 engine_app.add_typer(component_app, name="component")
 engine_app.add_typer(graph_app, name="graph")
 engine_app.add_typer(query_app, name="query")
+
+
+@engine_app.callback(invoke_without_command=True)
+def engine_callback(ctx: typer.Context):
+    check_credentials(ctx)

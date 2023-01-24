@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from cli.context import check_credentials
 from cli.component.component import Component, ComponentAlreadyExistsException
 from cli.constants import error_style, success_style
 
@@ -20,6 +21,11 @@ component_app = typer.Typer(
 
 logger = logging.getLogger()
 console = Console()
+
+
+@component_app.callback(invoke_without_command=True)
+def engine_callback(ctx: typer.Context):
+    check_credentials(ctx)
 
 
 @component_app.command()
