@@ -1,6 +1,7 @@
 from typing import Dict
 
-from pydantic import BaseSettings, Extra, BaseModel
+from pydantic import BaseModel, BaseSettings, Extra
+
 from cli.version import __version__
 
 
@@ -11,6 +12,7 @@ class SplightCLISettings(BaseSettings):
     # FRAMEWORK
     DATABASE_CLIENT: str = "remote_splight_lib.database.DatabaseClient"
     DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"
+    HUB_CLIENT: str = "remote_splight_lib.hub.SplightHubClient"
     STORAGE_CLIENT: str = "remote_splight_lib.storage.StorageClient"
     BLOCKCHAIN_CLIENT: str = "remote_splight_lib.blockchain.BlockchainClient"
     DEPLOYMENT_CLIENT: str = "remote_splight_lib.deployment.DeploymentClient"
