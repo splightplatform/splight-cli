@@ -1,6 +1,8 @@
 import os
 from unittest import TestCase
-from click.testing import CliRunner
+# from click.testing import CliRunner
+from typer.testing import CliRunner
+
 from cli.component.spec import Spec
 from cli.constants import DEFAULT_WORKSPACE, SPEC_FILE
 from cli.context import Context
