@@ -2,7 +2,7 @@ from private_splight_models import BuildSpec
 from splight_models import HubComponent
 from splight_models.constants import BuildStatus
 from splight_lib import logging
-from splight_lib.webhook import WebhookClient
+from splight_lib.webhook import WebhookClient, WebhookEvent
 from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
@@ -33,7 +33,8 @@ class ComponentManager:
         return self.webhook_client.get_signature(json.dumps(data).encode("ascii"))
 
     def update(self, component: HubComponent):
-        request = requests.Request("POST", self.url, json=component.dict())
+        event = WebhookEvent(event_name="component-update", object_type="Component", data=component.dict())
+        request = requests.Request("POST", self.url, json=event.dict())
         prepped = request.prepare()
         prepped.headers['Splight-Signature'] = self._compute_signature(json.loads(prepped.body))
         with requests.Session() as session:
