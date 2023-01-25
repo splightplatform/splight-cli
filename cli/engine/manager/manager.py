@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type
+from typing import Any, Dict, Type, List
 
 from rich.console import Console
 from rich.table import Table
@@ -25,7 +25,7 @@ class ResourceManager:
         self._resource_name = model.__name__
         self._console = Console()
 
-    def get(self, instance_id: str):
+    def get(self, instance_id: str, exclude_fields: List[str] = None):
         instance = self._client.get(self._model, id=instance_id, first=True)
         if not instance:
             raise ResourceManagerException(
@@ -39,7 +39,7 @@ class ResourceManager:
         )
         _ = [
             table.add_row(key, str(value))
-            for key, value in instance.dict().items()
+            for key, value in instance.dict().items() if key not in exclude_fields
         ]
         self._console.print(table)
 
