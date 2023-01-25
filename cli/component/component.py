@@ -3,21 +3,14 @@ import uuid
 from typing import Dict, List, Optional
 
 from jinja2 import Template
-from splight_lib import logging
 from splight_lib.execution import Thread
 
-from cli.component.exceptions import (
-    ComponentAlreadyExistsException,
-    ComponentDirectoryAlreadyExists,
-)
-from cli.component.handler import ComponentHandler
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
+
 from cli.component.spec import Spec
 from cli.constants import COMPONENT_FILE
 from cli.utils import get_template
 from cli.version import __version__
-
-logger = logging.getLogger()
 
 
 class Component:
@@ -26,14 +19,6 @@ class Component:
 
     def __init__(self, context):
         self.context = context
-
-    def list(self):
-        handler = ComponentHandler(self.context)
-        return handler.list_components()
-
-    def versions(self, name):
-        handler = ComponentHandler(self.context)
-        return handler.list_component_versions(name)
 
     def create(self, name, version):
         Spec.verify(
@@ -66,33 +51,6 @@ class Component:
             )
             with open(file_path, "w+") as f:
                 f.write(file)
-
-    def pull(self, name, version):
-        versioned_name = f"{name}-{version}"
-        component_path = os.path.join(versioned_name)
-
-        if os.path.exists(component_path):
-            raise ComponentDirectoryAlreadyExists(versioned_name)
-
-        handler = ComponentHandler(self.context)
-        handler.download_component(name, version)
-
-    def delete(self, name, version):
-        handler = ComponentHandler(self.context)
-        handler.delete_component(name, version)
-
-    def push(self, path: str, force=False):
-        # Load json and validate Spec structure
-        loader = SpecLoader(path=path)
-        spec = loader.load(prompt_input=False)
-
-        # TODO simplify this
-        handler = ComponentHandler(self.context)
-        if not force and handler.exists_in_hub(spec.name, spec.version):
-            raise ComponentAlreadyExistsException(
-                f"{spec.name}-{spec.version}"
-            )
-        handler.upload_component(spec, local_path=path)
 
     def run(
         self,
