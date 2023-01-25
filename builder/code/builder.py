@@ -33,7 +33,7 @@ class ComponentManager:
         return self.webhook_client.get_signature(json.dumps(data).encode("ascii"))
 
     def update(self, component: HubComponent):
-        request = requests.Request("PUT", self.url, json=component.dict())
+        request = requests.Request("POST", self.url, json=component.dict())
         prepped = request.prepare()
         prepped.headers['Splight-Signature'] = self._compute_signature(json.loads(prepped.body))
         with requests.Session() as session:
