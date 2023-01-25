@@ -26,7 +26,7 @@ class Context(BaseSettings):
 
 class ComponentManager:
     def __init__(self, url):
-        self.url = "/".join([url, "v2", "hub", "component", "webhook"])
+        self.url = "/".join([url, "v2", "hub", "component", "webhook", ""])
         self.webhook_client = WebhookClient()
 
     def _compute_signature(self, data: dict) -> str:
