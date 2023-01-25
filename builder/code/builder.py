@@ -30,7 +30,7 @@ class ComponentManager:
         self.webhook_client = WebhookClient()
 
     def _compute_signature(self, data: dict) -> str:
-        return WebhookClient.get_signature(json.dumps(data).encode("ascii"))
+        return self.webhook_client.get_signature(json.dumps(data).encode("ascii"))
 
     def update(self, component: HubComponent):
         request = requests.Request("PUT", self.url, json=component.dict())
