@@ -68,7 +68,8 @@ class Builder:
             name=self.build_spec.name,
             version=self.build_spec.version,
             splight_cli_version=self.build_spec.cli_version,
-            build_status=BuildStatus.UNKNOWN
+            build_status=BuildStatus.UNKNOWN,
+            min_component_capacity='small'
         )
 
     def build_and_push_component(self):
@@ -77,7 +78,7 @@ class Builder:
             self._update_component_build_status(BuildStatus.BUILDING)
             self._build_component()
             self._push_component()
-            self._update_min_component_capacity(save=False)
+            self._update_min_component_capacity()
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
             logger.info('Build failed: ', e)
@@ -162,20 +163,17 @@ class Builder:
             logger.error(f"Error pushing component: {e}")
             raise e
 
-    def _update_component_build_status(self, build_status: BuildStatus, save: bool = True):
+    def _update_component_build_status(self, build_status: BuildStatus):
         logger.info(f"Updating component build status to {build_status}")
         self.hub_component.build_status = build_status
-        if save:
-            self._save_component()
+        self._save_component()
 
-    def _update_min_component_capacity(self, save: bool = True):
+    def _update_min_component_capacity(self):
         logger.info("Saving image size")
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
         image_size = float(image.attrs["Size"] / 10**9)
         self.hub_component.min_component_capacity = self._get_min_component_capacity(image_size)
-        if save:
-            self._save_component()
 
     def _get_min_component_capacity(self, image_size: float) -> str:
         for size, cap in self._component_capacity:
