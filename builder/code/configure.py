@@ -1,18 +1,18 @@
 import argparse
-from asyncio.log import logger
 import json
 import subprocess
+from asyncio.log import logger
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Executes a hub component.'
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Executes a hub component.")
+    parser.add_argument(
+        "-c",
+        "--configure-spec",
+        type=str,
+        nargs=1,
+        help="Configure Spec",
+        required=True,
     )
-    parser.add_argument('-c',
-                        '--configure-spec',
-                        type=str,
-                        nargs=1,
-                        help='Configure Spec',
-                        required=True)
 
     args = parser.parse_args()
     configure_spec = json.loads(args.configure_spec[0])
@@ -30,12 +30,28 @@ if __name__ == '__main__':
         "SPLIGHT_PLATFORM_API_HOST": api_host,
     }
 
-    logger.info(f"Configure with {access_id} to configure {hub_name} {hub_version}. Remote set to {api_host}")
+    logger.info(
+        f"Configure with {access_id} to configure {hub_name} {hub_version}. Remote set to {api_host}"
+    )
 
     try:
-        subprocess.run(["splightcli", "configure", "--from-json", json.dumps(json_configuration)], check=True)
-        subprocess.run(["splightcli", "component", "pull", hub_name, hub_version], check=True)
-        subprocess.run(["splightcli", "component", "install-requirements", hub_descriptor], check=True)
+        subprocess.run(
+            [
+                "splight",
+                "configure",
+                "--from-json",
+                json.dumps(json_configuration),
+            ],
+            check=True,
+        )
+        subprocess.run(
+            ["splight", "hub", "component", "pull", hub_name, hub_version],
+            check=True,
+        )
+        subprocess.run(
+            ["splight", "component", "install-requirements", hub_descriptor],
+            check=True,
+        )
 
     except subprocess.CalledProcessError as e:
         logger.error(f"Error configuring component: {e}")
