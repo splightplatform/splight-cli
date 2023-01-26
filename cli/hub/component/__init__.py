@@ -1,5 +1,3 @@
-# import json
-
 import typer
 from rich.console import Console
 from splight_models import Component
