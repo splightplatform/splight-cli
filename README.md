@@ -13,10 +13,9 @@
   - [Commands](#commands)
     - [Component](#component)
     - [Configure](#configure)
-    - [Database](#database)
-    - [Datalake](#datalake)
-    - [Deployment](#deployment)
-    - [Storage](#storage)
+    - [Hub](#hub)
+      - [Component](#component-1)
+    - [Engine](#engine)
     - [Workspace](#workspace)
   - [Developing Components](#developing-components)
     - [What is a component?](#what-is-a-component)
@@ -44,15 +43,15 @@ pip install splight-cli
 
 Once you have installed `splight-cli` you can check the installation with 
 ```bash
-splightcli
+splight --version
 ```
 
 You should see something like
 
 ```bash
-$ splightcli
+$ splight
 
-Usage: splightcli [OPTIONS] COMMAND [ARGS]...
+Usage: splight [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --help  Show this message and exit.
@@ -82,7 +81,7 @@ The fastest and easiest way for configuring _Splight CLI_ is running on your ter
 the following command
 
 ```bash
-splightcli configure
+splight configure
 ```
 
 After entering the above command will ask you for the credentials you have created before.
@@ -99,7 +98,7 @@ used.
 The basic usage is
 
 ```bash
-splightcli <command> [--help]
+splight <command> [--help]
 ```
 
 where `<command>` is the command you want to use, and optionally you can add the flag
@@ -118,7 +117,7 @@ component, here we will only cover the different sub-commands you can use
   To create a new component the command is
 
   ```bash
-  splightcli component create <name> <version>
+  splight component create <name> <version>
   ```
 
   The parameters `<name>` and
@@ -130,22 +129,12 @@ component, here we will only cover the different sub-commands you can use
   directory where the command was executed. Inside the new folder, you will find some
   files that defines the basic structure of the component source code.
 
-- Delete a component
-
-  You can delete an existing component with the command
-
-  ```bash
-  splightcli component delete <name> <version>
-  ```
-
-  This command deletes the component in _Splight Hub_ so it can't be used any more.
-
 - Install component requirements
 
   The command
 
   ```bash
-  splightcli component install-requirements <path>
+  splight component install-requirements <path>
   ```
 
   Where the parameter `<path>` is the path to the component that will be installed
@@ -159,7 +148,7 @@ component, here we will only cover the different sub-commands you can use
   before push it and for development a new component. The command is the following
 
   ```bash
-  splightcli component run <path> [-r] [-rs]
+  splight component run <path> [-r] [-rs]
   ```
 
   This command will run a component locally. Optionally you can use the flag
@@ -170,12 +159,48 @@ component, here we will only cover the different sub-commands you can use
   configuration different to the one defined in the `spec.json` file. In the following
   section we will dive in in the usage of the file `spec.json`.
 
+### Configure
+
+This command is used for configuring Splight CLI and can be used as many times as you
+want.
+
+The command is
+
+```bash
+splight configure
+```
+
+And it will prompt you to enter some pieces of information that needed by Splight CLI.
+This command is quite useful when is used along with `workspace` command.
+
+You can also retrieve one of the parameters using the `get` command:
+
+```bash
+splight configure get <parameter>
+```
+for example for reading the `SPLIGHT_PLATFORM_API_HOST`:
+```bash
+splight configure get splight_platform_api_host
+```
+
+In the same way you can modify one parameter using the `set` command
+```bash
+splight configure set <parameter> <value>
+```
+
+### Hub
+
+This command allows you to interact with the Splight HUB, places where you can find all the 
+existing components that can be used in the platform. 
+
+#### Component
+
 - List component
 
   You can list all the components with the command
 
   ```bash
-  splightcli component list
+  splight component list
   ```
 
 - Pull or download a component
@@ -183,7 +208,7 @@ component, here we will only cover the different sub-commands you can use
   For downloading an existing component in _Splight Hub_ you can use
 
   ```bash
-  splightcli component pull <name> <version>
+  splight component pull <name> <version>
   ```
 
   This will download the component source code to your machine.
@@ -193,7 +218,7 @@ component, here we will only cover the different sub-commands you can use
   For pushing a new component or component version to _Splight Hub_ the command is
 
   ```bash
-  splightcli component push <path>
+  splight component push <path>
   ```
 
   Where `<path>` is the path (relative or absolute) for the source code of the
@@ -204,78 +229,31 @@ component, here we will only cover the different sub-commands you can use
   You can also list all the version of given component with
 
   ```bash
-  splightcli component versions <name>
+  splight component versions <name>
   ```
 
-### Configure
+### Engine
 
-This command is used for configuring Splight CLI and can be used as many times as you
-want.
+The `engine` command is used for interacting with the Splight Engine. So far, the available 
+subcommands provide an interface for creating, reaading and deleting resources in the engine.
 
 The command is
-
 ```bash
-splightcli configure
+splight engine <subcommand> <action> [extra args]
 ```
 
-And it will prompt you to enter some pieces of information that needed by Splight CLI.
-This command is quite useful when is used along with `workspace` command.
+depending on the which sub-command you use you can get different actions 
+to perform
 
-### Database
-
-The `database` command is used for listing different resources from the Splight Platform.
-The command is
-
-```bash
-splightcli database list <resource>
-```
-
-Where `<resource>` is the type of the resource to be listed. For example, can be
-`Component`, `Asset`, `Attribute` and many more.
-
-### Datalake
-
-You can interact with the datalake service using the `datalake` command as follow
-
-```bash
-splightcli datalake <sub-command>
-```
-
-The sub-commands are
-
-- `dump` for getting data from datalake.
-- `list` for listing the different collections.
-- `load` for loading new data to the datalake.
-
-Each sub-command contain it's own parameters. the information can be retrieved using the
-`--help` flag:
-
-```bash
-splightcli datalake <sub-command> --help
-```
-
-### Deployment
-
-The `deployment` command is used for listing the running component in the platform
-
-```bash
-splightcli deployment list
-```
-
-### Storage
-
-The command `storage` allows the user to use the storage service. The command basics is
-
-```bash
-splgithcli storage <subcommand>
-```
-
-The sub-commands are
-
-- `delete` for removing a file.
-- `download` for downloaing a file.
-- `list` for listing all the stored files.
-- `load` for saving a new file.
+The valid sub-commands so far are:
+- `asset`
+- `attribute`
+- `component`
+- `datalake`
+- `file`
+- `graph`
+- `query`
+- `secret`
 
 ### Workspace
 
@@ -286,7 +264,7 @@ computer.
 The command is
 
 ```bash
-splightcli workspace <sub-command>
+splight workspace <sub-command>
 ```
 
 The available subcommands are
@@ -319,7 +297,7 @@ To create a component with the Splight Hub CLI, open a terminal and change the d
 Execute the following command:
 
 ```bash
-splightcli component create <name> <version>
+splight component create <name> <version>
 ```
 
 This will create a directory with the following structure:
@@ -524,5 +502,5 @@ the limit is your imagination.
 You can run the component locally before pushing it to the platform
 
 ```bash
-splightcli component run <type> <component directory>
+splight component run <component directory>
 ```
