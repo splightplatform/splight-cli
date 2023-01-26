@@ -19,6 +19,7 @@ from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     ComponentPullError,
     ComponentPushError,
+    ComponentDirectoryAlreadyExists,
 )
 from cli.utils.loader import Loader
 
@@ -54,7 +55,8 @@ class HubComponentManager:
             versioned_name = f"{name}-{version}"
             file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
             if os.path.exists(component_path):
-                shutil.rmtree(component_path)
+                raise ComponentDirectoryAlreadyExists(component_path)
+
             try:
                 with open(file_name, "wb") as fid:
                     fid.write(response[0])
