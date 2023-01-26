@@ -3,7 +3,7 @@ import typer
 import subprocess
 from asyncio.log import logging
 from typing import Dict, List
-from pydantic import BaseModel, BaseSettings, validator, Extra, Field
+from pydantic import BaseModel, BaseSettings, validator, Extra
 
 app = typer.Typer(name="Splight Component Runner")
 

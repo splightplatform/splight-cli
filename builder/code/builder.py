@@ -11,7 +11,7 @@ import docker
 import base64
 import boto3
 import typer
-import json
+
 
 app = typer.Typer(name="Splight Component Builder")
 logger = logging.getLogger(__name__)
@@ -29,19 +29,25 @@ class ComponentManager:
         self.url = "/".join([url, "v2", "hub", "component", "webhook", ""])
         self.webhook_client = WebhookClient()
 
-    def _compute_signature(self, data: dict) -> str:
-        return self.webhook_client.get_signature(json.dumps(data).encode("ascii"))
-
     def update(self, component: HubComponent):
-        event = WebhookEvent(event_name="component-update", object_type="Component", data=component.dict())
-        request = requests.Request("POST", self.url, json=event.dict())
+        event = WebhookEvent(
+            event_name="hubcomponent-update",
+            object_type="HubComponent",
+            data=component.dict()
+        )
+        payload, signature = self.webhook_client.construct_payload(event)
+        headers = {'Splight-Signature': signature}
+        request = requests.Request(
+            "POST",
+            self.url,
+            data=payload,
+            headers=headers
+        )
         prepped = request.prepare()
-        prepped.headers['Splight-Signature'] = self._compute_signature(json.loads(prepped.body))
         with requests.Session() as session:
             response = session.send(prepped)
         if response.status_code != 200:
             raise Exception(f"Error updating component: {response.status_code} - {response.content}")
-
         logger.info(f"{response.status_code} - {response.content}")
 
 
