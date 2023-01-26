@@ -113,7 +113,7 @@ class DatalakeManager:
 
     def list(self, skip, limit):
         instances = [{'id': 'default', 'name': '-'}]
-        components = self._client.get(
+        components = self._db_client.get(
             resource_type=Component
         )
         components = [component.dict() for component in components]
