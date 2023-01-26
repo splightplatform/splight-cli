@@ -1,15 +1,13 @@
+import os
 from typing import Any, Dict, Type, List
-import pandas as pd
 
+import pandas as pd
 from rich.console import Console
 from rich.table import Table
 from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
 from splight_models import SplightBaseModel, Component, DatalakeModel
 from datetime import datetime
-from cli.utils import *
-from cli.constants import DEFAULT_NAMESPACE
-
-from cli.constants import warning_style
+from cli.constants import warning_style, success_style
 
 SplightModel = Type[SplightBaseModel]
 
@@ -144,7 +142,10 @@ class DatalakeManager:
             **self._get_filters(filters)
         )
         dataframe.to_csv(path)
-        click.secho(f"Succesfully dumpped {collection} in {path}", fg="green")
+        self._console.print(
+            f"Succesfully dumpped {collection} in {path}",
+            style=success_style,
+        )
 
     def load(self, collection, path):
         if not os.path.isfile(path):
@@ -156,7 +157,10 @@ class DatalakeManager:
         dataframe = dataframe.set_index('timestamp')
         DatalakeModel.Meta.collection_name = collection
         self._dl_client.save_dataframe(DatalakeModel, dataframe)
-        click.secho(f"Succesfully loaded {path} in {collection}", fg="green")
+        self._console.print(
+            f"Succesfully loaded {path} in {collection}",
+            style=success_style,
+        )
 
     @staticmethod
     def _to_list(key: str, elem: str):
