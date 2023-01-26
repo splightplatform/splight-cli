@@ -38,7 +38,7 @@ def list(
 @graph_app.command()
 def get(
     ctx: typer.Context,
-    instance_id: str = typer.Argument(..., help="The Asset's ID"),
+    instance_id: str = typer.Argument(..., help="The Graph's ID"),
 ):
     manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),

@@ -8,6 +8,7 @@ from cli.engine.graph import graph_app
 from cli.engine.query import query_app
 from cli.engine.file import file_app
 from cli.engine.secret import secret_app
+from cli.engine.datalake import datalake_app
 
 engine_app = typer.Typer(
     name="Splight Engine",
@@ -23,6 +24,7 @@ engine_app.add_typer(graph_app, name="graph")
 engine_app.add_typer(query_app, name="query")
 engine_app.add_typer(file_app, name="file")
 engine_app.add_typer(secret_app, name="secret")
+engine_app.add_typer(datalake_app, name="datalake")
 
 
 @engine_app.callback(invoke_without_command=True)
