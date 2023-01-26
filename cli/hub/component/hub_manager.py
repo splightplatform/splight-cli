@@ -37,7 +37,7 @@ class HubComponentManager:
         name = spec["name"]
         version = spec["version"]
 
-        if not force and self._exist_in_hub(name, version):
+        if not force and self._exists_in_hub(name, version):
             raise ComponentAlreadyExists(name, version)
 
         with Loader("Pushing Component to Splight Hub"):
@@ -101,7 +101,7 @@ class HubComponentManager:
                 "name": name,
                 "version": version,
                 "splight_cli_version": spec["splight_cli_version"],
-                "private_policy": spec.get("privacy_policy", "private"),
+                "privacy_policy": spec.get("privacy_policy", "private"),
                 "tags": json.dumps(spec.get("tags", [])),
                 "input": json.dumps(spec.get("input", [])),
                 "ouptut": json.dumps(spec.get("output", [])),
@@ -123,7 +123,7 @@ class HubComponentManager:
             if os.path.exists(file_name):
                 os.remove(file_name)
 
-    def _exist_in_hub(self, name: str, version: str) -> bool:
+    def _exists_in_hub(self, name: str, version: str) -> bool:
         exists = False
 
         public = self._client.public.get(
