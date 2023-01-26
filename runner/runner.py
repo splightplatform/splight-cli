@@ -35,7 +35,7 @@ class RunnerConfig(BaseSettings):
 
 class SplightComponentRunner:
 
-    _BASE_CMD = "splightcli"
+    _BASE_CMD = "splight"
 
     def __init__(self):
         logging.basicConfig(
