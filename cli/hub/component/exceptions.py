@@ -20,3 +20,9 @@ class ComponentPushError(Exception):
 
     def __str__(self) -> str:
         return self._msg
+
+
+class ComponentDirectoryAlreadyExists(Exception):
+    def __init__(self, directory: str):
+        self._msg = f"Directory with name {dir} already exists in path"
+        super().__init__(self._msg)
