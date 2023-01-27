@@ -1,4 +1,5 @@
 import json
+from typing import Optional, List
 
 import typer
 from rich.console import Console
@@ -21,18 +22,19 @@ MODEL = Component
 @component_app.command()
 def list(
     ctx: typer.Context,
-    skip: int = typer.Option(
-        0, "--skip", "-s", help="Number of element to skip"
-    ),
-    limit: int = typer.Option(
-        -1, "--limit", "-l", help="Limit the number of listed elements"
-    ),
+    filters: Optional[List[str]] = typer.Option(
+        None,
+        "--filter",
+        "-f",
+        help="Query param in the form key=value",
+    )
 ):
     manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
-    manager.list(skip=skip, limit=limit)
+    params = manager.get_query_params(filters)
+    manager.list(params=params)
 
 
 @component_app.command()
