@@ -92,10 +92,11 @@ class HubComponentManager:
         version = spec["version"]
 
         file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
+        versioned_name = f"{name}-{version}"
         readme_path = os.path.join(path, README_FILE)
         try:
             with py7zr.SevenZipFile(file_name, "w") as fid:
-                fid.writeall(path, file_name)
+                fid.writeall(path, versioned_name)
 
             data = {
                 "name": name,
