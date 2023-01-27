@@ -33,7 +33,9 @@ class NotExistingWorkspace(Exception):
 class WorkspaceManager:
     def __init__(self):
         self.config_file = CONFIG_FILE
-        Path(self.config_file).touch()
+        path = Path(self.config_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
         self._config = self.__load_config()
         self._workspaces = self._config.workspaces
         self._current_workspace = self._config.current_workspace
