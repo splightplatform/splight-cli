@@ -1,13 +1,15 @@
 import os
-from typing import Any, Dict, Type, List
+from datetime import datetime
+from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
+from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
-from splight_models import SplightBaseModel, Component, DatalakeModel
-from datetime import datetime
-from cli.constants import warning_style, success_style
+from splight_models import Component, DatalakeModel, SplightBaseModel
+
+from cli.constants import success_style, warning_style
 
 SplightModel = Type[SplightBaseModel]
 
@@ -18,6 +20,10 @@ class ResourceManagerException(Exception):
 
 class DatalakeManagerException(Exception):
     pass
+
+
+class QueryParam(BaseModel):
+    value: Union[int, float, str]
 
 
 class ResourceManager:
@@ -32,6 +38,7 @@ class ResourceManager:
         self._console = Console()
 
     def get(self, instance_id: str, exclude_fields: List[str] = None):
+        exclude_fields = exclude_fields if exclude_fields is not None else []
         instance = self._client.get(self._model, id=instance_id, first=True)
         if not instance:
             raise ResourceManagerException(
@@ -45,13 +52,14 @@ class ResourceManager:
         )
         _ = [
             table.add_row(key, str(value))
-            for key, value in instance.dict().items() if key not in exclude_fields
+            for key, value in instance.dict().items()
+            if key not in exclude_fields
         ]
         self._console.print(table)
 
-    def list(self, skip: int = 0, limit: int = -1):
+    def list(self, params: Dict[str, Any]):
         instances = self._client.get(
-            resource_type=self._model, skip_=skip, limit_=limit
+            resource_type=self._model, **params,  # skip_=skip, limit_=limit
         )
         table = Table("", "ID", "Name")
         _ = [
@@ -98,6 +106,16 @@ class ResourceManager:
             style=warning_style,
         )
 
+    @staticmethod
+    def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
+        params = {}
+        if filters:
+            params = {
+                item.split("=")[0]: QueryParam(value=item.split("=")[1]).value
+                for item in filters
+            }
+        return params
+
 
 class DatalakeManager:
     def __init__(
@@ -110,19 +128,19 @@ class DatalakeManager:
         self._console = Console()
 
     def list(self, skip, limit):
-        instances = [{'id': 'default', 'name': '-'}]
-        components = self._db_client.get(
-            resource_type=Component
-        )
+        instances = [{"id": "default", "name": "-"}]
+        components = self._db_client.get(resource_type=Component)
         components = [component.dict() for component in components]
         instances.extend(components)
-        instances = instances[skip:(limit + skip if limit is not None else None)]
+        instances = instances[
+            skip:(limit + skip if limit is not None else None)
+        ]
         table = Table("", "Name", "Component reference")
         _ = [
             table.add_row(
                 str(counter),
-                item.get('id'),
-                item.get('name'),
+                item.get("id"),
+                item.get("name"),
             )
             for counter, item in enumerate(instances)
         ]
@@ -132,14 +150,13 @@ class DatalakeManager:
         if os.path.exists(path):
             raise Exception(f"File {path} already exists")
         if os.path.isdir(path):
-            path = os.path.join(path, 'splight_dump.csv')
+            path = os.path.join(path, "splight_dump.csv")
         elif not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
 
         DatalakeModel.Meta.collection_name = collection
         dataframe = self._dl_client.get_dataframe(
-            resource_type=DatalakeModel,
-            **self._get_filters(filters)
+            resource_type=DatalakeModel, **self._get_filters(filters)
         )
         dataframe.to_csv(path)
         self._console.print(
@@ -154,7 +171,7 @@ class DatalakeManager:
             raise Exception("Only CSV files are supported")
 
         dataframe = pd.read_csv(path)
-        dataframe = dataframe.set_index('timestamp')
+        dataframe = dataframe.set_index("timestamp")
         DatalakeModel.Meta.collection_name = collection
         self._dl_client.save_dataframe(DatalakeModel, dataframe)
         self._console.print(
@@ -164,13 +181,13 @@ class DatalakeManager:
 
     @staticmethod
     def _to_list(key: str, elem: str):
-        if ',' not in elem and '__in' not in key:
+        if "," not in elem and "__in" not in key:
             raise ValueError
         return list(elem.split(","))
 
     @staticmethod
     def _to_int(key: str, elem: str):
-        if elem[0] == '-':
+        if elem[0] == "-":
             can = elem[1:].isdigit()
         else:
             can = elem.isdigit()
@@ -204,11 +221,11 @@ class DatalakeManager:
             self._to_int,
             self._to_float,
             self._to_bool,
-            self._to_date
+            self._to_date,
         ]
         parsed_filters = {}
         for key, value in filters.items():
-            if key == 'limit_':
+            if key == "limit_":
                 parsed_filters[key] = value
                 continue
             for cast in to_cast:
