@@ -32,7 +32,7 @@ def list(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
-    manager.list(skip=skip, limit=limit)
+    manager.list({"skip_": skip, "limit_": limit})
 
 
 @asset_app.command()
