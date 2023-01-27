@@ -1,9 +1,7 @@
-from collections import defaultdict
 from typing import List
 
 import typer
 from rich.console import Console
-from splight_models import Asset, Component
 from cli.constants import error_style
 from cli.engine.manager import DatalakeManager, DatalakeManagerException
 
