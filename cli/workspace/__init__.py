@@ -1,59 +1,78 @@
-import click
-import logging
+import typer
+from rich.console import Console
+from rich.table import Table
 
-from cli.utils.pprint import Printer
-from cli.cli import workspace as workspace_cli
-from cli.utils import *
-from cli.context import Context, pass_context
+from cli.constants import error_style, success_style
+
+workspace_app = typer.Typer(
+    name="Splight CLI Workspace",
+    add_completion=True,
+    rich_markup_mode="rich",
+)
+console = Console()
 
 
-logger = logging.getLogger()
-
-@workspace_cli.command()
-@pass_context
-def list(context: Context) -> None:
+@workspace_app.command()
+def list(ctx: typer.Context) -> None:
     try:
-        results = context.workspace.list_workspaces()
-        results_colors = ['green' if '*' in item else Printer.DEFAULT_COLOR for item in results]
-        Printer.print_list(items=results, items_colors=results_colors, header="WORKSPACES")
+        results = ctx.obj.workspace.list_workspaces()
+        table = Table("WORKSPACES", show_lines=False, show_edge=False)
+        _ = [
+            table.add_row(item, style=success_style if "*" in item else None)
+            for item in results
+        ]
+        console.print(table)
     except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
-        return
+        console.print(
+            f"Error configuring Splight Hub: {str(e)}", style=error_style
+        )
+        typer.Exit(1)
 
 
-@workspace_cli.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def create(context: Context, name: str) -> None:
+@workspace_app.command()
+def create(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace's name"),
+) -> None:
     try:
-        context.workspace.create_workspace(name)
-        results = context.workspace.list_workspaces()
-        results_colors = ['green' if '*' in item else Printer.DEFAULT_COLOR for item in results]
-        Printer.print_list(items=results, items_colors=results_colors, header="WORKSPACES")
+        ctx.obj.workspace.create_workspace(name)
+        results = ctx.obj.workspace.list_workspaces()
+        table = Table("WORKSPACES", show_lines=False, show_edge=False)
+        _ = [
+            table.add_row(item, style=success_style if "*" in item else None)
+            for item in results
+        ]
+        console.print(table)
     except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
-        return
+        console.print(
+            f"Error configuring Splight Hub: {str(e)}", style=error_style
+        )
+        typer.Exit(1)
 
 
-@workspace_cli.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def delete(context: Context, name: str) -> None:
+@workspace_app.command()
+def delete(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace's name"),
+) -> None:
     try:
-        context.workspace.delete_workspace(name)
-        click.secho(f"Deleted workspace {name}", fg="green")
+        ctx.obj.workspace.delete_workspace(name)
+        console.print(f"Deleted workspace {name}", style=success_style)
     except Exception as e:
-        click.secho(e, fg="red")
-        return
+        console.print(e, style=error_style)
+        typer.Exit(1)
 
 
-@workspace_cli.command()
-@click.argument("name", nargs=1, type=str)
-@pass_context
-def select(context: Context, name: str) -> None:
+@workspace_app.command()
+def select(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace's name"),
+) -> None:
     try:
-        context.workspace.select_workspace(name)
-        click.secho(f"Current workspace: {name}", fg="green")
+        ctx.obj.workspace.select_workspace(name)
+        console.print(f"Current workspace: {name}", style=success_style)
     except Exception as e:
-        click.secho(f"Error configuring Splight Hub: {str(e)}", fg="red")
-        return
+        console.print(
+            f"Error configuring Splight Hub: {str(e)}", style=error_style
+        )
+        typer.Exit(1)

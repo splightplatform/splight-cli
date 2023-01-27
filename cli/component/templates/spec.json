@@ -1,6 +1,8 @@
 {
     "name": "{{component_name}}",
     "version": "{{version}}",
+    "splight_cli_version": "{{splight_cli_version}}",
+    "privacy_policy": "private",
     "tags": [],
     "custom_types": [
         {

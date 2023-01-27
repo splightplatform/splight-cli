@@ -1,6 +1,10 @@
 import os
 from unittest import TestCase
-from click.testing import CliRunner
+# from click.testing import CliRunner
+from typer.testing import CliRunner
+from splight_lib.settings import setup
+
+from cli.component.spec import Spec
 from cli.constants import DEFAULT_WORKSPACE, SPEC_FILE
 from cli.context import Context
 from cli.settings import SplightCLISettings
@@ -8,7 +12,15 @@ from cli.utils import get_json_from_file
 
 
 class FakeFramework:
-    pass
+    @property
+    def setup(self):
+        return setup
+
+    def configure(self, environment):
+        # empty_keys = [
+        #     key for key, value in environment.items() if value is None
+        # ]
+        setup.configure(environment)
 
 
 class FakeWorkspace:
@@ -73,8 +85,12 @@ class SplightCLITest(TestCase):
     def setUp(self):
         self.path = os.path.join(os.path.dirname(__file__), "TestHub")
         self.component_json = get_json_from_file(os.path.join(self.path, SPEC_FILE))
+        self.spec = Spec.parse_obj(self.component_json)
         self.name = self.component_json['name']
         self.version = self.component_json['version']
+        self.splight_cli_version = self.component_json['splight_cli_version']
+        self.privacy_policy = self.component_json['privacy_policy']
+        self.component_id = self.component_json["component_id"]
         self.custom_types = self.component_json['custom_types']
         self.input = self.component_json['input']
         self.output = self.component_json['output']
@@ -91,6 +107,7 @@ class SplightCLITest(TestCase):
             "SPLIGHT_ACCESS_ID": "access_id",
             "SPLIGHT_SECRET_KEY": "secret_key",
             "DATABASE_CLIENT": "fake_splight_lib.database.FakeDatabaseClient",
+            "HUB_CLIENT": "fake_splight_lib.hub.FakeHubClient",
             "DATALAKE_CLIENT": "fake_splight_lib.datalake.FakeDatalakeClient",
             "DEPLOYMENT_CLIENT": "fake_splight_lib.deployment.FakeDeploymentClient",
         })

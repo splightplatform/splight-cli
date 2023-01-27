@@ -1,9 +1,14 @@
 import os
 from pathlib import Path
 from pydantic import AnyUrl
+from rich.style import Style
 
 from cli.settings import SplightCLISettings
 
+
+error_style = Style(color="red", bold=True)
+success_style = Style(color="green")
+warning_style = Style(color="yellow")
 
 SPLIGHT_PATH = os.path.join(os.path.expanduser("~"), '.splight')
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,11 +28,6 @@ COMPONENT_FILE = "__init__.py"
 SPEC_FILE = "spec.json"
 INIT_FILE = "Initialization"
 README_FILE = "README"
-PICTURE_FILE = "picture.jpg"
-VARS_FILE = "vars.svars"
-
-REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE, PICTURE_FILE]
-
 MAIN_CLASS_NAME = "Main"
 
 VALID_PARAMETER_VALUES = {

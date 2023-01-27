@@ -1,7 +1,10 @@
 {
     "name": "TestHub",
     "version": "0_1",
+    "splight_cli_version": "1.1.1",
+    "privacy_policy": "private",
     "custom_types": [],
+    "component_id": "ee21534f-b80b-4f84-a84f-53ce3812fa4c",
     "input": [
         {
             "name": "Int",

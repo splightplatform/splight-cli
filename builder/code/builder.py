@@ -1,11 +1,12 @@
-from private_splight_lib.settings import setup
 from private_splight_models import BuildSpec
-from splight_models import HubComponentVersion
+from splight_models import HubComponent
 from splight_models.constants import BuildStatus
 from splight_lib import logging
+from splight_lib.webhook import WebhookClient, WebhookEvent
 from pydantic import BaseSettings
 from functools import cached_property
 from docker.errors import BuildError, APIError
+import requests
 import docker
 import base64
 import boto3
@@ -17,9 +18,37 @@ logger = logging.getLogger(__name__)
 
 
 class Context(BaseSettings):
+    SPLIGHT_API_HOST: str
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
+
+
+class ComponentManager:
+    def __init__(self, url):
+        self.url = "/".join([url, "v2", "hub", "component", "webhook", ""])
+        self.webhook_client = WebhookClient()
+
+    def update(self, component: HubComponent):
+        event = WebhookEvent(
+            event_name="hubcomponent-update",
+            object_type="HubComponent",
+            data=component.dict()
+        )
+        payload, signature = self.webhook_client.construct_payload(event)
+        headers = {'Splight-Signature': signature}
+        request = requests.Request(
+            "POST",
+            self.url,
+            data=payload,
+            headers=headers
+        )
+        prepped = request.prepare()
+        with requests.Session() as session:
+            response = session.send(prepped)
+        if response.status_code != 200:
+            raise Exception(f"Error updating component: {response.status_code} - {response.content}")
+        logger.info(f"{response.status_code} - {response.content}")
 
 
 class Builder:
@@ -35,6 +64,13 @@ class Builder:
     def __init__(self, build_spec: BuildSpec):
         self.build_spec = build_spec
         self.context = Context()
+        self.hub_component = HubComponent(
+            name=self.build_spec.name,
+            version=self.build_spec.version,
+            splight_cli_version=self.build_spec.cli_version,
+            build_status=BuildStatus.UNKNOWN,
+            min_component_capacity='small'
+        )
 
     def build_and_push_component(self):
         logger.info("Building and pushing component")
@@ -42,17 +78,11 @@ class Builder:
             self._update_component_build_status(BuildStatus.BUILDING)
             self._build_component()
             self._push_component()
-            self._update_min_component_capacity(save=False)
+            self._update_min_component_capacity()
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
             logger.info('Build failed: ', e)
             self._update_component_build_status(BuildStatus.FAILED)
-
-    def delete_credentials(self):
-        logger.info("Deleting credentials")
-        AuthClient = setup.AUTH_CLIENT
-        auth_client = AuthClient(headers=self.credentials)
-        auth_client.deployment.destroy(self.build_spec.access_id)
 
     @property
     def registry(self):
@@ -69,13 +99,6 @@ class Builder:
     @property
     def repository(self):
         return f"{self.registry}/{self.repository_name}"
-
-    @property
-    def credentials(self):
-        headers = {
-            "Authorization": f"Splight {self.build_spec.access_id} {self.build_spec.secret_key}"
-        }
-        return headers
 
     @property
     def runner_image(self):
@@ -95,10 +118,9 @@ class Builder:
         return base64.b64decode(token["authorizationData"][0]["authorizationToken"]).decode().split(":")[1]
 
     @cached_property
-    def hub_client(self):
-        logger.info("Creating hub client")
-        HubClient = setup.HUB_CLIENT
-        return HubClient(headers=self.credentials)
+    def component_manager(self):
+        logger.info("Creating commponent manager")
+        return ComponentManager(self.context.SPLIGHT_API_HOST)
 
     @property
     def docker_client(self):
@@ -113,16 +135,6 @@ class Builder:
             logger.info(f"Login result: {result}")
             self._docker_client = docker_client
         return self._docker_client
-
-    @cached_property
-    def hub_component(self):
-        logger.info("Getting hub component")
-        return self.hub_client.mine.get(
-            HubComponentVersion,
-            name=self.build_spec.name,
-            version=self.build_spec.version,
-            first=True
-        )
 
     def _build_component(self):
         logger.info("Building component")
@@ -151,21 +163,17 @@ class Builder:
             logger.error(f"Error pushing component: {e}")
             raise e
 
-    def _update_component_build_status(self, build_status: BuildStatus, save: bool = True):
-        # TODO: Update this to use a webhook
+    def _update_component_build_status(self, build_status: BuildStatus):
         logger.info(f"Updating component build status to {build_status}")
         self.hub_component.build_status = build_status
-        if save:
-            self._save_component()
+        self._save_component()
 
-    def _update_min_component_capacity(self, save: bool = True):
+    def _update_min_component_capacity(self):
         logger.info("Saving image size")
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
         image_size = float(image.attrs["Size"] / 10**9)
         self.hub_component.min_component_capacity = self._get_min_component_capacity(image_size)
-        if save:
-            self._save_component()
 
     def _get_min_component_capacity(self, image_size: float) -> str:
         for size, cap in self._component_capacity:
@@ -176,10 +184,8 @@ class Builder:
     def _save_component(self):
         logger.info("Saving component")
         try:
-            self.hub_client.mine.update(
-                HubComponentVersion,
-                id=self.hub_component.id,
-                data=self.hub_component.dict()
+            self.component_manager.update(
+                component=self.hub_component
             )
         except Exception as e:
             logger.error(f"Error saving component: {e}")
@@ -194,7 +200,6 @@ def main(
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
-    builder.delete_credentials()
 
 
 if __name__ == "__main__":
