@@ -71,7 +71,7 @@ class SpecLoader:
     _CT_KEY: str = "custom_types"
     _INPUT_KEY: str = "input"
     _OUTPUT_KEY: str = "output"
-    _BINDINGS_KEY: str = "bindings"
+    _HOOKS_KEY: str = "hooks"
     _COMMANDS_KEY: str = "commands"
     _ENDPOINTS_KEY: str = "endpoints"
 
@@ -79,7 +79,7 @@ class SpecLoader:
         self.raw_spec = get_json_from_file(os.path.join(path, SPEC_FILE))
         self._validate()
 
-    def load(self, input_parameters: Optional[List[Dict]] = None, prompt_input = True):
+    def load(self, input_parameters: Optional[List[Dict]] = None, prompt_input=True):
         input_parameters = input_parameters if input_parameters else self.raw_spec['input']
         if prompt_input:
             input_parameters = self._load_or_prompt_input(input_parameters)

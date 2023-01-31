@@ -65,7 +65,7 @@
             ]
         }
     ],
-    "bindings": [
+    "hooks": [
         {
             "name": "handle_myasset_create",
             "object_type": "MyAsset",

@@ -8,8 +8,8 @@ from splight_lib import logging
 logger = logging.getLogger()
 
 # Custom Types
-## NOTE: In case you want to create new instances of this Class
-## You can find this model in self.custom_model.MyAsset inside the Main class
+# NOTE: In case you want to create new instances of this Class
+# You can find this model in self.custom_model.MyAsset inside the Main class
 MyAsset = TypeVar('MyAsset')
 
 
@@ -43,7 +43,7 @@ class Main(AbstractComponent):
     def _list_assets(self):
         logger.info(f"List of myassets: List[MyAsset] {self.my_assets}")
 
-    # Bindings
+    # Hooks
     def handle_myasset_create(self, my_asset: MyAsset):
         self.my_assets[my_asset.id] = my_asset
         logger.info(f"CREATED MyAsset: {my_asset}")

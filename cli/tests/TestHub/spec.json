@@ -58,7 +58,7 @@
         "tag2",
         "tag3"
     ],
-    "bindings": [],
+    "hooks": [],
     "endpoints": [
         {
             "name": "proxy",

@@ -107,7 +107,7 @@ class HubComponentManager:
                 "input": json.dumps(spec.get("input", [])),
                 "ouptut": json.dumps(spec.get("output", [])),
                 "commands": json.dumps(spec.get("commands", [])),
-                "bindings": json.dumps(spec.get("bindings", [])),
+                "hooks": json.dumps(spec.get("hooks", [])),
                 "endpoints": json.dumps(spec.get("endpoints", [])),
             }
             files = {

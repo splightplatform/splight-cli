@@ -94,7 +94,7 @@ class SplightCLITest(TestCase):
         self.custom_types = self.component_json['custom_types']
         self.input = self.component_json['input']
         self.output = self.component_json['output']
-        self.bindings = self.component_json["bindings"]
+        self.hooks = self.component_json["hooks"]
         self.tags = self.component_json['tags']
         self.commands = self.component_json['commands']
         self.endpoints = self.component_json['endpoints']
