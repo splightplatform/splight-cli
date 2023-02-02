@@ -98,10 +98,6 @@ class HubComponentManager:
             with py7zr.SevenZipFile(file_name, "w") as fid:
                 fid.writeall(path, versioned_name)
 
-            # TODO: remove this once hooks are in every component
-            if "hooks" not in spec:
-                spec["hooks"] = spec.get('bindings', [])
-
             data = {
                 "name": name,
                 "version": version,
