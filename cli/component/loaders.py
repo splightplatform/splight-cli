@@ -67,7 +67,7 @@ class SpecLoader:
     _VERSION_KEY: str = "version"
     _SPLIGHT_CLI_VERSION_KEY: str = "splight_cli_version"
     _PRIVACY_POLICY_KEY: str = "privacy_policy"
-
+    _DT_KEY: str = "default_type"
     _CT_KEY: str = "custom_types"
     _INPUT_KEY: str = "input"
     _OUTPUT_KEY: str = "output"

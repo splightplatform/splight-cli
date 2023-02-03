@@ -124,11 +124,22 @@ class PrivacyPolicy(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
 
+class DefaultComponent(str, Enum):
+    CONNECTOR = "connector"
+    ALGORTIHM = "algorithm"
+    NETWORK = "network"
+    
+
+class DefaultType(str, Enum):
+    CONNECTOR = "connector"
+    NETWORK = "network"
+    ALGORITHM = "algorithm"
 
 class Spec(ModelDeployment):
     splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
     privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []
+    default_type: DefaultComponent = DefaultComponent.CONNECTOR
     custom_types: List[CustomType] = []
     input: List[Parameter] = []
     output: List[Output] = []
@@ -161,6 +172,16 @@ class Spec(ModelDeployment):
                 raise Exception(f"Tag name {tag} is not unique")
             tag_names.add(tag)
         return tags
+
+    @validator("default_type")
+    def validate_default_types(cls, default_type):
+        if default_type is None:
+            return default_type
+
+        if default_type not in [e.value for e in DefaultType]:
+            raise ValueError(f"invalid default type {default_type}")
+
+        return default_type
 
     @validator("custom_types")
     def validate_custom_types(cls, custom_types):
@@ -204,6 +225,12 @@ class Spec(ModelDeployment):
     def validate_output(cls, v, values, field):
         _check_unique_names(v, "output parameters")
         return v
+    
+    @validator("default_type")
+    def validate_default_type(cls, default_type):
+        if default_type not in [e.value for e in DefaultComponent]:
+            raise ValueError(f"invalid default type {default_type}")
+        return default_type
 
     @classmethod
     def verify(cls, dict: dict):
