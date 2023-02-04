@@ -26,7 +26,7 @@ class Component:
             {
                 "name": name,
                 "version": version,
-                "default_type": "connector",
+                "component_type": "connector",
                 "splight_cli_version": __version__,
                 "custom_types": [],
                 "input": [],

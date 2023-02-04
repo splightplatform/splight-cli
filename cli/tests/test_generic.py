@@ -89,7 +89,7 @@ class SplightCLITest(TestCase):
         self.name = self.component_json['name']
         self.version = self.component_json['version']
         self.splight_cli_version = self.component_json['splight_cli_version']
-        self.default_type = self.component_json['default_type']
+        self.component_type = self.component_json['component_type']
         self.privacy_policy = self.component_json['privacy_policy']
         self.component_id = self.component_json["component_id"]
         self.custom_types = self.component_json['custom_types']
