@@ -225,7 +225,7 @@ class Spec(ModelDeployment):
     def validate_component_type(cls, component_type):
         if component_type not in [e.value for e in ComponentType]:
             raise ValueError(f"invalid default type {component_type}")
-        returncomponent_type 
+        return component_type 
 
     @classmethod
     def verify(cls, dict: dict):
