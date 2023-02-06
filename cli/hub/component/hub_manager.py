@@ -108,7 +108,7 @@ class HubComponentManager:
                 "custom_types": json.dumps(spec.get("custom_types", [])),
                 "input": json.dumps(spec.get("input", [])),
                 "output": json.dumps(spec.get("output", [])),
-                "component_type": spec["component_type"],
+                "component_type": spec.get("component_type", "algorithm")
                 "commands": json.dumps(spec.get("commands", [])),
                 "bindings": json.dumps(spec.get("bindings", [])),
                 "endpoints": json.dumps(spec.get("endpoints", [])),
