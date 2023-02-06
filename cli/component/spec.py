@@ -128,6 +128,7 @@ class ComponentType(str, Enum):
     CONNECTOR = "connector"
     ALGORTIHM = "algorithm"
     NETWORK = "network"
+    SIMULATOR = "simulator"
     
 
 class Spec(ModelDeployment):
@@ -221,12 +222,6 @@ class Spec(ModelDeployment):
         _check_unique_names(v, "output parameters")
         return v
     
-    @validator("component_type")
-    def validate_component_type(cls, component_type):
-        if component_type not in [e.value for e in ComponentType]:
-            raise ValueError(f"invalid default type {component_type}")
-        return component_type 
-
     @classmethod
     def verify(cls, dict: dict):
         cls(**dict)
