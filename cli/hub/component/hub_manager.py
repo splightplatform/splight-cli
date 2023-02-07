@@ -104,6 +104,7 @@ class HubComponentManager:
                 "splight_cli_version": spec["splight_cli_version"],
                 "privacy_policy": spec.get("privacy_policy", "private"),
                 "tags": spec.get("tags", []),
+                "custom_types": json.dumps(spec.get("custom_types", [])),
                 "input": json.dumps(spec.get("input", [])),
                 "ouptut": json.dumps(spec.get("output", [])),
                 "commands": json.dumps(spec.get("commands", [])),
