@@ -13,6 +13,7 @@ from splight_models import (
     Deployment as ModelDeployment,
     Endpoint as ModelEndpoint
 )
+from splight_models.constants import ComponentType
 
 
 class ChoiceMixin:
@@ -124,11 +125,6 @@ class PrivacyPolicy(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
 
-class ComponentType(str, Enum):
-    CONNECTOR = "connector"
-    ALGORTIHM = "algorithm"
-    NETWORK = "network"
-    SIMULATOR = "simulator"
     
 
 class Spec(ModelDeployment):
