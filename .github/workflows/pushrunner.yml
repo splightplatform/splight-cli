@@ -1,5 +1,8 @@
 name: Push runner image to ECR
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - master
 jobs:
   upload:
     runs-on: ubuntu-latest
