@@ -120,6 +120,7 @@ class HubComponentManager:
                 files=files,
             )
         except Exception as exc:
+            raise exc
             raise ComponentPushError(name, version) from exc
         finally:
             if os.path.exists(file_name):
