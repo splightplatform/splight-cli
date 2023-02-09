@@ -8,6 +8,7 @@ from splight_lib.execution import Thread
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 
 from cli.component.spec import Spec
+from cli.component.exceptions import InvalidSplightCLIVersion
 from cli.constants import COMPONENT_FILE
 from cli.utils import get_template
 from cli.version import __version__
@@ -64,6 +65,7 @@ class Component:
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
         run_spec = loader.load(input_parameters=input_parameters)
+        self._validate_cli_version(run_spec.splight_cli_version)
         component = component_class(
             run_spec=run_spec.dict(),
             initial_setup=self.context.workspace.settings.dict(),
@@ -74,3 +76,7 @@ class Component:
     def install_requirements(self, path: str):
         loader = InitLoader(path=path)
         loader.load()
+
+    def _validate_cli_version(self, component_cli_version: str):
+        if component_cli_version != __version__:
+            raise InvalidSplightCLIVersion(component_cli_version, __version__)
