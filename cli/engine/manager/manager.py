@@ -23,7 +23,7 @@ class DatalakeManagerException(Exception):
 
 
 class QueryParam(BaseModel):
-    value: Union[int, float, str]
+    value: Union[List[int], List[float], List[str], int, float, str]
 
 
 class ResourceManager:
@@ -59,7 +59,8 @@ class ResourceManager:
 
     def list(self, params: Dict[str, Any]):
         instances = self._client.get(
-            resource_type=self._model, **params,  # skip_=skip, limit_=limit
+            resource_type=self._model,
+            **params,
         )
         table = Table("", "ID", "Name")
         _ = [
@@ -109,11 +110,20 @@ class ResourceManager:
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
         params = {}
-        if filters:
-            params = {
-                item.split("=")[0]: QueryParam(value=item.split("=")[1]).value
-                for item in filters
-            }
+        filter_dict = {}
+        for filter in filters:
+            key, v = filter.split("=")
+            if "__in" in key:
+                value = filter_dict.get(key, [])
+                value.append(v)
+                filter_dict[key] = value
+            else:
+                filter_dict[key] = v
+
+        params = {
+            key: QueryParam(value=value).value
+            for key, value in filter_dict.items()
+        }
         return params
 
 
@@ -133,7 +143,7 @@ class DatalakeManager:
         components = [component.dict() for component in components]
         instances.extend(components)
         instances = instances[
-            skip:(limit + skip if limit is not None else None)
+            skip : (limit + skip if limit is not None else None)
         ]
         table = Table("", "Name", "Component reference")
         _ = [
