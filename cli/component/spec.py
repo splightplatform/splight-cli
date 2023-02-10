@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import validator, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
 from cli.utils import *
 from cli.constants import *
 from splight_models import (
