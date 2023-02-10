@@ -131,7 +131,7 @@ class Spec(ModelDeployment):
     splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
     privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []
-    component_type: ComponentType = ComponentType.CONNECTOR
+    component_type: Optional[ComponentType] = ComponentType.CONNECTOR
     custom_types: List[CustomType] = []
     input: List[Parameter] = []
     output: List[Output] = []
@@ -164,16 +164,6 @@ class Spec(ModelDeployment):
                 raise Exception(f"Tag name {tag} is not unique")
             tag_names.add(tag)
         return tags
-
-    @validator("component_type")
-    def validate_component_types(cls, component_type):
-        if component_type is None:
-            return component_type 
-
-        if component_type not in [e.value for e in ComponentType]:
-            raise ValueError(f"invalid default type {component_type}")
-
-        return component_type 
 
     @validator("custom_types")
     def validate_custom_types(cls, custom_types):
