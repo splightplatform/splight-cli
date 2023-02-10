@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.table import Table
 from splight_abstract.hub import AbstractHubClient
 from splight_models import HubComponent, HubComponentVersion
+from splight_models.constants import ComponentType
 
 from cli.constants import (
     COMPRESSION_TYPE,
@@ -108,6 +109,7 @@ class HubComponentManager:
                 "custom_types": json.dumps(spec.get("custom_types", [])),
                 "input": json.dumps(spec.get("input", [])),
                 "output": json.dumps(spec.get("output", [])),
+                "component_type": spec.get("component_type", ComponentType.CONNECTOR.value),
                 "commands": json.dumps(spec.get("commands", [])),
                 "bindings": json.dumps(spec.get("bindings", [])),
                 "endpoints": json.dumps(spec.get("endpoints", [])),

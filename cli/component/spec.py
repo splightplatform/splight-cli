@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import validator, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
 from cli.utils import *
 from cli.constants import *
 from splight_models import (
@@ -13,6 +13,7 @@ from splight_models import (
     Deployment as ModelDeployment,
     Endpoint as ModelEndpoint
 )
+from splight_models.constants import ComponentType
 
 
 class ChoiceMixin:
@@ -124,11 +125,13 @@ class PrivacyPolicy(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
 
+    
 
 class Spec(ModelDeployment):
     splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
     privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []
+    component_type: Optional[ComponentType] = ComponentType.CONNECTOR
     custom_types: List[CustomType] = []
     input: List[Parameter] = []
     output: List[Output] = []
@@ -204,7 +207,7 @@ class Spec(ModelDeployment):
     def validate_output(cls, v, values, field):
         _check_unique_names(v, "output parameters")
         return v
-
+    
     @classmethod
     def verify(cls, dict: dict):
         cls(**dict)

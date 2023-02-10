@@ -4,6 +4,7 @@
     "splight_cli_version": "{{splight_cli_version}}",
     "privacy_policy": "private",
     "tags": [],
+    "component_type": "connector",
     "custom_types": [
         {
             "name": "MyAsset",
