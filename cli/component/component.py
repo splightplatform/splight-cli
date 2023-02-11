@@ -80,3 +80,37 @@ class Component:
     def _validate_cli_version(self, component_cli_version: str):
         if component_cli_version != __version__:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
+
+    def readme(self, path: str):
+        loader = SpecLoader(path=path)
+        spec = loader.load().dict()
+        name, version = spec['name'], spec['version']
+        if (os.path.exists(os.path.join(path, 'README.md'))):
+            print(f"README.md already exists for {name} {version}")
+            return
+        else:
+            template = get_template('auto_readme.md')
+            readme = template.render(
+                component_name=name,
+                version=version,
+                component_type=spec['component_type'].capitalize(),
+                custom_types=spec.get(['custom_types'],
+                                      {
+                    "name": "MyAsset",
+                    "fields": [
+                        {
+                            "name": "asset",
+                            "type": "Asset",
+                            "required": true
+                        },
+                        {
+                            "name": "alias",
+                            "type": "str",
+                            "required": true
+                        }
+                    ]
+                }),
+            )
+            with open(os.path.join(path, 'README.md'), 'w+') as f:
+                f.write(readme)
+            print(f"README.md created for {name} {version}")

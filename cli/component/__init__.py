@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import List, Optional
 
 import typer
 from rich.console import Console
@@ -81,3 +82,29 @@ def install_requirements(
             style=error_style,
         )
         typer.Exit(1)
+
+
+@component_app.command()
+def readme(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component source code"),
+    filters: Optional[List[str]] = typer.Option(
+        None,
+        "--force",
+        "-f",
+        help="Delete if a Readme exists", 
+    )
+) -> None:
+    try:
+        component = Component(ctx.obj)
+        console.print("Generating component README...", style=success_style)
+        component.readme(path)
+    except Exception as e:
+        console.print(
+            f"Error generating component README: {str(e)}",
+            style=error_style
+        )
+        typer.Exit(1)
+
+
+
