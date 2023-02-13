@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from jinja2 import Template
 from splight_lib.execution import Thread
+from rich.console import Console
 
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 
@@ -16,6 +17,8 @@ from cli.constants import COMPONENT_FILE
 from cli.utils import get_template
 from cli.version import __version__
 
+
+console = Console()
 
 class Component:
     name = None
@@ -105,4 +108,4 @@ class Component:
         )
         with open(os.path.join(path, 'README.md'), 'w+') as f:
             f.write(readme)
-        print(f"README.md created for {name} {version}")
+        console.print(f"README.md created for {name} {version}")
