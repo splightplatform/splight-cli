@@ -85,8 +85,8 @@ class Component:
         loader = SpecLoader(path=path)
         spec = loader.load().dict()
         name, version = spec['name'], spec['version']
-        if (os.path.exists(os.path.join(path, 'README.md'))):
-            if (not filters):
+        if os.path.exists(os.path.join(path, 'README.md')):
+            if not filters:
                 print(f"README.md already exists for {name} {version}")
                 return
             else:
