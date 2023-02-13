@@ -94,7 +94,6 @@ class Component:
         if os.path.exists(os.path.join(path, 'README.md')):
             if not force:
                 raise ReadmeExists(path)
-                return
             else:
                 os.remove(os.path.join(path, 'README.md'))
         template = get_template('auto_readme.md')
