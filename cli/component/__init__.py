@@ -88,7 +88,7 @@ def install_requirements(
 def readme(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),
-    filters: Optional[bool] = typer.Option(
+    force: Optional[bool] = typer.Option(
         False,
         "--force",
         "-f",
