@@ -88,8 +88,8 @@ def install_requirements(
 def readme(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),
-    filters: Optional[List[str]] = typer.Option(
-        None,
+    filters: Optional[bool] = typer.Option(
+        False,
         "--force",
         "-f",
         help="Delete if a Readme exists", 
@@ -98,7 +98,7 @@ def readme(
     try:
         component = Component(ctx.obj)
         console.print("Generating component README...", style=success_style)
-        component.readme(path)
+        component.readme(path, filters)
     except Exception as e:
         console.print(
             f"Error generating component README: {str(e)}",

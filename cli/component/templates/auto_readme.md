@@ -2,22 +2,35 @@
 
 ## Version: {{version}}
 
-### Table of Contents  
-[Description](#description)  
-[Input](#Input)  
-[Output](#Output)  
-[Example](#Example)
+## Table of Contents  
+1. [Description](#description)  
+2. [Input](#Input)  
+3. [Output](#Output)  
+4. [Bindings](#Bindings)  
+5. [Example](#Example)
 
 ### Description
 
-Behavior and usage of the component. Reference data
+What does the component do?
+
 ### Input
 
-- **param1**: 
-- **param2**
-- {{custom_types}}
+{% for input in inputs %}
+  - {{input.name}}: {{input.type}} value 
+{% endfor %}
 
 ### Output
 
+{% for out in output %}
+  - {{out.name}}: {{out.type}} value 
+{% endfor %}
+
+### Bindings
+
+{% for val in bindings %}
+  {{loop.index}}. {{val.name}}: {{val.object_type}} value 
+{% endfor %}
+
 ### Example
 
+Provide a sample case for {{component_name}}

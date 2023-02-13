@@ -27,7 +27,7 @@ CONFIG_FILE = os.path.join(SPLIGHT_PATH, 'config')
 COMPONENT_FILE = "__init__.py"
 SPEC_FILE = "spec.json"
 INIT_FILE = "Initialization"
-README_FILE = "README"
+README_FILE = "README.md"
 MAIN_CLASS_NAME = "Main"
 
 VALID_PARAMETER_VALUES = {
