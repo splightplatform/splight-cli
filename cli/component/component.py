@@ -4,15 +4,21 @@ from typing import Dict, List, Optional
 
 from jinja2 import Template
 from splight_lib.execution import Thread
+from rich.console import Console
 
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 
 from cli.component.spec import Spec
-from cli.component.exceptions import InvalidSplightCLIVersion
+from cli.component.exceptions import (
+    InvalidSplightCLIVersion,
+    ReadmeExists
+)
 from cli.constants import COMPONENT_FILE
 from cli.utils import get_template
 from cli.version import __version__
 
+
+console = Console()
 
 class Component:
     name = None
@@ -80,3 +86,25 @@ class Component:
     def _validate_cli_version(self, component_cli_version: str):
         if component_cli_version != __version__:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
+
+    def readme(self, path: str, force: Optional[bool] = False):
+        loader = SpecLoader(path=path)
+        spec = loader.load().dict()
+        name, version = spec['name'], spec['version']
+        if os.path.exists(os.path.join(path, 'README.md')):
+            if not force:
+                raise ReadmeExists(path)
+            else:
+                os.remove(os.path.join(path, 'README.md'))
+        template = get_template('auto_readme.md')
+        readme = template.render(
+            component_name=name,
+            version=version,
+            component_type=spec.get('component_type',''),
+            inputs=spec.get('input', []),
+            bindings=spec.get('bindings',[]),
+            output=spec.get('output', []),
+        )
+        with open(os.path.join(path, 'README.md'), 'w+') as f:
+            f.write(readme)
+        console.print(f"README.md created for {name} {version}")
