@@ -47,7 +47,7 @@ class ComponentLoader:
 
     def _validate(self):
         # VALIDATE FILES
-        for required_file in self.REQUIRED_FILES[:-1]:
+        for required_file in [x for x in self.REQUIRED_FILES if x!=README_FILE_1]:
             if not os.path.isfile(os.path.join(self.base_path, required_file)):
                 raise Exception(
                     f"{required_file} file is missing in {self.base_path}"
