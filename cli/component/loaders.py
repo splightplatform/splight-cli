@@ -6,7 +6,15 @@ from typing import Dict, List, Union, Optional
 from splight_lib.component import AbstractComponent
 from splight_lib import logging
 from cli.component.spec import Spec
-from cli.constants import MAIN_CLASS_NAME, SPEC_FILE, COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE
+from cli.constants import (
+    MAIN_CLASS_NAME,
+    SPEC_FILE,
+    COMPONENT_FILE, 
+    SPEC_FILE,
+    INIT_FILE,
+    README_FILE_1,
+    README_FILE_2
+)
 from cli.utils import get_json_from_file, input_single
 
 logger = logging.getLogger()
@@ -16,7 +24,7 @@ Primitive = Union[int, str, float, bool]
 class ComponentLoader:
     _MAIN_CLASS_NAME: str = "Main"
     REQUIRED_FILES = [
-        COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE
+        COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE_1
     ]
 
     def __init__(self, path: str) -> None:
@@ -39,10 +47,16 @@ class ComponentLoader:
 
     def _validate(self):
         # VALIDATE FILES
-        for required_file in self.REQUIRED_FILES:
+        for required_file in self.REQUIRED_FILES[:-1]:
             if not os.path.isfile(os.path.join(self.base_path, required_file)):
                 raise Exception(
                     f"{required_file} file is missing in {self.base_path}"
+                )
+        # retrocompatibility for components with README without extension
+        if not os.path.isfile(os.path.join(self.base_path, README_FILE_1)) \
+            and not os.path.isfile(os.path.join(self.base_path, README_FILE_2)):
+                raise Exception(
+                    f"No {README_FILE_1} or {README_FILE_2} found at {self.base_path}"
                 )
         if self.module:
             # VALIDATE MODULE HAS MAIN CLASS
