@@ -12,7 +12,8 @@ from splight_models.constants import ComponentType
 
 from cli.constants import (
     COMPRESSION_TYPE,
-    README_FILE,
+    README_FILE_1,
+    README_FILE_2,
     SPEC_FILE,
     success_style,
 )
@@ -94,7 +95,9 @@ class HubComponentManager:
 
         file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
         versioned_name = f"{name}-{version}"
-        readme_path = os.path.join(path, README_FILE)
+        readme_path = os.path.join(path, README_FILE_1)
+        if not os.path.exists(readme_path):
+            readme_path = os.path.join(path, README_FILE_2)
         try:
             with py7zr.SevenZipFile(file_name, "w") as fid:
                 fid.writeall(path, versioned_name)
@@ -105,7 +108,6 @@ class HubComponentManager:
                 "splight_cli_version": spec["splight_cli_version"],
                 "privacy_policy": spec.get("privacy_policy", "private"),
                 "tags": spec.get("tags", []),
-                "component_type": spec.get("component_type", "algorithm"),
                 "custom_types": json.dumps(spec.get("custom_types", [])),
                 "input": json.dumps(spec.get("input", [])),
                 "output": json.dumps(spec.get("output", [])),

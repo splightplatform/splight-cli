@@ -5,7 +5,6 @@ from rich.style import Style
 
 from cli.settings import SplightCLISettings
 
-
 error_style = Style(color="red", bold=True)
 success_style = Style(color="green")
 warning_style = Style(color="yellow")
@@ -27,7 +26,8 @@ CONFIG_FILE = os.path.join(SPLIGHT_PATH, 'config')
 COMPONENT_FILE = "__init__.py"
 SPEC_FILE = "spec.json"
 INIT_FILE = "Initialization"
-README_FILE = "README.md"
+README_FILE_1 = "README.md" 
+README_FILE_2 = "README" 
 MAIN_CLASS_NAME = "Main"
 
 VALID_PARAMETER_VALUES = {

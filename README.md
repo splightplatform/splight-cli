@@ -307,13 +307,13 @@ This will create a directory with the following structure:
 │   __init__.py
 │   Initialization
 │   spec.json
-│   README
+│   README.md
 ```
 
 - `__init__.py` : The component is coded here.
 - `Initialization` : Execute instructions for the component to be initialized.
 - `spec.json` : JSON file where the component metadata is set.
-- `README` : Text that describes the component and how it works
+- `README.md` : Text that describes the component and how it works
 
 #### Component Core
 

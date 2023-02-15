@@ -13,7 +13,10 @@ from cli.component.exceptions import (
     InvalidSplightCLIVersion,
     ReadmeExists
 )
-from cli.constants import COMPONENT_FILE
+from cli.constants import (
+    COMPONENT_FILE,
+    README_FILE_1
+)
 from cli.utils import get_template
 from cli.version import __version__
 
@@ -90,21 +93,21 @@ class Component:
     def readme(self, path: str, force: Optional[bool] = False):
         loader = SpecLoader(path=path)
         spec = loader.load().dict()
-        name, version = spec['name'], spec['version']
-        if os.path.exists(os.path.join(path, 'README.md')):
+        name, version = spec["name"], spec["version"]
+        if os.path.exists(os.path.join(path, README_FILE_1)):
             if not force:
                 raise ReadmeExists(path)
             else:
-                os.remove(os.path.join(path, 'README.md'))
-        template = get_template('auto_readme.md')
+                os.remove(os.path.join(path, README_FILE_1))
+        template = get_template("auto_readme.md")
         readme = template.render(
             component_name=name,
             version=version,
-            component_type=spec.get('component_type',''),
-            inputs=spec.get('input', []),
-            bindings=spec.get('bindings',[]),
-            output=spec.get('output', []),
+            component_type=spec.get("component_type",""),
+            inputs=spec.get("input", []),
+            bindings=spec.get("bindings",[]),
+            output=spec.get("output", []),
         )
-        with open(os.path.join(path, 'README.md'), 'w+') as f:
+        with open(os.path.join(path, README_FILE_1), "w+") as f:
             f.write(readme)
-        console.print(f"README.md created for {name} {version}")
+        console.print(f"{README_FILE_1} created for {name} {version}")
