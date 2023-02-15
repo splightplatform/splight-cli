@@ -56,7 +56,7 @@ class ComponentLoader:
         if not os.path.isfile(os.path.join(self.base_path, README_FILE_1)) \
             and not os.path.isfile(os.path.join(self.base_path, README_FILE_2)):
                 raise Exception(
-                    f"No {README_FILE_1} or {README_FILE_2} found at {self.base_path}"
+                    f"No {README_FILE_1} or {README_FILE_2} found in {self.base_path}"
                 )
         if self.module:
             # VALIDATE MODULE HAS MAIN CLASS
