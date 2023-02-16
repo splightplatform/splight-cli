@@ -19,7 +19,9 @@ if __name__ == "__main__":
     # TODO remove this overparsing
     hub_name = configure_spec["name"]
     hub_version = configure_spec["version"]
-    hub_descriptor = f"{hub_name}/{hub_version}"
+    # TODO: search for a better approach
+    renamed_version = hub_version.replace(".", "_")
+    hub_descriptor = f"{hub_name}/{renamed_version}"
     access_id = configure_spec.get("access_id", None)
     secret_key = configure_spec.get("secret_key", None)
     api_host = configure_spec.get("api_host", None)
