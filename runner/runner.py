@@ -60,7 +60,9 @@ class SplightComponentRunner:
     def run(self, component_spec: RunnerSpec):
         try:
             self._logger.info("Running component")
-            component_name = f"{component_spec.name}/{component_spec.version}"
+            # TODO: search for a better approach
+            renamed_version = component_spec.version.replace(".", "_")
+            component_name = f"{component_spec.name}/{renamed_version}"
             subprocess.run(
                 [
                     self._BASE_CMD,

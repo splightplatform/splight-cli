@@ -53,7 +53,9 @@ class HubComponentManager:
                 data={"name": name, "version": version}
             )
 
-            component_path = f"{name}/{version}"
+            # TODO: search for a better approach
+            version_modified = version.replace(".", "_")
+            component_path = f"{name}/{version_modified}"
             versioned_name = f"{name}-{version}"
             file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
             if os.path.exists(component_path):
