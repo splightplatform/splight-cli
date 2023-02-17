@@ -6,8 +6,8 @@ from cli.version import __version__
 
 
 class SplightCLISettings(BaseSettings):
-    SPLIGHT_ACCESS_ID: str = None
-    SPLIGHT_SECRET_KEY: str = None
+    SPLIGHT_ACCESS_ID: str = ""
+    SPLIGHT_SECRET_KEY: str = ""
     SPLIGHT_PLATFORM_API_HOST: str = "https://api.splight-ai.com"
     # FRAMEWORK
     DATABASE_CLIENT: str = "remote_splight_lib.database.DatabaseClient"

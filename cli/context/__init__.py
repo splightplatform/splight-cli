@@ -37,7 +37,7 @@ def check_credentials(ctx: typer.Context):
 
     access_id = settings.SPLIGHT_ACCESS_ID
     secret_key = settings.SPLIGHT_SECRET_KEY
-    if access_id is None or secret_key is None:
+    if not access_id or not secret_key:
         console.print(
             'Please set you Splight credentials with "splight configure"',
             style=error_style,
