@@ -40,7 +40,7 @@ def list(
 @alert_app.command()
 def get(
     ctx: typer.Context,
-    instance_id: str = typer.Argument(..., help="The Asset's ID"),
+    instance_id: str = typer.Argument(..., help="The Alert's ID"),
 ):
     manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
