@@ -1,6 +1,7 @@
 import typer
 
 from cli.context import check_credentials
+from cli.engine.alert import alert_app
 from cli.engine.asset import asset_app
 from cli.engine.attribute import attribute_app
 from cli.engine.component import component_app
@@ -18,6 +19,7 @@ engine_app = typer.Typer(
     no_args_is_help=True,
 )
 
+engine_app.add_typer(alert_app, name="alert")
 engine_app.add_typer(asset_app, name="asset")
 engine_app.add_typer(attribute_app, name="attribute")
 engine_app.add_typer(component_app, name="component")
