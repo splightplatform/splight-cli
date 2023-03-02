@@ -30,7 +30,9 @@ def create(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Component's name"),
     path: str = typer.Option("", "--path", "-p", help="Component's path"),
-    version: str = typer.Option("1.0", "--version", "-v", help="Component's version"),
+    version: str = typer.Option(
+        "1.0", "--version", "-v", help="Component's version"
+    ),
 ) -> None:
     try:
         component = Component(ctx.obj)
@@ -41,7 +43,7 @@ def create(
 
     except Exception as e:
         console.print(
-            f"Error creating component: {str(e)}", style=success_style
+            f"Error creating component: {str(e)}", style=error_style
         )
         typer.Exit(1)
 
