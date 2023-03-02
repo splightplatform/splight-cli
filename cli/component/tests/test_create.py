@@ -15,7 +15,7 @@ class TestCreate(SplightCLITest):
         super().tearDown()
 
     def test_create_on_custom_path(self):
-        self.component.create(self.name, self.custompath)
+        self.component.create(self.name, self.version, self.custompath)
         for filename in ComponentLoader.REQUIRED_FILES:
             self.assertTrue(
                 os.path.exists(os.path.join(self.custompath, filename))
@@ -24,5 +24,5 @@ class TestCreate(SplightCLITest):
     def test_create_already_exists(self):
         os.makedirs(self.custompath)
         with self.assertRaises(Exception):
-            self.component.create(self.name, self.custompath)
+            self.component.create(self.name, self.version, self.custompath)
 

@@ -29,14 +29,14 @@ def callback(ctx: typer.Context):
 def create(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Component's name"),
-    path: str = typer.Option("", "--path", "-p", help="Component's path"),
     version: str = typer.Option(
         "1.0", "--version", "-v", help="Component's version"
     ),
+    path: str = typer.Option("", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
         component = Component(ctx.obj)
-        component.create(name, path, version)
+        component.create(name, version, path)
         console.print(
             f"Component {name} created successfully", style=success_style
         )
