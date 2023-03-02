@@ -30,7 +30,7 @@ class Component:
     def __init__(self, context):
         self.context = context
 
-    def create(self, name, version):
+    def create(self, name, component_path, version):
         Spec.verify(
             {
                 "name": name,
@@ -43,8 +43,9 @@ class Component:
             }
         )
 
-        component_path = os.path.join(f"{name}", f"{version}")
-        os.makedirs(component_path)
+        if component_path:
+            component_path = os.path.join(f"{component_path}")
+            os.makedirs(component_path)
 
         for file_name in ComponentLoader.REQUIRED_FILES:
             template_name = file_name
