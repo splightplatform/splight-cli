@@ -30,7 +30,7 @@ class Component:
     def __init__(self, context):
         self.context = context
 
-    def create(self, name, component_path, version):
+    def create(self, name, component_path = "", version = "1.0"):
         Spec.verify(
             {
                 "name": name,
