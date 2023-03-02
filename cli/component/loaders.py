@@ -1,5 +1,6 @@
 import importlib
 import os
+import pathlib
 import sys
 import subprocess
 from typing import Dict, List, Union, Optional
@@ -28,10 +29,12 @@ class ComponentLoader:
     ]
 
     def __init__(self, path: str) -> None:
-        self.base_path = path
-        self.component_directory_name = path.split(os.sep)[-1]
+        abs_path = str(pathlib.Path(path).resolve())
+
+        self.base_path = abs_path
+        self.component_directory_name = abs_path.split(os.sep)[-1]
         self.module = None
-        sys.path.append(os.path.dirname(path))
+        sys.path.append(os.path.dirname(abs_path))
         self._validate()
 
     def load(self):
