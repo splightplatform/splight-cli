@@ -18,7 +18,7 @@ def input_single(param: dict):
         else param["value"]
     )
     name = (
-        f"{'*' if param['required'] else ''}{param['name']}: {param['type']}"
+        f"{'*' if param['required'] else ' '}{param['name']}: {param['type']}"
     )
     param_type = locate(param["type"])
     if not param_type:

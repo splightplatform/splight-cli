@@ -110,27 +110,18 @@ class SpecLoader:
         prefix: str = "",
     ):
         for param in input_parameters:
-            value = param.get("value")
-            if value is None:
-                new_value = self._prompt_param(param, prefix=prefix)
-                param["value"] = new_value
+            param_name = param["name"]
+            param["value"] = input_single(
+                {
+                    "name": f"{prefix}.{param_name}",
+                    "type": param["type"],
+                    "required": param.get("required", True),
+                    "multiple": param.get("multiple", False),
+                    "value": param.get("value"),
+                }
+            )
 
         return input_parameters
-
-    def _prompt_param(
-        self, param: Dict, prefix: str = ""
-    ) -> Primitive:
-        param_name = param["name"]
-        new_value = input_single(
-            {
-                "name": f"{prefix}.{param_name}",
-                "type": param["type"],
-                "required": param.get("required", True),
-                "multiple": param.get("multiple", False),
-                "value": param.get("value"),
-            }
-        )
-        return new_value
 
     def _validate(self):
         Spec.verify(self.raw_spec)
