@@ -1,9 +1,9 @@
 import importlib
 import os
-import pathlib
 import sys
 import subprocess
 from typing import Dict, List, Union, Optional
+from pathlib import Path
 from splight_lib.component import AbstractComponent
 from splight_lib import logging
 from cli.component.spec import Spec
@@ -29,7 +29,7 @@ class ComponentLoader:
     ]
 
     def __init__(self, path: str) -> None:
-        abs_path = str(pathlib.Path(path).resolve())
+        abs_path = str(Path(path).resolve())
 
         self.base_path = abs_path
         self.component_directory_name = abs_path.split(os.sep)[-1]
