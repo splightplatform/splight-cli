@@ -25,5 +25,5 @@ class TestRun(SplightCLITest):
         output = ansi_escape.sub("", result.output)
         self.assertEqual(
             output,
-            "Running component...\nHELLO\nHELLO2\n",
+            '''Running component...\n*.Int: int [1]: \n*.String: str [default]: \n*.Bool: bool [True]: \n*.Float: float [1.0]: \nHELLO\nHELLO2\n''',
         )
