@@ -11,17 +11,21 @@ class TestCreate(SplightCLITest):
         self.component = Component(self.context)
 
     def tearDown(self) -> None:
-        shutil.rmtree(self.name)
+        shutil.rmtree(self.custompath)
         super().tearDown()
 
-    def test_create(self):
-        self.component.create(self.name, self.version)
+    def test_create_on_custom_path(self):
+        self.component.create(self.name, self.version, self.custompath)
         for filename in ComponentLoader.REQUIRED_FILES:
             self.assertTrue(
-                os.path.exists(os.path.join(self.name, self.version, filename))
+                os.path.exists(os.path.join(self.custompath, filename))
             )
 
     def test_create_already_exists(self):
-        os.makedirs(os.path.join(self.name, self.version))
-        with self.assertRaises(Exception):
-            self.component.create(self.name, self.version)
+        os.makedirs(self.custompath)
+        self.component.create(self.name, self.version, self.custompath)
+
+        for filename in ComponentLoader.REQUIRED_FILES:
+            self.assertTrue(
+                os.path.exists(os.path.join(self.custompath, filename))
+            )

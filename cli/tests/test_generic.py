@@ -101,6 +101,7 @@ class SplightCLITest(TestCase):
         self.endpoints = self.component_json['endpoints']
         self.context = FakeContext()
         self.runner = CliRunner()
+        self.custompath = self.name + self.version + self.component_id
 
     @property
     def default_configuration(self):

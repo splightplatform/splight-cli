@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import List, Optional
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -29,18 +30,23 @@ def callback(ctx: typer.Context):
 def create(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Component's name"),
-    version: str = typer.Argument(..., help="Component's version"),
+    version: str = typer.Option(
+        "1.0", "--version", "-v", help="Component's version"
+    ),
+    path: str = typer.Option("", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
         component = Component(ctx.obj)
-        component.create(name, version)
+        component.create(name, version, path)
+        abs_path = str(Path(path).resolve())
         console.print(
-            f"Component {name} created successfully", style=success_style
+            f"Component {name} created successfully in {abs_path} .", 
+            style=success_style
         )
 
     except Exception as e:
         console.print(
-            f"Error creating component: {str(e)}", style=success_style
+            f"Error creating component: {str(e)}", style=error_style
         )
         typer.Exit(1)
 
