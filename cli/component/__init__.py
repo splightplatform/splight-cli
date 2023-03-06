@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import List, Optional
+from pathlib import Path
 
 import typer
 from rich.console import Console
@@ -37,8 +38,10 @@ def create(
     try:
         component = Component(ctx.obj)
         component.create(name, version, path)
+        abs_path = str(Path(path).resolve())
         console.print(
-            f"Component {name} created successfully", style=success_style
+            f"Component {name} created successfully in {abs_path} .", 
+            style=success_style
         )
 
     except Exception as e:
