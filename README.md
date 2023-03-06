@@ -117,17 +117,20 @@ component, here we will only cover the different sub-commands you can use
   To create a new component the command is
 
   ```bash
-  splight component create <name> <version>
+  splight component create <name> -v <version> -p <path>
   ```
 
   The parameters `<name>` and
-  `<version>` are the name and version of the component to be created.
+  `<version>` are the name and version of the component to be created,
+  while the `<path>` parameter is the path of the directory where the 
+  component will be created.
   The three commands parameters `<name>` and `<version>` are
   commong between all the sub-commands.
 
-  The command creates a new folder with the name `<name>-<version>` in the same
-  directory where the command was executed. Inside the new folder, you will find some
-  files that defines the basic structure of the component source code.
+  If no `<path>` is specified, you will find some
+  files that defines the basic structure of the component source 
+  code in the same directory where the command was executed. If `<path>` 
+  is specified, then the files will be located in the specified path.
 
 - Install component requirements
 
