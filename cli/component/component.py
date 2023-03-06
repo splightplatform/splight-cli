@@ -47,9 +47,7 @@ class Component:
             component_path = os.path.join(f"{component_path}")
             os.makedirs(component_path)
 
-
         for file_name in ComponentLoader.REQUIRED_FILES:
-
             template_name = file_name
             file_path = os.path.join(component_path, file_name)
             component_id = str(uuid.uuid4())
