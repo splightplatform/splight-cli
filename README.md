@@ -203,7 +203,7 @@ existing components that can be used in the platform.
   You can list all the components with the command
 
   ```bash
-  splight component list
+  splight hub component list
   ```
 
 - Pull or download a component
@@ -211,7 +211,7 @@ existing components that can be used in the platform.
   For downloading an existing component in _Splight Hub_ you can use
 
   ```bash
-  splight component pull <name> <version>
+  splight hub component pull <name> <version>
   ```
 
   This will download the component source code to your machine.
@@ -221,7 +221,7 @@ existing components that can be used in the platform.
   For pushing a new component or component version to _Splight Hub_ the command is
 
   ```bash
-  splight component push <path>
+  splight hub component push <path>
   ```
 
   Where `<path>` is the path (relative or absolute) for the source code of the
@@ -232,7 +232,7 @@ existing components that can be used in the platform.
   You can also list all the version of given component with
 
   ```bash
-  splight component versions <name>
+  splight hub component versions <name>
   ```
 
 ### Engine
