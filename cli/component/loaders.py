@@ -97,16 +97,22 @@ class SpecLoader:
         self.raw_spec = get_json_from_file(os.path.join(path, SPEC_FILE))
         self._validate()
 
-    def load(self, input_parameters: Optional[List[Dict]] = None, prompt_input = True, manager = None, component_id = None):
+    def load(
+        self,
+        input_parameters: Optional[List[Dict]] = None,
+        prompt_input = True,
+        manager = None,
+        component_id = None
+    ):
         input_parameters = input_parameters if input_parameters else self.raw_spec['input']
         if component_id:
-            remote_component_input = manager._client.mine.get(HubComponent, id=component_id)[0].input
+            remote_component = manager._client.mine.get(HubComponent, id=component_id)[0]
 
             input_parameters = []
-            for a in remote_component_input:
-                input_parameters.append(a.__dict__)
-        elif prompt_input:
-            input_parameters = self._load_or_prompt_input(input_parameters=input_parameters, component_id=component_id)
+            for input in remote_component.input:
+                input_parameters.append(input.__dict__)
+        if prompt_input:
+            input_parameters = self._load_or_prompt_input(input_parameters=input_parameters)
         self.raw_spec["input"] = input_parameters
         self._validate()
         return Spec.parse_obj(self.raw_spec)

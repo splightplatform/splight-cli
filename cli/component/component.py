@@ -7,7 +7,6 @@ from splight_lib.execution import Thread
 from rich.console import Console
 
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
-
 from cli.component.spec import Spec
 from cli.component.exceptions import (
     InvalidSplightCLIVersion,
@@ -17,12 +16,9 @@ from cli.constants import (
     COMPONENT_FILE,
     README_FILE_1
 )
+from cli.hub.component.hub_manager import HubComponentManager
 from cli.utils import get_template
 from cli.version import __version__
-
-from cli.hub.component.hub_manager import HubComponentManager
-
-
 
 console = Console()
 
@@ -77,7 +73,9 @@ class Component:
         component_class = loader.load()
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
-        manager = HubComponentManager(client=self.context.framework.setup.HUB_CLIENT())
+        manager = HubComponentManager(
+            client=self.context.framework.setup.HUB_CLIENT()
+        )
         run_spec = loader.load(
             input_parameters=input_parameters,
             manager=manager,
