@@ -40,7 +40,7 @@ def create(
         component.create(name, version, path)
         abs_path = str(Path(path).resolve())
         console.print(
-            f"Component {name} created successfully in {abs_path} .", 
+            f"Component {name} created successfully in {abs_path}", 
             style=success_style
         )
 
