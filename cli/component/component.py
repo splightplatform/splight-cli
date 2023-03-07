@@ -20,6 +20,9 @@ from cli.constants import (
 from cli.utils import get_template
 from cli.version import __version__
 
+from cli.hub.component.hub_manager import HubComponentManager
+
+
 
 console = Console()
 
@@ -74,7 +77,12 @@ class Component:
         component_class = loader.load()
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
-        run_spec = loader.load(input_parameters=input_parameters)
+        manager = HubComponentManager(client=self.context.framework.setup.HUB_CLIENT())
+        run_spec = loader.load(
+            input_parameters=input_parameters,
+            manager=manager,
+            component_id=component_id
+        )
         self._validate_cli_version(run_spec.splight_cli_version)
         component = component_class(
             run_spec=run_spec.dict(),
