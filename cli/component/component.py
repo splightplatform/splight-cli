@@ -74,10 +74,22 @@ class Component:
         component_class = loader.load()
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
-        # manager = ComponentManager(
-        manager = HubComponentManager(
-            client=self.context.framework.setup.HUB_CLIENT()
-        )
+
+        remote_input_parameters = []
+        if component_id:
+            db_client = self.context.framework.setup.DATABASE_CLIENT()
+            components = db_client._get(resource_type=ComponentModel)
+
+            component_input = components[0].input
+            from_component = components[0]
+            for component in components:
+                if component.id == component_id:
+                    component_input = component.input
+
+            # print("HOLAAAA",component_input)
+
+            for input in component_input:
+                remote_input_parameters.append(input.__dict__)
 
         # HACER COMPONENT MANAGER
         # componentmanager.get(component_id)
@@ -89,8 +101,8 @@ class Component:
         # 3. null
 
         run_spec = loader.load(
-            input_parameters=input_parameters,
-            manager=manager,
+            input_parameters=remote_input_parameters,
+            # manager=manager,
             component_id=component_id
         )
         self._validate_cli_version(run_spec.splight_cli_version)

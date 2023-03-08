@@ -6,7 +6,7 @@ from typing import Dict, List, Union, Optional
 from pathlib import Path
 from splight_lib.component import AbstractComponent
 from splight_lib import logging
-from splight_models import HubComponent
+from splight_models import HubComponent, Component
 from cli.component.spec import Spec
 from cli.constants import (
     MAIN_CLASS_NAME,
@@ -101,16 +101,17 @@ class SpecLoader:
         self,
         input_parameters: Optional[List[Dict]] = None,
         prompt_input = True,
-        manager = None,
         component_id = None
     ):
         input_parameters = input_parameters if input_parameters else self.raw_spec['input']
-        if component_id:
-            remote_component = manager._client.mine.get(HubComponent, id=component_id)[0]
 
-            input_parameters = []
-            for input in remote_component.input:
-                input_parameters.append(input.__dict__)
+        print(input_parameters)
+        # if component_id:
+        #     remote_component = manager._client.mine.get(Component, id=component_id)[0]
+
+        #     input_parameters = []
+        #     for input in remote_component.input:
+        #         input_parameters.append(input.__dict__)
         if prompt_input:
             input_parameters = self._load_or_prompt_input(input_parameters=input_parameters)
         self.raw_spec["input"] = input_parameters
