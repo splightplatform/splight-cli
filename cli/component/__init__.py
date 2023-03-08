@@ -72,6 +72,27 @@ def run(
 
 
 @component_app.command()
+def upgrade(
+    ctx: typer.Context,
+    from_component_id: str = typer.Option(
+        None, "--from-component-id", "-f", help="From Component's ID"
+    ),
+    to_component_id: str = typer.Option(
+        None, "--to-component-id", "-t", help="To Component's ID"
+    ),
+) -> None:
+    try:
+        component = Component(ctx.obj)
+        console.print("Upgrading component...", style=success_style)
+        # input = json.loads(input) if input else None
+        component.upgrade(from_component_id=from_component_id, to_component_id=to_component_id)
+    except Exception as e:
+        logger.exception(e)
+        console.print(f"Error upgrading component: {str(e)}", style=error_style)
+        typer.Exit(1)
+
+
+@component_app.command()
 def install_requirements(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),

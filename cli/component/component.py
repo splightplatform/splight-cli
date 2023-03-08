@@ -17,6 +17,7 @@ from cli.constants import (
     README_FILE_1
 )
 from cli.hub.component.hub_manager import HubComponentManager
+from splight_models import HubComponent
 from cli.utils import get_template
 from cli.version import __version__
 
@@ -73,9 +74,20 @@ class Component:
         component_class = loader.load()
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
+        # manager = ComponentManager(
         manager = HubComponentManager(
             client=self.context.framework.setup.HUB_CLIENT()
         )
+
+        # HACER COMPONENT MANAGER
+        # componentmanager.get(component_id)
+
+        # /hub/mine -> engine/component/components : de ahi saco los input_parameters
+        
+        # 1. input_parameters
+        # 2. component_id
+        # 3. null
+
         run_spec = loader.load(
             input_parameters=input_parameters,
             manager=manager,
@@ -88,6 +100,32 @@ class Component:
             component_id=component_id,
         )
         component.execution_client.start(Thread(target=component.start))
+
+    def upgrade(self, from_component_id, to_component_id):
+        manager = HubComponentManager(
+            client=self.context.framework.setup.HUB_CLIENT()
+        )
+
+        # traigo input de from
+        from_component = manager._client.mine.get(HubComponent, id=from_component_id)[0]
+        old_input = from_component.input
+
+        # traigo input de to
+        to_component = manager._client.mine.get(HubComponent, id=to_component_id)[0]
+        new_input = to_component.input
+
+        # los comparo y veo que onda.
+        for new in new_input:
+            for old in old_input:
+                if new.name == old.name:
+                    new.value = old.value
+
+        print(new_input)
+
+        # tendria que traer los component object
+
+        # updateo los cambios al to_component_id.
+
 
     def install_requirements(self, path: str):
         loader = InitLoader(path=path)
