@@ -17,7 +17,7 @@ from cli.constants import (
     README_FILE_1
 )
 from cli.hub.component.hub_manager import HubComponentManager
-from splight_models import HubComponent
+from splight_models import HubComponent, Component as ComponentModel
 from cli.utils import get_template
 from cli.version import __version__
 
@@ -101,31 +101,30 @@ class Component:
         )
         component.execution_client.start(Thread(target=component.start))
 
-    def upgrade(self, from_component_id, to_component_id):
-        manager = HubComponentManager(
-            client=self.context.framework.setup.HUB_CLIENT()
-        )
+    def upgrade(self, from_component_id: str, to_component_id: str):
+        db_client = self.context.framework.setup.DATABASE_CLIENT()
+        components = db_client._get(resource_type=ComponentModel)
 
-        # traigo input de from
-        from_component = manager._client.mine.get(HubComponent, id=from_component_id)[0]
+        to_component = components[0]
+        from_component = components[0]
+        for component in components:
+            if component.id == from_component_id:
+                from_component = component
+            elif component.id == to_component_id:
+                to_component = component
+
         old_input = from_component.input
-
-        # traigo input de to
-        to_component = manager._client.mine.get(HubComponent, id=to_component_id)[0]
         new_input = to_component.input
-
-        # los comparo y veo que onda.
         for new in new_input:
             for old in old_input:
                 if new.name == old.name:
                     new.value = old.value
 
-        print(new_input)
+        to_component.input = new_input
 
-        # tendria que traer los component object
+        # TODO: hay que pasar los objects!!!
 
-        # updateo los cambios al to_component_id.
-
+        db_client._update(path="v2/engine/component/components", resource_id=to_component_id, data=to_component)
 
     def install_requirements(self, path: str):
         loader = InitLoader(path=path)
