@@ -16,9 +16,8 @@ from cli.constants import (
     COMPONENT_FILE,
     README_FILE_1
 )
-from cli.hub.component.hub_manager import HubComponentManager
-from splight_models import HubComponent, Component as ComponentModel
-from cli.utils import get_template
+from splight_models import Component as ComponentModel
+from cli.utils import get_template, input_single
 from cli.version import __version__
 
 console = Console()
@@ -75,8 +74,8 @@ class Component:
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
 
-        remote_input_parameters = []
-        if component_id:
+        if component_id and not input_parameters:
+            remote_input_parameters = []
             db_client = self.context.framework.setup.DATABASE_CLIENT()
             components = db_client._get(resource_type=ComponentModel)
 
@@ -86,23 +85,13 @@ class Component:
                 if component.id == component_id:
                     component_input = component.input
 
-            # print("HOLAAAA",component_input)
-
             for input in component_input:
                 remote_input_parameters.append(input.__dict__)
 
-        # HACER COMPONENT MANAGER
-        # componentmanager.get(component_id)
-
-        # /hub/mine -> engine/component/components : de ahi saco los input_parameters
-        
-        # 1. input_parameters
-        # 2. component_id
-        # 3. null
+            input_parameters = remote_input_parameters
 
         run_spec = loader.load(
-            input_parameters=remote_input_parameters,
-            # manager=manager,
+            input_parameters=input_parameters,
             component_id=component_id
         )
         self._validate_cli_version(run_spec.splight_cli_version)
@@ -127,14 +116,28 @@ class Component:
 
         old_input = from_component.input
         new_input = to_component.input
-        for new in new_input:
+        for param in new_input:
+            setted = False
             for old in old_input:
-                if new.name == old.name:
-                    new.value = old.value
+                if param.name == old.name:
+                    param.value = old.value
+                    setted = True
+                    break
+
+            if not setted:
+                param.value = input_single(
+                    {
+                        "name": param.name,
+                        "type": param.type,
+                        "required": param.required,
+                        "multiple": param.multiple,
+                        "value": param.value,
+                    }
+                )
 
         to_component.input = new_input
 
-        # TODO: hay que pasar los objects!!!
+        # TODO: also get component objects from remote
 
         db_client._update(path="v2/engine/component/components", resource_id=to_component_id, data=to_component)
 

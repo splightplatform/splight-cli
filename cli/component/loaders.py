@@ -105,13 +105,6 @@ class SpecLoader:
     ):
         input_parameters = input_parameters if input_parameters else self.raw_spec['input']
 
-        print(input_parameters)
-        # if component_id:
-        #     remote_component = manager._client.mine.get(Component, id=component_id)[0]
-
-        #     input_parameters = []
-        #     for input in remote_component.input:
-        #         input_parameters.append(input.__dict__)
         if prompt_input:
             input_parameters = self._load_or_prompt_input(input_parameters=input_parameters)
         self.raw_spec["input"] = input_parameters
