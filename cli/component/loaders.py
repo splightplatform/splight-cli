@@ -6,7 +6,6 @@ from typing import Dict, List, Union, Optional
 from pathlib import Path
 from splight_lib.component import AbstractComponent
 from splight_lib import logging
-from splight_models import HubComponent, Component
 from cli.component.spec import Spec
 from cli.constants import (
     MAIN_CLASS_NAME,
@@ -97,16 +96,10 @@ class SpecLoader:
         self.raw_spec = get_json_from_file(os.path.join(path, SPEC_FILE))
         self._validate()
 
-    def load(
-        self,
-        input_parameters: Optional[List[Dict]] = None,
-        prompt_input = True,
-        component_id = None
-    ):
+    def load(self, input_parameters: Optional[List[Dict]] = None, prompt_input = True):
         input_parameters = input_parameters if input_parameters else self.raw_spec['input']
-
         if prompt_input:
-            input_parameters = self._load_or_prompt_input(input_parameters=input_parameters)
+            input_parameters = self._load_or_prompt_input(input_parameters)
         self.raw_spec["input"] = input_parameters
         self._validate()
         return Spec.parse_obj(self.raw_spec)
@@ -117,18 +110,27 @@ class SpecLoader:
         prefix: str = "",
     ):
         for param in input_parameters:
-            param_name = param["name"]
-            param["value"] = input_single(
-                {
-                    "name": f"{prefix}.{param_name}",
-                    "type": param["type"],
-                    "required": param.get("required", True),
-                    "multiple": param.get("multiple", False),
-                    "value": param.get("value"),
-                }
-            )
+            value = param.get("value")
+            if value is None:
+                new_value = self._prompt_param(param, prefix=prefix)
+                param["value"] = new_value
 
         return input_parameters
+
+    def _prompt_param(
+        self, param: Dict, prefix: str = ""
+    ) -> Primitive:
+        param_name = param["name"]
+        new_value = input_single(
+            {
+                "name": f"{prefix}.{param_name}",
+                "type": param["type"],
+                "required": param.get("required", True),
+                "multiple": param.get("multiple", False),
+                "value": param.get("value"),
+            }
+        )
+        return new_value
 
     def _validate(self):
         Spec.verify(self.raw_spec)

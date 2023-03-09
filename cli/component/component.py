@@ -16,9 +16,10 @@ from cli.constants import (
     COMPONENT_FILE,
     README_FILE_1
 )
-from splight_models import Component as ComponentModel
 from cli.utils import get_template, input_single
 from cli.version import __version__
+from splight_models import Component as ComponentModel
+
 
 console = Console()
 
@@ -90,10 +91,7 @@ class Component:
 
             input_parameters = remote_input_parameters
 
-        run_spec = loader.load(
-            input_parameters=input_parameters,
-            component_id=component_id
-        )
+        run_spec = loader.load(input_parameters=input_parameters)
         self._validate_cli_version(run_spec.splight_cli_version)
         component = component_class(
             run_spec=run_spec.dict(),
