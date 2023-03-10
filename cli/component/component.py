@@ -82,7 +82,7 @@ class Component:
                 ComponentModel,
                 id=component_id,
                 first=True
-            )
+            ).input
 
             for input in component_input:
                 remote_input_parameters.append(input.__dict__)
