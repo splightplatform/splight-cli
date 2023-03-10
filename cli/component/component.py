@@ -78,13 +78,11 @@ class Component:
         if component_id and not input_parameters:
             remote_input_parameters = []
             db_client = self.context.framework.setup.DATABASE_CLIENT()
-            components = db_client._get(resource_type=ComponentModel)
-
-            component_input = components[0].input
-            from_component = components[0]
-            for component in components:
-                if component.id == component_id:
-                    component_input = component.input
+            component_input = db_client.get(
+                ComponentModel,
+                id=component_id,
+                first=True
+            )
 
             for input in component_input:
                 remote_input_parameters.append(input.__dict__)
@@ -101,8 +99,17 @@ class Component:
         component.execution_client.start(Thread(target=component.start))
 
     def upgrade(self, from_component_id: str, to_component_id: str):
-        from_component = self._get_remote_component(component_id=from_component_id)
-        to_component = self._get_remote_component(component_id=to_component_id)
+        db_client = self.context.framework.setup.DATABASE_CLIENT()
+        from_component = db_client.get(
+            ComponentModel,
+            id=from_component_id,
+            first=True
+        )
+        to_component = db_client.get(
+            ComponentModel,
+            id=to_component_id,
+            first=True
+        )
 
         from_inputs = from_component.input
         to_inputs = to_component.input
@@ -128,9 +135,8 @@ class Component:
 
         to_component.input = to_inputs
 
-        # TODO: also get component objects from remote
+        # TODO: also upgrade component objects
 
-        db_client = self.context.framework.setup.DATABASE_CLIENT()
         db_client.save(instance=to_component)
 
     def install_requirements(self, path: str):
@@ -140,18 +146,6 @@ class Component:
     def _validate_cli_version(self, component_cli_version: str):
         if component_cli_version != __version__:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
-
-    def _get_remote_component(self, component_id: str):
-        db_client = self.context.framework.setup.DATABASE_CLIENT()
-        components = db_client._get(resource_type=ComponentModel)
-
-        # component = components[0]
-        for comp in components:
-            if comp.id == component_id:
-                component = comp
-                break
-
-        return component
 
     def readme(self, path: str, force: Optional[bool] = False):
         loader = SpecLoader(path=path)
