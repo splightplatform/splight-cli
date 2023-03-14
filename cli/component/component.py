@@ -93,7 +93,7 @@ class Component:
 
     def readme(self, path: str, force: Optional[bool] = False):
         loader = SpecLoader(path=path)
-        spec = loader.load().dict()
+        spec = loader.load(prompt_input=False).dict()
         name, version = spec["name"], spec["version"]
         if os.path.exists(os.path.join(path, README_FILE_1)):
             if not force:
