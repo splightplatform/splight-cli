@@ -43,7 +43,7 @@ class Component:
             }
         )
 
-        if not os.path.exists(component_path):
+        if component_path and not os.path.exists(component_path):
             component_path = os.path.join(f"{component_path}")
             os.makedirs(component_path)
 
