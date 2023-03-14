@@ -7,7 +7,6 @@ from splight_lib.execution import Thread
 from rich.console import Console
 
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
-
 from cli.component.spec import Spec
 from cli.component.exceptions import (
     InvalidSplightCLIVersion,
@@ -17,8 +16,9 @@ from cli.constants import (
     COMPONENT_FILE,
     README_FILE_1
 )
-from cli.utils import get_template
+from cli.utils import get_template, input_single
 from cli.version import __version__
+from splight_models import Component as ComponentModel
 
 
 console = Console()
@@ -74,6 +74,21 @@ class Component:
         component_class = loader.load()
         # Load json and validate Spec structure
         loader = SpecLoader(path=path)
+
+        if component_id and not input_parameters:
+            remote_input_parameters = []
+            db_client = self.context.framework.setup.DATABASE_CLIENT()
+            component_input = db_client.get(
+                ComponentModel,
+                id=component_id,
+                first=True
+            ).input
+
+            for input in component_input:
+                remote_input_parameters.append(input.__dict__)
+
+            input_parameters = remote_input_parameters
+
         run_spec = loader.load(input_parameters=input_parameters)
         self._validate_cli_version(run_spec.splight_cli_version)
         component = component_class(
@@ -82,6 +97,47 @@ class Component:
             component_id=component_id,
         )
         component.execution_client.start(Thread(target=component.start))
+
+    def upgrade(self, from_component_id: str, to_component_id: str):
+        db_client = self.context.framework.setup.DATABASE_CLIENT()
+        from_component = db_client.get(
+            ComponentModel,
+            id=from_component_id,
+            first=True
+        )
+        to_component = db_client.get(
+            ComponentModel,
+            id=to_component_id,
+            first=True
+        )
+
+        from_inputs = from_component.input
+        to_inputs = to_component.input
+        for param in to_inputs:
+            has_value = False
+
+            for old in from_inputs:
+                if param.name == old.name:
+                    param.value = old.value
+                    has_value = True
+                    break
+
+            if not has_value:
+                param.value = input_single(
+                    {
+                        "name": param.name,
+                        "type": param.type,
+                        "required": param.required,
+                        "multiple": param.multiple,
+                        "value": param.value,
+                    }
+                )
+
+        to_component.input = to_inputs
+
+        # TODO: also upgrade component objects
+
+        db_client.save(instance=to_component)
 
     def install_requirements(self, path: str):
         loader = InitLoader(path=path)
