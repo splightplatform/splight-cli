@@ -102,9 +102,8 @@ class HubComponentManager:
         if not os.path.exists(readme_path):
             readme_path = os.path.join(path, README_FILE_2)
         try:
-            for filename in os.listdir(path):
-                if filename.endswith(".csv"):
-                    self._is_valid_csv(filename=os.path.join(path, filename))
+            for filename in [f for f in os.listdir(path) if f.endswith(".csv")]:
+                self._is_valid_csv(filename=os.path.join(path, filename))
 
             with py7zr.SevenZipFile(file_name, "w") as fid:
                 fid.writeall(path, versioned_name)
