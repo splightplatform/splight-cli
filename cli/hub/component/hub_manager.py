@@ -3,6 +3,7 @@ import os
 import shutil
 from typing import Any, Dict, Optional
 
+import pathspec
 import py7zr
 from rich.console import Console
 from rich.table import Table
@@ -15,6 +16,7 @@ from cli.constants import (
     README_FILE_1,
     README_FILE_2,
     SPEC_FILE,
+    SPLIGHT_INCLUDE,
     success_style,
 )
 from cli.hub.component.exceptions import (
@@ -101,8 +103,13 @@ class HubComponentManager:
         if not os.path.exists(readme_path):
             readme_path = os.path.join(path, README_FILE_2)
         try:
+            with open(os.path.join(path, SPLIGHT_INCLUDE), "r") as splightinclude:
+                regexes = pathspec.PathSpec.from_lines('gitwildmatch', splightinclude)
+
             with py7zr.SevenZipFile(file_name, "w") as fid:
-                fid.writeall(path, versioned_name)
+                matches = regexes.match_tree(path)
+                for included_file in list(matches):
+                    fid.write(os.path.join(path, included_file), included_file)
 
             data = {
                 "name": name,
