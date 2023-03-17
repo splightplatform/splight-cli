@@ -140,7 +140,9 @@ class Component:
     def readme(self, path: str, force: Optional[bool] = False):
         loader = SpecLoader(path=path)
         spec = loader.load().dict()
-        name, version = spec["name"], spec["version"]
+        name = spec["name"]
+        version = spec["version"]
+        description = spec["description"]
         if os.path.exists(os.path.join(path, README_FILE_1)):
             if not force:
                 raise ReadmeExists(path)
@@ -150,11 +152,12 @@ class Component:
         readme = template.render(
             component_name=name,
             version=version,
+            description=description,
             component_type=spec.get("component_type", ""),
-            inputs=spec.get("input", []),
-            custom_types=spec.get("custom_types", []),
-            bindings=spec.get("bindings", []),
-            output=spec.get("output", []),
+            inputs=spec.get("input", None),
+            custom_types=spec.get("custom_types", None),
+            bindings=spec.get("bindings", None),
+            output=spec.get("output", None),
         )
         with open(os.path.join(path, README_FILE_1), "w+") as f:
             f.write(readme)
