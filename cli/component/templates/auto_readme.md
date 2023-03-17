@@ -18,6 +18,15 @@ What does the component do?
   - {{input.name}} [{{input.type}}]: (Default: {{input.value}}) {{input.description}}
 {% endfor %}
 
+### Custom Types
+
+{% for item in custom_types -%}
+  - {{item.name}}
+     {% for p in item.fields -%}
+       {{p.name}} [{{p.type}}]: (Default: {{p.value}}) {{p.description}}
+     {% endfor %}
+{% endfor %}
+
 ### Output
 
 {% for out in output -%}

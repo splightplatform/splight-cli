@@ -152,6 +152,7 @@ class Component:
             version=version,
             component_type=spec.get("component_type", ""),
             inputs=spec.get("input", []),
+            custom_types=spec.get("custom_types", []),
             bindings=spec.get("bindings", []),
             output=spec.get("output", []),
         )
