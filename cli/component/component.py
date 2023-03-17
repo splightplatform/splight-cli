@@ -3,25 +3,19 @@ import uuid
 from typing import Dict, List, Optional
 
 from jinja2 import Template
-from splight_lib.execution import Thread
 from rich.console import Console
-
-from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
-from cli.component.spec import Spec
-from cli.component.exceptions import (
-    InvalidSplightCLIVersion,
-    ReadmeExists
-)
-from cli.constants import (
-    COMPONENT_FILE,
-    README_FILE_1
-)
-from cli.utils import get_template, input_single
-from cli.version import __version__
+from splight_lib.execution import Thread
 from splight_models import Component as ComponentModel
 
+from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
+from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
+from cli.component.spec import Spec
+from cli.constants import COMPONENT_FILE, README_FILE_1
+from cli.utils import get_template, input_single
+from cli.version import __version__
 
 console = Console()
+
 
 class Component:
     name = None
@@ -30,7 +24,9 @@ class Component:
     def __init__(self, context):
         self.context = context
 
-    def create(self, name: str, version: str = "0.1.0", component_path: str = ""):
+    def create(
+        self, name: str, version: str = "0.1.0", component_path: str = "."
+    ):
         Spec.verify(
             {
                 "name": name,
@@ -43,13 +39,13 @@ class Component:
             }
         )
 
-        if component_path and not os.path.exists(component_path):
-            component_path = os.path.join(f"{component_path}")
-            os.makedirs(component_path)
+        absolute_path = os.path.abspath(component_path)
+        if not os.path.exists(absolute_path):
+            os.makedirs(absolute_path)
 
         for file_name in ComponentLoader.REQUIRED_FILES:
             template_name = file_name
-            file_path = os.path.join(component_path, file_name)
+            file_path = os.path.join(absolute_path, file_name)
             component_id = str(uuid.uuid4())
             if file_name == COMPONENT_FILE:
                 template_name = "component.py"
@@ -79,9 +75,7 @@ class Component:
             remote_input_parameters = []
             db_client = self.context.framework.setup.DATABASE_CLIENT()
             component_input = db_client.get(
-                ComponentModel,
-                id=component_id,
-                first=True
+                ComponentModel, id=component_id, first=True
             ).input
 
             for input in component_input:
@@ -101,14 +95,10 @@ class Component:
     def upgrade(self, from_component_id: str, to_component_id: str):
         db_client = self.context.framework.setup.DATABASE_CLIENT()
         from_component = db_client.get(
-            ComponentModel,
-            id=from_component_id,
-            first=True
+            ComponentModel, id=from_component_id, first=True
         )
         to_component = db_client.get(
-            ComponentModel,
-            id=to_component_id,
-            first=True
+            ComponentModel, id=to_component_id, first=True
         )
 
         from_inputs = from_component.input
@@ -160,9 +150,9 @@ class Component:
         readme = template.render(
             component_name=name,
             version=version,
-            component_type=spec.get("component_type",""),
+            component_type=spec.get("component_type", ""),
             inputs=spec.get("input", []),
-            bindings=spec.get("bindings",[]),
+            bindings=spec.get("bindings", []),
             output=spec.get("output", []),
         )
         with open(os.path.join(path, README_FILE_1), "w+") as f:

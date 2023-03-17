@@ -31,16 +31,16 @@ def create(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Component's name"),
     version: str = typer.Option(
-        "1.0", "--version", "-v", help="Component's version"
+        "0.1.0", "--version", "-v", help="Component's version"
     ),
-    path: str = typer.Option("", "--path", "-p", help="Component's path"),
+    path: str = typer.Option(".", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
         component = Component(ctx.obj)
         component.create(name, version, path)
         abs_path = str(Path(path).resolve())
         console.print(
-            f"Component {name} created successfully in {abs_path}", 
+            f"Component {name} created successfully in {abs_path}",
             style=success_style
         )
 
@@ -112,7 +112,7 @@ def readme(
         False,
         "--force",
         "-f",
-        help="Delete if a Readme exists", 
+        help="Delete if a Readme exists",
     )
 ) -> None:
     try:
