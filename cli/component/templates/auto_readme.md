@@ -15,6 +15,8 @@
 ### Input
 
 {% if inputs is not none -%}
+The component's input parameters are:
+
 {% for input in inputs -%}
   - {{input.name}} [{{input.type}}]: (Default: {{input.value}}) {{input.description}}
 {% endfor -%}
@@ -25,6 +27,8 @@ This component does not have any input parameter.
 ### Custom Types
 
 {% if custom_types is not none -%}
+The custom types defined by the component are:
+
 {% for item in custom_types -%}
   - {{item.name}}
      {% for p in item.fields -%}
@@ -38,12 +42,17 @@ This component does not have any custom type.
 ### Output
 
 {% if output is not none -%}
+The component's output are:
+
 {% for out in output -%}
-  - {{out.name}}: {{out.type}} value 
+  - {{out.name}}:
+    {% for field in out.fields -%}
+      {{field.name}} [{{field.type}}]
+    {% endfor %}
 {% endfor %}
 {%- else -%}
 This component does not have any output.
-{%- endif %}
+{%- endif -%}
 
 ### Bindings
 
