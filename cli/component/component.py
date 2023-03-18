@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from typing import Dict, List, Optional
@@ -149,6 +150,9 @@ class Component:
             else:
                 os.remove(os.path.join(path, README_FILE_1))
         template = get_template("auto_readme.md")
+        parsed_bindings = [
+            json.loads(binding.json()) for binding in spec.bindings
+        ]
         readme = template.render(
             component_name=name,
             version=version,
@@ -156,8 +160,10 @@ class Component:
             component_type=spec.component_type,
             inputs=spec.input,
             custom_types=spec.custom_types,
-            bindings=spec.bindings,
+            bindings=parsed_bindings,
+            commands=spec.commands,
             output=spec.output,
+            endpoints=spec.endpoints,
         )
         with open(os.path.join(path, README_FILE_1), "w+") as f:
             f.write(readme)

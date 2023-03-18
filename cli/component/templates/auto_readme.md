@@ -19,7 +19,7 @@
   - {{input.name}} [{{input.type}}]: (Default: {{input.value}}) {{input.description}}
 {% endfor -%}
 {%- else -%}
-This component does not have any input parameter
+This component does not have any input parameter.
 {%- endif %}
 
 ### Custom Types
@@ -32,7 +32,7 @@ This component does not have any input parameter
      {% endfor %}
 {% endfor -%}
 {%- else -%}
-This component does not have any custom type
+This component does not have any custom type.
 {%- endif -%}
 
 ### Output
@@ -42,15 +42,42 @@ This component does not have any custom type
   - {{out.name}}: {{out.type}} value 
 {% endfor %}
 {%- else -%}
-This component does not have any output
+This component does not have any output.
 {%- endif %}
 
 ### Bindings
 
 {% if bindings -%}
 {% for val in bindings -%}
-  {{loop.index}}. {{val.name}}: {{val.object_type}} value 
+  {{loop.index}}. {{val.name}}: The binding **{{val.name}}** is executed when the action **{{val.object_action}}** is applied on a **{{val.object_type}}**.
 {% endfor %}
 {%- else -%}
-This component does not have any binding
+This component does not have any binding.
+{%- endif %}
+
+### Commands
+
+{% if commands -%}
+The component commands are the following:
+
+{% for val in commands -%}
+  {{loop.index}}. {{val.name}}: 
+    {% for field in val.fields -%}
+      {{field.name}} [{{field.type}}]
+    {% endfor %}
+{% endfor %}
+{%- else -%}
+This component does not have any command.
+{%- endif -%}
+
+### Endpoints
+
+{% if endpoints -%}
+The component's endpoints are:
+
+{% for val in endpoints -%}
+  {{loop.index}}. Endpoint **{{val.name}}** on port {{val.port}}.
+{% endfor %}
+{%- else -%}
+This component does not have any command
 {%- endif -%}
