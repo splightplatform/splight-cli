@@ -88,5 +88,5 @@ The component's endpoints are:
   {{loop.index}}. Endpoint **{{val.name}}** on port {{val.port}}.
 {% endfor %}
 {%- else -%}
-This component does not have any command
+This component does not have any endpoint
 {%- endif -%}
