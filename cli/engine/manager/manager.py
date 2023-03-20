@@ -10,6 +10,7 @@ from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
 from splight_models import Component, DatalakeModel, SplightBaseModel
 
 from cli.constants import success_style, warning_style, REQUIRED_DATALAKE_COLUMNS
+from cli.component.exceptions import InvalidCSVColumns
 
 SplightModel = Type[SplightBaseModel]
 
@@ -253,4 +254,4 @@ class DatalakeManager:
         required_columns = REQUIRED_DATALAKE_COLUMNS
 
         if not required_columns.issubset(set(data.columns)):
-            raise Exception("CSV file does not have all necessary columns.")
+            raise InvalidCSVColumns(columns=required_columns)
