@@ -1,3 +1,17 @@
+from typing import Set
+
+
+class InvalidCSVColumns(Exception):
+    def __init__(self, columns: Set[str]):
+        self._msg = (
+            "CSV file does not have the necessary columns. "
+            f"The required columns are {columns}."
+        )
+
+    def __str__(self) -> str:
+        return self._msg
+
+
 class InvalidSplightCLIVersion(Exception):
     def __init__(self, component_cli_version: str, cli_version: str):
         self._msg = (
@@ -7,6 +21,7 @@ class InvalidSplightCLIVersion(Exception):
 
     def __str__(self) -> str:
         return self._msg
+
 
 class ReadmeExists(Exception):
     def __init__(self, readme_path: str):
