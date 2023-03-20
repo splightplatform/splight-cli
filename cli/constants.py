@@ -29,7 +29,7 @@ INIT_FILE = "Initialization"
 README_FILE_1 = "README.md" 
 README_FILE_2 = "README" 
 MAIN_CLASS_NAME = "Main"
-SPLIGHT_INCLUDE = ".splightinclude"
+SPLIGHT_IGNORE = ".splightignore"
 
 VALID_PARAMETER_VALUES = {
     "int": int,

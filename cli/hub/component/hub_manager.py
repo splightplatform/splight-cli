@@ -16,7 +16,7 @@ from cli.constants import (
     README_FILE_1,
     README_FILE_2,
     SPEC_FILE,
-    SPLIGHT_INCLUDE,
+    SPLIGHT_IGNORE,
     success_style,
 )
 from cli.hub.component.exceptions import (
@@ -103,12 +103,19 @@ class HubComponentManager:
         if not os.path.exists(readme_path):
             readme_path = os.path.join(path, README_FILE_2)
         try:
-            with open(os.path.join(path, SPLIGHT_INCLUDE), "r") as splightinclude:
-                regexes = pathspec.PathSpec.from_lines('gitwildmatch', splightinclude)
+            with open(os.path.join(path, SPLIGHT_IGNORE), "r") as splightignore:
+                regexes = pathspec.PathSpec.from_lines(
+                    'gitwildmatch',
+                    splightignore
+                )
 
             with py7zr.SevenZipFile(file_name, "w") as fid:
-                matches = regexes.match_tree(path)
-                for included_file in list(matches):
+                ignored_files = set(regexes.match_tree(path))
+                matches = filter(
+                    lambda f: f not in ignored_files,
+                    os.listdir(path)
+                )
+                for included_file in matches:
                     fid.write(os.path.join(path, included_file), included_file)
 
             data = {
