@@ -1,3 +1,4 @@
+import json
 import os
 import uuid
 from typing import Dict, List, Optional
@@ -139,21 +140,30 @@ class Component:
 
     def readme(self, path: str, force: Optional[bool] = False):
         loader = SpecLoader(path=path)
-        spec = loader.load().dict()
-        name, version = spec["name"], spec["version"]
+        spec = loader.load(prompt_input=False)
+        name = spec.name
+        version = spec.version
+        description = spec.description
         if os.path.exists(os.path.join(path, README_FILE_1)):
             if not force:
                 raise ReadmeExists(path)
             else:
                 os.remove(os.path.join(path, README_FILE_1))
         template = get_template("auto_readme.md")
+        parsed_bindings = [
+            json.loads(binding.json()) for binding in spec.bindings
+        ]
         readme = template.render(
             component_name=name,
             version=version,
-            component_type=spec.get("component_type", ""),
-            inputs=spec.get("input", []),
-            bindings=spec.get("bindings", []),
-            output=spec.get("output", []),
+            description=description,
+            component_type=spec.component_type,
+            inputs=spec.input,
+            custom_types=spec.custom_types,
+            bindings=parsed_bindings,
+            commands=spec.commands,
+            output=spec.output,
+            endpoints=spec.endpoints,
         )
         with open(os.path.join(path, README_FILE_1), "w+") as f:
             f.write(readme)
