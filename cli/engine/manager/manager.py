@@ -249,7 +249,7 @@ class DatalakeManager:
             parsed_filters[key] = value
         return parsed_filters
 
-    def _validate_csv(self, data):
+    def _validate_csv(self, data: pd.DataFrame):
         required_columns = REQUIRED_DATALAKE_COLUMNS
 
         if not required_columns.issubset(set(data.columns)):
