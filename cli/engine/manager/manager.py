@@ -9,7 +9,7 @@ from rich.table import Table
 from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
 from splight_models import Component, DatalakeModel, SplightBaseModel
 
-from cli.constants import success_style, warning_style
+from cli.constants import success_style, warning_style, REQUIRED_DATALAKE_COLUMNS
 
 SplightModel = Type[SplightBaseModel]
 
@@ -174,13 +174,14 @@ class DatalakeManager:
             style=success_style,
         )
 
-    def load(self, collection, path):
+    def load(self, collection: str, path: str):
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
 
         dataframe = pd.read_csv(path)
+        self._validate_csv(dataframe)
         dataframe = dataframe.set_index("timestamp")
         DatalakeModel.Meta.collection_name = collection
         self._dl_client.save_dataframe(DatalakeModel, dataframe)
@@ -247,3 +248,9 @@ class DatalakeManager:
 
             parsed_filters[key] = value
         return parsed_filters
+
+    def _validate_csv(self, data):
+        required_columns = REQUIRED_DATALAKE_COLUMNS
+
+        if not required_columns.issubset(set(data.columns)):
+            raise Exception("CSV file does not have all necessary columns.")

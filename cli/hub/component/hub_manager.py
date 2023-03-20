@@ -3,7 +3,6 @@ import os
 import shutil
 from typing import Any, Dict, Optional
 
-import pandas as pd
 import py7zr
 from rich.console import Console
 from rich.table import Table
@@ -102,9 +101,6 @@ class HubComponentManager:
         if not os.path.exists(readme_path):
             readme_path = os.path.join(path, README_FILE_2)
         try:
-            for filename in [f for f in os.listdir(path) if f.endswith(".csv")]:
-                self._is_valid_csv(filename=os.path.join(path, filename))
-
             with py7zr.SevenZipFile(file_name, "w") as fid:
                 fid.writeall(path, versioned_name)
 
@@ -148,10 +144,3 @@ class HubComponentManager:
         if any([list(public), list(private)]):
             exists = True
         return exists
-
-    def _is_valid_csv(self, filename):
-        try:
-            pd.read_csv(filename)
-        except pd.errors.ParserError as e:
-            logger.error(f"{filename} has invalid csv format.")
-            raise e
