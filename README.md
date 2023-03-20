@@ -162,6 +162,18 @@ component, here we will only cover the different sub-commands you can use
   configuration different to the one defined in the `spec.json` file. In the following
   section we will dive in in the usage of the file `spec.json`.
 
+- Create component Readme
+  
+  As a component developer, you can generate a README.md file automatically using the 
+  command
+
+  ```bash 
+  splight component readme <path> [-f]
+  ```
+
+  This way, based on the `spec.json` file the readme is generated and you don't need 
+  to care about basic descriptions like input, output, custom types and more.
+
 ### Configure
 
 This command is used for configuring Splight CLI and can be used as many times as you
