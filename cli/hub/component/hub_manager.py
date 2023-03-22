@@ -109,7 +109,7 @@ class HubComponentManager:
                     splightignore
                 )
             ignored_files = set(regexes.match_tree(path))
-        except Exception:
+        except:
             ignored_files = {}
 
         try:
