@@ -15,7 +15,8 @@ from cli.component.exceptions import (
 )
 from cli.constants import (
     COMPONENT_FILE,
-    README_FILE_1
+    README_FILE_1,
+    SPLIGHT_IGNORE,
 )
 from cli.utils import get_template
 from cli.version import __version__
@@ -47,7 +48,10 @@ class Component:
             component_path = os.path.join(f"{component_path}")
             os.makedirs(component_path)
 
-        for file_name in ComponentLoader.REQUIRED_FILES:
+        files_to_create = ComponentLoader.REQUIRED_FILES
+        files_to_create.append(SPLIGHT_IGNORE)
+
+        for file_name in files_to_create:
             template_name = file_name
             file_path = os.path.join(component_path, file_name)
             component_id = str(uuid.uuid4())
