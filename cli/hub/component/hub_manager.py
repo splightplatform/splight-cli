@@ -24,6 +24,7 @@ from cli.hub.component.exceptions import (
     ComponentPullError,
     ComponentPushError,
     ComponentDirectoryAlreadyExists,
+    SplightIgnoreMissing,
 )
 from cli.utils.loader import Loader
 
@@ -108,7 +109,10 @@ class HubComponentManager:
                     'gitwildmatch',
                     splightignore
                 )
+        except Exception:
+            raise SplightIgnoreMissing()
 
+        try:
             with py7zr.SevenZipFile(file_name, "w") as fid:
                 ignored_files = set(regexes.match_tree(path))
                 matches = filter(
@@ -116,7 +120,10 @@ class HubComponentManager:
                     os.listdir(path)
                 )
                 for included_file in matches:
-                    fid.write(os.path.join(path, included_file), included_file)
+                    fid.write(
+                        os.path.join(path, included_file),
+                        os.path.join(versioned_name, included_file)
+                    )
 
             data = {
                 "name": name,
