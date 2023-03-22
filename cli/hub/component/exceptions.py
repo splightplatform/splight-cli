@@ -28,11 +28,3 @@ class ComponentDirectoryAlreadyExists(Exception):
 
     def __str__(self) -> str:
         return self._msg
-
-
-class SplightIgnoreMissing(Exception):
-    def __init__(self):
-        self._msg = f".splightignore file is missing in component directory."
-
-    def __str__(self) -> str:
-        return self._msg
