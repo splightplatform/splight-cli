@@ -9,15 +9,8 @@ from rich.console import Console
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 
 from cli.component.spec import Spec
-from cli.component.exceptions import (
-    InvalidSplightCLIVersion,
-    ReadmeExists
-)
-from cli.constants import (
-    COMPONENT_FILE,
-    README_FILE_1,
-    SPLIGHT_IGNORE,
-)
+from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
+from cli.constants import COMPONENT_FILE, README_FILE_1, SPLIGHT_IGNORE
 from cli.utils import get_template
 from cli.version import __version__
 
