@@ -11,7 +11,8 @@ from splight_models import Component as ComponentModel
 from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
-from cli.constants import COMPONENT_FILE, README_FILE_1
+from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
+from cli.constants import COMPONENT_FILE, README_FILE_1, SPLIGHT_IGNORE
 from cli.utils import get_template, input_single
 from cli.version import __version__
 
@@ -44,7 +45,10 @@ class Component:
         if not os.path.exists(absolute_path):
             os.makedirs(absolute_path)
 
-        for file_name in ComponentLoader.REQUIRED_FILES:
+        files_to_create = ComponentLoader.REQUIRED_FILES
+        files_to_create.append(SPLIGHT_IGNORE)
+
+        for file_name in files_to_create:
             template_name = file_name
             file_path = os.path.join(absolute_path, file_name)
             component_id = str(uuid.uuid4())
