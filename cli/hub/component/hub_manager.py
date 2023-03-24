@@ -109,8 +109,8 @@ class HubComponentManager:
                     splightignore
                 )
             ignored_files = set(regexes.match_tree(path))
-        except:
-            ignored_files = {}
+        except FileNotFoundError:
+            ignored_files = set()
 
         try:
             with py7zr.SevenZipFile(file_name, "w") as fid:

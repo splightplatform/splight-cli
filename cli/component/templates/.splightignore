@@ -6,6 +6,12 @@
 .pre-commit-config.yaml
 *.7z
 
+# C extensions
+*.so
+
+# archiver files
+*.a
+
 # Distribution / packaging
 .Python
 build/
