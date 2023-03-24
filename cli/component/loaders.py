@@ -10,7 +10,7 @@ from cli.component.spec import Spec
 from cli.constants import (
     MAIN_CLASS_NAME,
     SPEC_FILE,
-    COMPONENT_FILE, 
+    COMPONENT_FILE,
     SPEC_FILE,
     INIT_FILE,
     README_FILE_1,
@@ -82,6 +82,7 @@ class ComponentLoader:
 class SpecLoader:
     _NAME_KEY: str = "name"
     _VERSION_KEY: str = "version"
+    _DESCRIPTION_KEY: str = "description"
     _SPLIGHT_CLI_VERSION_KEY: str = "splight_cli_version"
     _PRIVACY_POLICY_KEY: str = "privacy_policy"
     _COMPONENT_KEY: str = "component_type"

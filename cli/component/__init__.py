@@ -31,16 +31,16 @@ def create(
     ctx: typer.Context,
     name: str = typer.Argument(..., help="Component's name"),
     version: str = typer.Option(
-        "1.0", "--version", "-v", help="Component's version"
+        "0.1.0", "--version", "-v", help="Component's version"
     ),
-    path: str = typer.Option("", "--path", "-p", help="Component's path"),
+    path: str = typer.Option(".", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
         component = Component(ctx.obj)
         component.create(name, version, path)
         abs_path = str(Path(path).resolve())
         console.print(
-            f"Component {name} created successfully in {abs_path}", 
+            f"Component {name} created successfully in {abs_path}",
             style=success_style
         )
 
@@ -70,6 +70,20 @@ def run(
         console.print(f"Error running component: {str(e)}", style=error_style)
         typer.Exit(1)
 
+@component_app.command()
+def upgrade(
+    ctx: typer.Context,
+    from_component_id: str = typer.Option(None, "--from-component-id", "-f", help="From Component's ID"),
+    to_component_id: str = typer.Option(None, "--to-component-id", "-t", help="To Component's ID"),
+) -> None:
+    try:
+        component = Component(ctx.obj)
+        console.print("Upgrading component...", style=success_style)
+        component.upgrade(from_component_id=from_component_id, to_component_id=to_component_id)
+    except Exception as e:
+        logger.exception(e)
+        console.print(f"Error upgrading component: {str(e)}", style=error_style)
+        typer.Exit(1)
 
 @component_app.command()
 def install_requirements(
@@ -98,7 +112,7 @@ def readme(
         False,
         "--force",
         "-f",
-        help="Delete if a Readme exists", 
+        help="Delete if a Readme exists",
     )
 ) -> None:
     try:

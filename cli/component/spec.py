@@ -54,7 +54,7 @@ class Parameter(ModelInputParameter, ChoiceMixin):
         # UUIDs and Date must be None
         if VALID_PARAMETER_VALUES[type_] is None:
             return v
-        
+
         # if values["required"] and v is None:
         #     raise ValueError("value must be set")
 
@@ -125,10 +125,10 @@ class PrivacyPolicy(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
 
-    
 
 class Spec(ModelDeployment):
     splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
+    description: Optional[str] = None
     privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []
     component_type: Optional[ComponentType] = ComponentType.CONNECTOR
@@ -207,7 +207,7 @@ class Spec(ModelDeployment):
     def validate_output(cls, v, values, field):
         _check_unique_names(v, "output parameters")
         return v
-    
+
     @classmethod
     def verify(cls, dict: dict):
         cls(**dict)

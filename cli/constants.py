@@ -31,6 +31,14 @@ README_FILE_2 = "README"
 MAIN_CLASS_NAME = "Main"
 SPLIGHT_IGNORE = ".splightignore"
 
+REQUIRED_DATALAKE_COLUMNS = {
+    "timestamp",
+    "asset",
+    "attribute",
+    "value",
+    "output_format"
+}
+
 VALID_PARAMETER_VALUES = {
     "int": int,
     "bool": bool,
