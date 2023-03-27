@@ -41,7 +41,7 @@ _SplightCLI_ is a Python package that can be installed using `pip`
 pip install splight-cli
 ```
 
-Once you have installed `splight-cli` you can check the installation with 
+Once you have installed `splight-cli` you can check the installation with
 ```bash
 splight --version
 ```
@@ -59,6 +59,30 @@ Options:
 Commands:
 ...
 ```
+
+You can enable auto completions by running
+
+```bash
+splight --install-completion <SHELL>
+```
+
+where SHELL is either bash, zsh, fish, powershell, pwsh.
+
+This will add commands at the bottom of your shell's dotfile (zsh example):
+
+```bash
+autoload -Uz compinit
+zstyle ':completion:*' menu select
+fpath+=~/.zfunc
+```
+
+If these do not work after restarting the shell, you can try adding
+
+```bash
+compinit -D
+```
+
+to the bottom of your shell's dotfile, in order to recreate the autocompletions file, and restarting again.
 
 ### Configuration
 
@@ -122,14 +146,14 @@ component, here we will only cover the different sub-commands you can use
 
   The parameters `<name>` and
   `<version>` are the name and version of the component to be created,
-  while the `<path>` parameter is the path of the directory where the 
+  while the `<path>` parameter is the path of the directory where the
   component will be created.
   The three commands parameters `<name>` and `<version>` are
   commong between all the sub-commands.
 
   If no `<path>` is specified, you will find some
-  files that defines the basic structure of the component source 
-  code in the same directory where the command was executed. If `<path>` 
+  files that defines the basic structure of the component source
+  code in the same directory where the command was executed. If `<path>`
   is specified, then the files will be located in the specified path.
 
 - Install component requirements
@@ -163,15 +187,15 @@ component, here we will only cover the different sub-commands you can use
   section we will dive in in the usage of the file `spec.json`.
 
 - Create component Readme
-  
-  As a component developer, you can generate a README.md file automatically using the 
+
+  As a component developer, you can generate a README.md file automatically using the
   command
 
-  ```bash 
+  ```bash
   splight component readme <path> [-f]
   ```
 
-  This way, based on the `spec.json` file the readme is generated and you don't need 
+  This way, based on the `spec.json` file the readme is generated and you don't need
   to care about basic descriptions like input, output, custom types and more.
 
 ### Configure
@@ -205,8 +229,8 @@ splight configure set <parameter> <value>
 
 ### Hub
 
-This command allows you to interact with the Splight HUB, places where you can find all the 
-existing components that can be used in the platform. 
+This command allows you to interact with the Splight HUB, places where you can find all the
+existing components that can be used in the platform.
 
 #### Component
 
@@ -249,7 +273,7 @@ existing components that can be used in the platform.
 
 ### Engine
 
-The `engine` command is used for interacting with the Splight Engine. So far, the available 
+The `engine` command is used for interacting with the Splight Engine. So far, the available
 subcommands provide an interface for creating, reaading and deleting resources in the engine.
 
 The command is
@@ -257,7 +281,7 @@ The command is
 splight engine <subcommand> <action> [extra args]
 ```
 
-depending on the which sub-command you use you can get different actions 
+depending on the which sub-command you use you can get different actions
 to perform
 
 The valid sub-commands so far are:
