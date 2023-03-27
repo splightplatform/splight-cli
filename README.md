@@ -82,7 +82,7 @@ If these do not work after restarting the shell, you can try adding
 compinit -D
 ```
 
-to the bottom of your shell's dotfile in order to recreate the autocompletions file and restarting again.
+to the bottom of your shell's dotfile, in order to recreate the autocompletions file, and restarting again.
 
 ### Configuration
 
