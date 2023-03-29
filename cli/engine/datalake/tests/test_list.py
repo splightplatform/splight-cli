@@ -1,3 +1,8 @@
+import os
+
+os.environ["SPLIGHT_ACCESS_ID"] = "access_id"
+os.environ["SPLIGHT_SECRET_KEY"] = "secret_key"
+
 from unittest.mock import patch
 
 from remote_splight_lib.database import DatabaseClient
@@ -20,13 +25,12 @@ remote_collections = [
 class TestList(SplightCLITest):
     def setUp(self):
         super().setUp()
-        self.configure()
 
-    # @patch.object(DatabaseClient, "get", return_value=remote_collections)
-    @patch("remote_splight_lib.database.DatabaseClient.get", return_value=remote_collections)
-    @patch("remote_splight_lib.settings.settings.SPLIGHT_SECRET_KEY", return_value="secret_key")
-    @patch("remote_splight_lib.settings.settings.SPLIGHT_ACCESS_ID", return_value="access_id")
-    def test_list(self, mock_id, mock_key, mock_get):
+    @patch(
+        "remote_splight_lib.database.DatabaseClient.get",
+        return_value=remote_collections,
+    )
+    def test_list(self, mock):
         result = self.runner.invoke(
             datalake_app, "list", obj=self.context, catch_exceptions=False
         )
