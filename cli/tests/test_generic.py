@@ -1,6 +1,7 @@
 import os
+import shutil
 from unittest import TestCase
-# from click.testing import CliRunner
+
 from typer.testing import CliRunner
 from splight_lib.settings import setup
 
@@ -108,10 +109,6 @@ class SplightCLITest(TestCase):
         return SplightCLISettings.parse_obj({
             "SPLIGHT_ACCESS_ID": "access_id",
             "SPLIGHT_SECRET_KEY": "secret_key",
-            "DATABASE_CLIENT": "fake_splight_lib.database.FakeDatabaseClient",
-            "HUB_CLIENT": "fake_splight_lib.hub.FakeHubClient",
-            "DATALAKE_CLIENT": "fake_splight_lib.datalake.FakeDatalakeClient",
-            "DEPLOYMENT_CLIENT": "fake_splight_lib.deployment.FakeDeploymentClient",
         })
 
     def configure(self):
