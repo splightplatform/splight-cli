@@ -30,7 +30,11 @@ class TestPull(SplightCLITest):
         file_name = f"{self.name}-{self.version}"
         mock1.assert_called_with(file_name, path)
 
-    def test_pull_already_exists_in_local(self):
+    @patch(
+        "remote_splight_lib.hub.SplightHubClient.download",
+        return_value=(b"file content", 200),
+    )
+    def test_pull_already_exists_in_local(self, mock):
         component_path = os.path.join(".", f"{self.name}/{self.version}")
         os.makedirs(component_path)
         with self.assertRaises(ComponentDirectoryAlreadyExists):
