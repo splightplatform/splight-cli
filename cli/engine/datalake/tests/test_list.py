@@ -24,7 +24,9 @@ class TestList(SplightCLITest):
 
     # @patch.object(DatabaseClient, "get", return_value=remote_collections)
     @patch("remote_splight_lib.database.DatabaseClient.get", return_value=remote_collections)
-    def test_list(self, mock_get):
+    @patch("remote_splight_lib.settings.settings.SPLIGHT_SECRET_KEY", return_value="secret_key")
+    @patch("remote_splight_lib.settings.settings.SPLIGHT_ACCESS_ID", return_value="access_id")
+    def test_list(self, mock_id, mock_key, mock_get):
         result = self.runner.invoke(
             datalake_app, "list", obj=self.context, catch_exceptions=False
         )
