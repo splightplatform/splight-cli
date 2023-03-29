@@ -22,7 +22,8 @@ class TestList(SplightCLITest):
         super().setUp()
         self.configure()
 
-    @patch.object(DatabaseClient, "get", return_value=remote_collections)
+    # @patch.object(DatabaseClient, "get", return_value=remote_collections)
+    @patch("remote_splight_lib.database.DatabaseClient.get", return_value=remote_collections)
     def test_list(self, mock_get):
         result = self.runner.invoke(
             datalake_app, "list", obj=self.context, catch_exceptions=False
