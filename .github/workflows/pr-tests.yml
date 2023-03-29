@@ -17,3 +17,16 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python setup.py install
       - run: pytest .
+
+  check_version:
+    runs-on: ubuntu-latest
+    name: checking version
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+      - run: pip install -r requirements.txt
+      - run: python .github/workflows/check_version.py
