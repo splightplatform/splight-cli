@@ -13,16 +13,20 @@ class TestPull(SplightCLITest):
             client=self.context.framework.setup.HUB_CLIENT()
         )
 
-    def test_push_no_force(self):
+    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
+    @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
+    def test_push_no_force(self, mock1, mock2):
         self._manager.push(path=self.path, force=False)
 
+    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
-    def test_push_exists_in_hub(self, mock1):
+    def test_push_exists_in_hub(self, mock1, mock2):
         with self.assertRaises(ComponentAlreadyExists):
             self._manager.push(path=self.path, force=False)
 
+    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
     @patch.object(HubComponentManager, "_upload_component", return_value=None)
-    def test_push_exists_with_force(self, mock1, mock2):
+    def test_push_exists_with_force(self, mock1, mock2, mock3):
         self._manager.push(path=self.path, force=True)
         mock1.assert_called_once()

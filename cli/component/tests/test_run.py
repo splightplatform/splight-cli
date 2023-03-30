@@ -1,3 +1,7 @@
+import os
+os.environ["SPLIGHT_ACCESS_ID"] = "access_id"
+os.environ["SPLIGHT_SECRET_KEY"] = "secret_key"
+
 import json
 import re
 from unittest.mock import patch
@@ -10,7 +14,8 @@ from cli.tests.test_generic import SplightCLITest
 class TestRun(SplightCLITest):
 
     @patch.object(Component, "_validate_cli_version", return_value=None)
-    def test_run(self, mock):
+    @patch("remote_splight_lib.datalake.DatalakeClient.create_index", return_value=None)
+    def test_run(self, mock, mock1):
         self.component = Component(self.context)
         self.configure()
         result = self.runner.invoke(
@@ -20,7 +25,7 @@ class TestRun(SplightCLITest):
             catch_exceptions=False,
         )
         # Remove ANSI characters that prints with color
-        mock.assert_called_once()
+        mock1.assert_called_once()
         ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
         output = ansi_escape.sub("", result.output)
         self.assertEqual(

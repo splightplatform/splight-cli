@@ -1,11 +1,9 @@
 import re
 from unittest.mock import patch
 
-# from cli.hub.component import component_app
 from cli.hub import hub_app
 from cli.hub.component.hub_manager import HubComponentManager
 
-# from cli.component.handler import ComponentHandler
 from cli.tests.test_generic import SplightCLITest
 
 
