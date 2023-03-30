@@ -6,12 +6,12 @@ from typing import Dict, List, Optional
 from jinja2 import Template
 from rich.console import Console
 from splight_lib.execution import Thread
+from splight_lib.client.database import DatabaseClientBuilder
 from splight_models import Component as ComponentModel
 
 from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
-from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
 from cli.constants import COMPONENT_FILE, README_FILE_1, SPLIGHT_IGNORE
 from cli.utils import get_template, input_single
 from cli.version import __version__
@@ -68,7 +68,8 @@ class Component:
         self,
         path: str,
         input_parameters: Optional[List[Dict]] = None,
-        component_id: str = None,
+        component_id: Optional[str] = None,
+        local_dev: bool = False,
     ):
         # Load py module and validate Splight Component structure
         loader = ComponentLoader(path=path)
@@ -78,7 +79,9 @@ class Component:
 
         if component_id and not input_parameters:
             remote_input_parameters = []
-            db_client = self.context.framework.setup.DATABASE_CLIENT()
+            db_client = DatabaseClientBuilder.build(
+                local_db=local_dev, path=path, namespace="default"
+            )
             component_input = db_client.get(
                 ComponentModel, id=component_id, first=True
             ).input
@@ -94,6 +97,7 @@ class Component:
             run_spec=run_spec.dict(),
             initial_setup=self.context.workspace.settings.dict(),
             component_id=component_id,
+            database_config={"local_db": local_dev, "path": path}
         )
         component.execution_client.start(Thread(target=component.start))
 
