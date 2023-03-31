@@ -127,4 +127,16 @@ def readme(
         typer.Exit(1)
 
 
-
+@component_app.command()
+def test(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component test code"),
+) -> None:
+    try:
+        component = Component(ctx.obj)
+        console.print("Testing component...", style=success_style)
+        component.test(path)
+    except Exception as e:
+        logger.exception(e)
+        console.print(f"Error testing component: {str(e)}", style=error_style)
+        typer.Exit(1)

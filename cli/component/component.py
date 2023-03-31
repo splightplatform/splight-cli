@@ -1,6 +1,8 @@
 import json
 import os
 import uuid
+from pathlib import Path
+from subprocess import PIPE, Popen
 from typing import Dict, List, Optional
 
 from jinja2 import Template
@@ -20,6 +22,9 @@ console = Console()
 
 
 class Component:
+    TEST_CMD = "pytest"
+    DEFAULT_TEST_FILE = "tests.py"
+
     name = None
     version = None
 
@@ -172,3 +177,24 @@ class Component:
         with open(os.path.join(path, README_FILE_1), "w+") as f:
             f.write(readme)
         console.print(f"{README_FILE_1} created for {name} {version}")
+
+    def test(
+        self,
+        path: str,
+    ):
+        abs_path = str(Path(path).resolve())
+        if not os.path.exists(abs_path):
+            console.print("Error: test file passed as argument does not exists")
+
+        test_path = os.path.join(abs_path, self.DEFAULT_TEST_FILE)
+        cmd = " ".join([self.TEST_CMD, test_path])
+        process = Popen(cmd, stderr=PIPE, stdout=PIPE, shell=True)
+        stdout, stderror = process.communicate()
+        status_code = process.poll()
+
+        if status_code != 0:
+            if stderror:
+                console.print(stderror)
+
+        if stdout:
+            console.print(stdout.decode())
