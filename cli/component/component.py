@@ -6,7 +6,6 @@ from typing import Dict, List, Optional
 from jinja2 import Template
 from rich.console import Console
 from splight_lib.execution import Thread
-from splight_lib.client.database import DatabaseClientBuilder
 from splight_models import Component as ComponentModel
 
 from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
@@ -69,7 +68,6 @@ class Component:
         path: str,
         input_parameters: Optional[List[Dict]] = None,
         component_id: Optional[str] = None,
-        local_dev: bool = False,
     ):
         # Load py module and validate Splight Component structure
         loader = ComponentLoader(path=path)
@@ -79,9 +77,7 @@ class Component:
 
         if component_id and not input_parameters:
             remote_input_parameters = []
-            db_client = DatabaseClientBuilder.build(
-                local_db=local_dev, path=path, namespace="default"
-            )
+            db_client = self.context.framework.setup.DATABASE_CLIENT()
             component_input = db_client.get(
                 ComponentModel, id=component_id, first=True
             ).input
@@ -97,7 +93,7 @@ class Component:
             run_spec=run_spec.dict(),
             initial_setup=self.context.workspace.settings.dict(),
             component_id=component_id,
-            database_config={"local_db": local_dev, "path": path}
+            database_config={"path": path}
         )
         component.execution_client.start(Thread(target=component.start))
 

@@ -1,7 +1,7 @@
 import json
 import logging
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import typer
 from rich.console import Console
@@ -9,6 +9,7 @@ from rich.console import Console
 from cli.component.component import Component
 from cli.constants import error_style, success_style
 from cli.context import check_credentials
+from cli.context.context import local_environment_context
 
 component_app = typer.Typer(
     name="Splight Component",
@@ -60,6 +61,8 @@ def run(
     local_dev: bool = typer.Option(
         False,
         "--local",
+        callback=local_environment_context,
+        is_eager=True
     ),
 ) -> None:
     try:
@@ -70,7 +73,6 @@ def run(
             path,
             input_parameters=input,
             component_id=component_id,
-            local_dev=local_dev,
         )
     except Exception as e:
         logger.exception(e)
