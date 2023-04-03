@@ -34,4 +34,4 @@ jobs:
         with:
           python-version: '3.8'
       - run: pip install -r requirements.txt
-      - run: python .github/workflows/check_branch_version.py ${{ steps.extract_branch.outputs.branch }}
+      - run: python .github/workflows/check_branch_version.py ${{ github.head_ref }}
