@@ -18,9 +18,7 @@ if __name__ == "__main__":
         old_version_line = output_lines[-3]
         new_version_line = output_lines[-2]
     except:
-        print("bn", branch_name)
-        print("argv", sys.argv)
-        print("l", output_lines)
+        print("bn", branch_name, "argv", sys.argv, "l", output_lines)
 
     old_version = get_version_from_line(old_version_line)
     new_version = get_version_from_line(new_version_line)
