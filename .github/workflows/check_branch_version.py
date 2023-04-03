@@ -10,9 +10,9 @@ def get_version_from_line(line):
 if __name__ == "__main__":
     branch_name = sys.argv[1]
     cmd = ["git", "diff", f"master..{branch_name}", "--", "cli/version.py"]
-    process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    output, error = process.communicate()
+    output = subprocess.check_output(cmd)
     output_lines = output.decode().split("\n")
+    print(output_lines)
 
     try:
         old_version_line = output_lines[-3]
