@@ -93,6 +93,16 @@ class HubComponentManager:
             )
         console.print(table)
 
+    def _get_ignore_pathspec(self, path):
+        try:
+            with open(os.path.join(path, SPLIGHT_IGNORE), "r") as splightignore:
+                return pathspec.PathSpec.from_lines(
+                    'gitwildmatch',
+                    splightignore
+                )
+        except FileNotFoundError:
+            return None
+
     def _upload_component(self, spec: Dict[str, Any], path: str):
         name = spec["name"]
         version = spec["version"]
@@ -102,28 +112,18 @@ class HubComponentManager:
         readme_path = os.path.join(path, README_FILE_1)
         if not os.path.exists(readme_path):
             readme_path = os.path.join(path, README_FILE_2)
-        try:
-            with open(os.path.join(path, SPLIGHT_IGNORE), "r") as splightignore:
-                regexes = pathspec.PathSpec.from_lines(
-                    'gitwildmatch',
-                    splightignore
-                )
-            ignored_files = set(regexes.match_tree(path))
-        except FileNotFoundError:
-            ignored_files = set()
 
         try:
-            with py7zr.SevenZipFile(file_name, "w") as fid:
-                matched_files = filter(
-                    lambda f: f not in ignored_files,
-                    os.listdir(path)
-                )
-                for included_file in matched_files:
-                    fid.write(
-                        os.path.join(path, included_file),
-                        os.path.join(versioned_name, included_file)
-                    )
-
+            ignore_pathpec = self._get_ignore_pathspec(path)
+            with py7zr.SevenZipFile(file_name, "w") as archive:
+                for root, _, files in os.walk(path):
+                    if ignore_pathpec and ignore_pathpec.match_file(root):
+                        continue
+                    for file in files:
+                        if ignore_pathpec and ignore_pathpec.match_file(os.path.join(root, file)):
+                            continue
+                        filepath = os.path.join(root, file)
+                        archive.write(filepath, os.path.join(versioned_name, filepath))
             data = {
                 "name": name,
                 "version": version,
