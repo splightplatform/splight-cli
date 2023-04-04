@@ -93,7 +93,8 @@ class Component:
             run_spec=run_spec.dict(),
             initial_setup=self.context.workspace.settings.dict(),
             component_id=component_id,
-            database_config={"path": path}
+            database_config={"path": path},
+            datalake_config={"path": path},
         )
         component.execution_client.start(Thread(target=component.start))
 
