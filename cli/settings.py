@@ -11,7 +11,7 @@ class SplightCLISettings(BaseSettings):
     SPLIGHT_PLATFORM_API_HOST: str = "https://api.splight-ai.com"
     # FRAMEWORK
     DATABASE_CLIENT: str = "splight_lib.client.database.RemoteDatabaseClient"
-    DATALAKE_CLIENT: str = "remote_splight_lib.datalake.DatalakeClient"
+    DATALAKE_CLIENT: str = "splight_lib.client.datalake.RemoteDatalakeClient"
     HUB_CLIENT: str = "remote_splight_lib.hub.SplightHubClient"
     COMMUNICATION_CLIENT: str = (
         "remote_splight_lib.communication.CommunicationClient"
