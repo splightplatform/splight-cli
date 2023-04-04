@@ -77,7 +77,10 @@ class Component:
 
         if component_id and not input_parameters:
             remote_input_parameters = []
-            db_client = self.context.framework.setup.DATABASE_CLIENT()
+            db_client = self.context.framework.setup.DATABASE_CLIENT(
+                namespace="default",
+                path=path
+            )
             component_input = db_client.get(
                 ComponentModel, id=component_id, first=True
             ).input
