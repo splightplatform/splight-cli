@@ -1,4 +1,5 @@
 import os
+
 os.environ["SPLIGHT_ACCESS_ID"] = "access_id"
 os.environ["SPLIGHT_SECRET_KEY"] = "secret_key"
 
@@ -12,9 +13,11 @@ from cli.tests.test_generic import SplightCLITest
 
 
 class TestRun(SplightCLITest):
-
     @patch.object(Component, "_validate_cli_version", return_value=None)
-    @patch("remote_splight_lib.datalake.DatalakeClient.create_index", return_value=None)
+    @patch(
+        "splight_lib.client.datalake.RemoteDatalakeClient.create_index",
+        return_value=None,
+    )
     def test_run(self, mock, mock1):
         self.component = Component(self.context)
         self.configure()

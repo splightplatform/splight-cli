@@ -5,6 +5,8 @@
 .gitignore
 .pre-commit-config.yaml
 *.7z
+dl_*
+splight-db.json
 
 # C extensions
 *.so

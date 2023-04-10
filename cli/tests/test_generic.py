@@ -103,6 +103,7 @@ class SplightCLITest(TestCase):
         self.context = FakeContext()
         self.runner = CliRunner()
         self.custompath = self.name + self.version + self.component_id
+        self.configure()
 
     @property
     def default_configuration(self):
