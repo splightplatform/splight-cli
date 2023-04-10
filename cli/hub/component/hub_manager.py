@@ -114,16 +114,16 @@ class HubComponentManager:
             readme_path = os.path.join(path, README_FILE_2)
 
         try:
-            ignore_pathpec = self._get_ignore_pathspec(path)
+            ignore_pathspec = self._get_ignore_pathspec(path)
             with py7zr.SevenZipFile(file_name, "w") as archive:
                 for root, _, files in os.walk(path):
-                    if ignore_pathpec and ignore_pathpec.match_file(root):
+                    if ignore_pathspec and ignore_pathspec.match_file(root):
                         continue
                     for file in files:
-                        if ignore_pathpec and ignore_pathpec.match_file(os.path.join(root, file)):
+                        if ignore_pathspec and ignore_pathspec.match_file(os.path.join(root, file)):
                             continue
                         filepath = os.path.join(root, file)
-                        archive.write(filepath, os.path.join(versioned_name, filepath))
+                        archive.write(filepath, os.path.join(versioned_name, file))
             data = {
                 "name": name,
                 "version": version,
