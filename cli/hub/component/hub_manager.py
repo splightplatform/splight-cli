@@ -24,8 +24,11 @@ from cli.hub.component.exceptions import (
     ComponentPullError,
     ComponentPushError,
     ComponentDirectoryAlreadyExists,
+    ComponentTestError
 )
 from cli.utils.loader import Loader
+from cli.component.component import Component
+
 
 console = Console()
 
@@ -43,6 +46,11 @@ class HubComponentManager:
 
         if not force and self._exists_in_hub(name, version):
             raise ComponentAlreadyExists(name, version)
+
+        # run test before push to hub. To run test, ctx isn't needed
+        component = Component(context=None)
+        if not component.test(path):
+            raise ComponentTestError(name, version)
 
         with Loader("Pushing Component to Splight Hub"):
             self._upload_component(spec, path)

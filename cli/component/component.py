@@ -187,10 +187,12 @@ class Component:
     def test(
         self,
         path: str,
-    ):
+    ) -> bool:
+        success = True
         abs_path = str(Path(path).resolve())
         if not os.path.exists(abs_path):
             console.print("Error: test file passed as argument does not exists")
+            success = False
 
         test_path = os.path.join(abs_path, TESTS_FILE)
         cmd = " ".join([self.TEST_CMD, test_path])
@@ -201,6 +203,7 @@ class Component:
         if status_code != 0:
             if stderror:
                 console.print(stderror)
-
+                success = False
         if stdout:
             console.print(stdout.decode())
+        return success
