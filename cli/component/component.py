@@ -13,7 +13,12 @@ from splight_models import Component as ComponentModel
 from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
-from cli.constants import COMPONENT_FILE, README_FILE_1, SPLIGHT_IGNORE
+from cli.constants import (
+    COMPONENT_FILE,
+    README_FILE_1,
+    SPLIGHT_IGNORE,
+    TESTS_FILE
+)
 from cli.utils import get_template, input_single
 from cli.version import __version__
 
@@ -22,7 +27,6 @@ console = Console()
 
 class Component:
     TEST_CMD = "pytest"
-    DEFAULT_TEST_FILE = "tests.py"
 
     name = None
     version = None
@@ -188,7 +192,7 @@ class Component:
         if not os.path.exists(abs_path):
             console.print("Error: test file passed as argument does not exists")
 
-        test_path = os.path.join(abs_path, self.DEFAULT_TEST_FILE)
+        test_path = os.path.join(abs_path, TESTS_FILE)
         cmd = " ".join([self.TEST_CMD, test_path])
         process = Popen(cmd, stderr=PIPE, stdout=PIPE, shell=True)
         stdout, stderror = process.communicate()
