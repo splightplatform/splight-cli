@@ -55,14 +55,12 @@ class Component:
         for file_name in files_to_create:
             template_name = file_name
             file_path = os.path.join(absolute_path, file_name)
-            component_id = str(uuid.uuid4())
             if file_name == COMPONENT_FILE:
                 template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
                 component_name=name,
                 version=version,
-                component_id=component_id,
                 splight_cli_version=__version__,
             )
             with open(file_path, "w+") as f:

@@ -30,6 +30,7 @@ README_FILE_1 = "README.md"
 README_FILE_2 = "README" 
 MAIN_CLASS_NAME = "Main"
 SPLIGHT_IGNORE = ".splightignore"
+TEST_FILE = "test.py"
 
 REQUIRED_DATALAKE_COLUMNS = {
     "timestamp",
