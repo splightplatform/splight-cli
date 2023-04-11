@@ -201,9 +201,9 @@ class Component:
         status_code = process.poll()
 
         if status_code != 0:
+            success = False
             if stderror:
                 console.print(stderror)
-                success = False
         if stdout:
             console.print(stdout.decode())
         return success
