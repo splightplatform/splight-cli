@@ -9,6 +9,8 @@ from cli.tests.test_generic import SplightCLITest
 
 class TestConfigure(SplightCLITest):
     def test_configure_requested(self):
+        self.context.workspace.settings.SPLIGHT_ACCESS_ID = ""
+        self.context.workspace.settings.SPLIGHT_SECRET_KEY = ""
         with patch.object(
             HubComponentManager, "list_components", return_value=None
         ):

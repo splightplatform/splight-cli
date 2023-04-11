@@ -27,7 +27,7 @@ setup(
     dependency_links=dependency_links,
     entry_points={
         'console_scripts': [
-            'splight = cli:cli.app',
+            'splight = cli.cli:app',
         ],
     },
 )

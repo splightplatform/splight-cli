@@ -1,14 +1,15 @@
 import json
 import logging
-from typing import List, Optional
 from pathlib import Path
+from typing import Optional
 
 import typer
 from rich.console import Console
 
-from cli.context import check_credentials
 from cli.component.component import Component
 from cli.constants import error_style, success_style
+from cli.context import check_credentials
+from cli.context.context import local_environment_context
 
 component_app = typer.Typer(
     name="Splight Component",
@@ -41,13 +42,11 @@ def create(
         abs_path = str(Path(path).resolve())
         console.print(
             f"Component {name} created successfully in {abs_path}",
-            style=success_style
+            style=success_style,
         )
 
     except Exception as e:
-        console.print(
-            f"Error creating component: {str(e)}", style=error_style
-        )
+        console.print(f"Error creating component: {str(e)}", style=error_style)
         typer.Exit(1)
 
 
@@ -59,31 +58,52 @@ def run(
     component_id: str = typer.Option(
         None, "--component-id", "-id", help="Component's ID"
     ),
+    local_dev: bool = typer.Option(
+        False,
+        "--local",
+        callback=local_environment_context,
+        is_eager=True
+    ),
 ) -> None:
     try:
         component = Component(ctx.obj)
         console.print("Running component...", style=success_style)
         input = json.loads(input) if input else None
-        component.run(path, input_parameters=input, component_id=component_id)
+        component.run(
+            path,
+            input_parameters=input,
+            component_id=component_id,
+        )
     except Exception as e:
         logger.exception(e)
         console.print(f"Error running component: {str(e)}", style=error_style)
         typer.Exit(1)
 
+
 @component_app.command()
 def upgrade(
     ctx: typer.Context,
-    from_component_id: str = typer.Option(None, "--from-component-id", "-f", help="From Component's ID"),
-    to_component_id: str = typer.Option(None, "--to-component-id", "-t", help="To Component's ID"),
+    from_component_id: str = typer.Option(
+        None, "--from-component-id", "-f", help="From Component's ID"
+    ),
+    to_component_id: str = typer.Option(
+        None, "--to-component-id", "-t", help="To Component's ID"
+    ),
 ) -> None:
     try:
         component = Component(ctx.obj)
         console.print("Upgrading component...", style=success_style)
-        component.upgrade(from_component_id=from_component_id, to_component_id=to_component_id)
+        component.upgrade(
+            from_component_id=from_component_id,
+            to_component_id=to_component_id,
+        )
     except Exception as e:
         logger.exception(e)
-        console.print(f"Error upgrading component: {str(e)}", style=error_style)
+        console.print(
+            f"Error upgrading component: {str(e)}", style=error_style
+        )
         typer.Exit(1)
+
 
 @component_app.command()
 def install_requirements(
@@ -113,7 +133,7 @@ def readme(
         "--force",
         "-f",
         help="Delete if a Readme exists",
-    )
+    ),
 ) -> None:
     try:
         component = Component(ctx.obj)
@@ -121,8 +141,7 @@ def readme(
         component.readme(path, force)
     except Exception as e:
         console.print(
-            f"Error generating component README: {str(e)}",
-            style=error_style
+            f"Error generating component README: {str(e)}", style=error_style
         )
         typer.Exit(1)
 
