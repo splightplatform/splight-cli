@@ -32,6 +32,8 @@ MAIN_CLASS_NAME = "Main"
 SPLIGHT_IGNORE = ".splightignore"
 TESTS_FILE = "tests.py"
 
+TEST_CMD = "pytest"
+
 REQUIRED_DATALAKE_COLUMNS = {
     "timestamp",
     "asset",

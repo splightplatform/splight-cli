@@ -17,7 +17,8 @@ from cli.constants import (
     COMPONENT_FILE,
     README_FILE_1,
     SPLIGHT_IGNORE,
-    TESTS_FILE
+    TEST_CMD,
+    TESTS_FILE,
 )
 from cli.utils import get_template, input_single
 from cli.version import __version__
@@ -26,8 +27,6 @@ console = Console()
 
 
 class Component:
-    TEST_CMD = "pytest"
-
     name = None
     version = None
 
@@ -196,7 +195,7 @@ class Component:
             success = False
 
         test_path = os.path.join(abs_path, TESTS_FILE)
-        cmd = " ".join([self.TEST_CMD, test_path])
+        cmd = " ".join([TEST_CMD, test_path])
 
         if name:
             cmd = "::".join([cmd, name])
