@@ -187,6 +187,7 @@ class Component:
     def test(
         self,
         path: str,
+        name: Optional[str] = None,
     ) -> bool:
         success = True
         abs_path = str(Path(path).resolve())
@@ -196,6 +197,10 @@ class Component:
 
         test_path = os.path.join(abs_path, TESTS_FILE)
         cmd = " ".join([self.TEST_CMD, test_path])
+
+        if name:
+            cmd = "::".join([cmd, name])
+
         process = Popen(cmd, stderr=PIPE, stdout=PIPE, shell=True)
         stdout, stderror = process.communicate()
         status_code = process.poll()

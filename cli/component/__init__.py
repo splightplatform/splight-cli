@@ -150,11 +150,17 @@ def readme(
 def test(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component test code"),
+    name: Optional[str] = typer.Option(
+        None,
+        "--name",
+        "-n",
+        help="Name of the only test that you want to run",
+    ),
 ) -> None:
     try:
         component = Component(ctx.obj)
         console.print("Testing component...", style=success_style)
-        component.test(path)
+        component.test(path=path, name=name)
     except Exception as e:
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)
