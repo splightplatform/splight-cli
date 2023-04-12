@@ -1,7 +1,8 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
 from version import __version__
 
-with open('requirements.txt') as fp:
+with open("requirements.txt") as fp:
     install_requires = fp.readlines()
 
 dependency_links = [
@@ -9,25 +10,26 @@ dependency_links = [
 ]
 
 setup(
-    name='splight-cli',
+    name="splight-cli",
     version=__version__,
-    author='Splight',
-    author_email='factory@splight-ae.com',
-    description='CLI tool to build and run Splight components',
-    py_modules=['splight'],
+    author="Splight",
+    author_email="factory@splight-ae.com",
+    description="CLI tool to build and run Splight components",
+    py_modules=["splight"],
     install_requires=install_requires,
     packages=find_packages(),
     package_data={
-        'cli': [
-            'component/templates/*',
-            'datalake/dump_example.csv',
+        "cli": [
+            "component/templates/*",
+            "component/templates/.splightignore",
+            "datalake/dump_example.csv",
         ],
     },
     include_package_data=True,
     dependency_links=dependency_links,
     entry_points={
-        'console_scripts': [
-            'splight = cli.cli:app',
+        "console_scripts": [
+            "splight = cli.cli:app",
         ],
     },
 )
