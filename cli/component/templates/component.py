@@ -39,6 +39,7 @@ class Main(AbstractComponent):
         logger.info(f"Random number: {chosen_number}")
         out = self.output.Value(value=chosen_number)
         self.datalake_client.save(instances=[out])
+        return chosen_number
 
     def _list_assets(self):
         logger.info(f"List of myassets: List[MyAsset] {self.my_assets}")
