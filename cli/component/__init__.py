@@ -156,11 +156,17 @@ def test(
         "-n",
         help="Name of the only test that you want to run",
     ),
+    debug: Optional[bool] = typer.Option(
+        False,
+        "--debug",
+        "-d",
+        help="To enable debug mode using pdb"
+    )
 ) -> None:
     try:
         component = Component(ctx.obj)
         console.print("Testing component...", style=success_style)
-        component.test(path=path, name=name)
+        component.test(path=path, name=name, debug=debug)
     except Exception as e:
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)

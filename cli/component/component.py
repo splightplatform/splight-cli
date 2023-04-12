@@ -1,8 +1,7 @@
 import json
 import os
-import uuid
 from pathlib import Path
-from subprocess import PIPE, Popen
+from subprocess import run
 from typing import Dict, List, Optional
 
 from jinja2 import Template
@@ -187,6 +186,7 @@ class Component:
         self,
         path: str,
         name: Optional[str] = None,
+        debug: Optional[bool] = False,
     ) -> bool:
         success = True
         abs_path = str(Path(path).resolve())
@@ -200,14 +200,16 @@ class Component:
         if name:
             cmd = "::".join([cmd, name])
 
-        process = Popen(cmd, stderr=PIPE, stdout=PIPE, shell=True)
-        stdout, stderror = process.communicate()
-        status_code = process.poll()
+        if debug:
+            cmd = " ".join([cmd, "-s"])
 
-        if status_code != 0:
+        r = run(cmd, shell=True, check=True)
+        stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
+
+        if returncode != 0:
             success = False
-            if stderror:
-                console.print(stderror)
+            if stderr:
+                console.print(stderr)
         if stdout:
             console.print(stdout.decode())
         return success
