@@ -28,11 +28,3 @@ class ComponentDirectoryAlreadyExists(Exception):
 
     def __str__(self) -> str:
         return self._msg
-
-
-class ComponentTestError(Exception):
-    def __init__(self, name: str, version: str):
-        self._msg = f"An error occurred running test for component {name}-{version}"
-
-    def __str__(self) -> str:
-        return self._msg

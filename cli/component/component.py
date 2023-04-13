@@ -9,7 +9,12 @@ from rich.console import Console
 from splight_lib.execution import Thread
 from splight_models import Component as ComponentModel
 
-from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
+from cli.component.exceptions import (
+    InvalidSplightCLIVersion,
+    ReadmeExists,
+    ComponentTestFileDoesNotExists,
+    ComponentTestError
+)
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
 from cli.constants import (
@@ -187,12 +192,11 @@ class Component:
         path: str,
         name: Optional[str] = None,
         debug: Optional[bool] = False,
-    ) -> bool:
-        success = True
+    ):
         abs_path = str(Path(path).resolve())
         if not os.path.exists(abs_path):
             console.print("Error: test file passed as argument does not exists")
-            success = False
+            raise ComponentTestFileDoesNotExists(TESTS_FILE)
 
         test_path = os.path.join(abs_path, TESTS_FILE)
         cmd = " ".join([TEST_CMD, test_path])
@@ -207,9 +211,8 @@ class Component:
         stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
 
         if returncode != 0:
-            success = False
             if stderr:
                 console.print(stderr)
+            raise ComponentTestError
         if stdout:
             console.print(stdout.decode())
-        return success

@@ -1,4 +1,4 @@
-from typing import Set
+from typing import Set, Optional
 
 
 class InvalidCSVColumns(Exception):
@@ -28,6 +28,28 @@ class ReadmeExists(Exception):
         self._msg = (
             f"\nReadme already exists at {readme_path}"
             f"\nRemove it or use --force to overwrite it"
+        )
+
+    def __str__(self) -> str:
+        return self._msg
+
+
+class ComponentTestFileDoesNotExists(Exception):
+    def __init__(self, filename: str):
+        self._msg = (
+            f"\nTest file: {filename} doesn't exists"
+            "\nTo start testing your component, create tests.py file"
+        )
+
+    def __str__(self) -> str:
+        return self._msg
+
+
+class ComponentTestError(Exception):
+    def __init__(self):
+        self._msg = (
+            f"\nAn error occurred running component tests."
+            "\nPlease, review your code and try again."
         )
 
     def __str__(self) -> str:
