@@ -1,12 +1,13 @@
 from unittest.mock import patch
 
 from cli.hub.component.hub_manager import HubComponentManager
-from cli.hub.component.exceptions import ComponentAlreadyExists, ComponentTestError
+from cli.hub.component.exceptions import ComponentAlreadyExists
+from cli.component.exceptions import ComponentTestError
 from cli.tests.test_generic import SplightCLITest
 from cli.component.component import Component
 
 
-class TestPull(SplightCLITest):
+class TestPush(SplightCLITest):
     def setUp(self):
         super().setUp()
         self.configure()
@@ -14,30 +15,32 @@ class TestPull(SplightCLITest):
             client=self.context.framework.setup.HUB_CLIENT()
         )
 
+    @patch.object(Component, "test", return_value=True)
     @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
-    @patch.object(Component, "test", return_value=True)
     def test_push_no_force(self, mock1, mock2, mock3):
         self._manager.push(path=self.path, force=False)
 
+    @patch.object(Component, "test", return_value=True)
     @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
-    @patch.object(Component, "test", return_value=True)
     def test_push_exists_in_hub(self, mock1, mock2, mock3):
         with self.assertRaises(ComponentAlreadyExists):
             self._manager.push(path=self.path, force=False)
 
+    @patch.object(Component, "test", return_value=True)
     @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
     @patch.object(HubComponentManager, "_upload_component", return_value=None)
-    @patch.object(Component, "test", return_value=True)
     def test_push_exists_with_force(self, mock1, mock2, mock3, mock4):
         self._manager.push(path=self.path, force=True)
         mock1.assert_called_once()
 
+    @patch.object(Component, "test", side_effect=ComponentTestError)
+    @patch.object(HubComponentManager, "_upload_component", return_value=None)
     @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
-    @patch.object(Component, "test", return_value=False)
-    def test_push_failing_tests(self, mock1, mock2, mock3):
+    def test_push_failing_tests(self, mock1, mock2, mock3, mock4):
         with self.assertRaises(ComponentTestError):
             self._manager.push(path=self.path)
+        mock3.assert_not_called()

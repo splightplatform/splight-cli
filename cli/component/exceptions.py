@@ -37,8 +37,8 @@ class ReadmeExists(Exception):
 class ComponentTestFileDoesNotExists(Exception):
     def __init__(self, filename: str):
         self._msg = (
-            f"\nTest file: {filename} doesn't exists"
-            "\nTo start testing your component, create tests.py file"
+            f"\nTest file: {filename} doesn't exists."
+            "\nTo start testing your component, create tests file."
         )
 
     def __str__(self) -> str:
