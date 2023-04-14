@@ -5,6 +5,9 @@ from typing import Any, Dict, Optional
 
 import pathspec
 import py7zr
+from rich.console import Console
+from rich.table import Table
+
 from cli.constants import (
     COMPRESSION_TYPE,
     README_FILE_1,
@@ -20,6 +23,7 @@ from cli.hub.component.exceptions import (
     ComponentPushError,
 )
 from cli.utils.loader import Loader
+from cli.engine.component.exceptions import BadHubVersion
 from rich.console import Console
 from rich.table import Table
 from splight_abstract.hub import AbstractHubClient
@@ -170,3 +174,17 @@ class HubComponentManager:
         if any([list(public), list(private)]):
             exists = True
         return exists
+
+    def fetch_component(self, name: str, version: str):
+        public = self._client.public.get(
+            HubComponent, name=name, version=version
+        )
+        private = self._client.private.get(
+            HubComponent, name=name, version=version
+        )
+        if public:
+            return public[0]
+        elif private:
+            return private[0]
+        else:
+            raise BadHubVersion(name, version)
