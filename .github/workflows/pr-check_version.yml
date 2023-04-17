@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     name: checking branch version
     steps:
-      - uses: actions/labeler@v4
+      - uses: actions/labeler@main
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract branch name
