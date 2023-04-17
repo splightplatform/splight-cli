@@ -21,25 +21,6 @@ jobs:
 
   check_branch_version:
     runs-on: ubuntu-latest
-    name: checking branch version
-    steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
-        id: extract_branch
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check out repository code
-        uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.8'
-      - run: pip install -r requirements.txt
-      - run: python .github/workflows/check_branch_version.py ${{ github.head_ref }}
-
-  compare-version:
-    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
