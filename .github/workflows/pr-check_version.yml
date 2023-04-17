@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Get current branch name
-        run: echo "CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+        run: echo "CURRENT_BRANCH=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
 
       - name: Get version from current branch
         run: echo "BRANCH_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> $GITHUB_ENV
