@@ -23,13 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     name: checking branch version
     steps:
-      - uses: actions/labeler@main
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Extract branch name
         shell: bash
         run: echo "branch=$(echo ${GITHUB_REF#refs/heads/})" >>$GITHUB_OUTPUT
         id: extract_branch
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check out repository code
         uses: actions/checkout@v3
       - name: Set up Python
