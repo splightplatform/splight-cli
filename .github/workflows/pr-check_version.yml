@@ -2,7 +2,8 @@ name: "Checking version upgrade"
 on:
   pull_request:
     types:
-      [opened, synchronize]
+      - opened
+      - synchronize
     branches:
       - '**'
 jobs:
@@ -37,3 +38,32 @@ jobs:
           python-version: '3.8'
       - run: pip install -r requirements.txt
       - run: python .github/workflows/check_branch_version.py ${{ github.head_ref }}
+
+  compare-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get current branch name
+        run: echo "CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_ENV
+
+      - name: Get version from current branch
+        run: echo "BRANCH_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> $GITHUB_ENV
+
+      - name: Checkout master branch
+        run: git checkout master
+
+      - name: Get version from master branch
+        run: echo "MASTER_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> $GITHUB_ENV
+
+      - name: Checkout current branch
+        run: git checkout ${{ github.CURRENT_BRANCH }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+      - run: pip install -r requirements.txt
+      - run: python .github/workflows/check_branch_version.py ${{ github.MASTER_VERSION }} ${{ github.BRANCH_VERSION}}
