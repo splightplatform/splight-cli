@@ -2,8 +2,7 @@ name: "Checking version upgrade"
 on:
   pull_request:
     types:
-      - opened
-      - synchronize
+      [opened, synchronize]
     branches:
       - '**'
 jobs:
