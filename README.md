@@ -538,8 +538,35 @@ the limit is your imagination.
 
 #### Running Locally
 
-You can run the component locally before pushing it to the platform
+You can run the component locally before pushing it to the platform with the `--local` option:
 
 ```bash
-splight component run <component directory>
+splight component run <component directory> --local
+```
+
+This way, the component will run using local clients for database and datalake. This is extremely
+useful for development since you can create instances of the different database objects in the 
+local database for running different scenearios or differents tests. The same can be applied for 
+datalake data, the local client stores the data in files. In both cases, for database and datalake,
+the files are created in the same directory as the `__init__.py` file of the component, so you 
+can modified it based on your needs.
+
+You can interact with the local databases using the library, for example
+
+```python
+from splight_models import Asset, Attribute, Number
+from splight_lib.client.database import LocalDatabaseClient
+from splight_lib.client.datalake import LocalDatalakeClient
+
+
+component_path = ...
+db_client = LocalDatabaseClient(namespace="default", path=component_path)
+dl_client = LocalDatalakeClient(namespace="default", path=component_path)
+
+all_assets = db_client.get(Asset)
+attribute = Attribute(name="SomeAttribute")
+
+db_client.save(attribute)
+
+df = client.get_dataframe(Number, asset=all_assets[0].id, attribute=attribute.id)
 ```

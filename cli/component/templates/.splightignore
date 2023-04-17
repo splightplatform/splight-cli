@@ -5,6 +5,9 @@
 .gitignore
 .pre-commit-config.yaml
 *.7z
+*.pyc
+dl_*
+splight-db.json
 
 # C extensions
 *.so

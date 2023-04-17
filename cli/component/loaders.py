@@ -18,7 +18,7 @@ from cli.constants import (
 )
 from cli.utils import get_json_from_file, input_single
 
-logger = logging.getLogger()
+logger = logging.getLogger(dev=True)
 Primitive = Union[int, str, float, bool]
 
 
