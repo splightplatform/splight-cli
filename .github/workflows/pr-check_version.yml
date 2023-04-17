@@ -33,7 +33,7 @@ jobs:
         run: echo "BRANCH_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> $GITHUB_ENV
 
       - name: Checkout master branch
-        run: git checkout master
+        run: git fetch; git checkout master
 
       - name: Get version from master branch
         run: echo "MASTER_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> $GITHUB_ENV
