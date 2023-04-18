@@ -130,11 +130,19 @@ class SpecLoader:
 
         return input_parameters
 
-    def _prompt_param(self, param: Dict, prefix: str = "") -> Primitive:
+    @staticmethod
+    def _prompt_param(
+        param: Dict, prefix: str = ""
+    ) -> Primitive:
+        """
+        Prompt the user for a single parameter
+        :param param: The parameter to prompt for
+        :param prefix: The prefix to use for the parameter name
+        """
         param_name = param["name"]
         new_value = input_single(
             {
-                "name": f"{prefix}.{param_name}",
+                "name": f"{prefix} {param_name}",
                 "type": param["type"],
                 "required": param.get("required", True),
                 "multiple": param.get("multiple", False),

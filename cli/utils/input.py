@@ -12,13 +12,18 @@ def list_of(input_value: Union[List, str], param_type: Type = str):
 
 
 def input_single(param: dict):
+    """
+    Prompt user for input for a single parameter
+    :param param: Parameter to prompt for
+    :return: Value of parameter
+    """
     default = (
         "None"
         if param.get("value") is None and not param["required"]
         else param["value"]
     )
     name = (
-        f"{'*' if param['required'] else ' '}{param['name']}: {param['type']}"
+        f"{'*' if param['required'] else ' '}{param['name']} ({param['type']})"
     )
     param_type = locate(param["type"])
     if not param_type:
@@ -28,14 +33,15 @@ def input_single(param: dict):
         value_proc = partial(list_of, param_type=param_type)
 
     val = click.prompt(
-        name,
+        text=name,
         type=param_type,
         default=default,
-        show_default=True,
         value_proc=value_proc,
     )
     if isinstance(val, str):
         val = val.strip(" ")
+        if not val:
+            val = None
     if val == "None":
         val = None
     return val

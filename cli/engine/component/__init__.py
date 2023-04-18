@@ -2,8 +2,7 @@ import json
 from typing import List, Optional
 
 import typer
-from cli.constants import error_style
-from cli.engine.manager import ResourceManager, ResourceManagerException
+import requests
 from rich.console import Console
 from splight_models import Component, InputParameter
 
@@ -12,7 +11,7 @@ from cli.engine.manager import ResourceManager, ResourceManagerException
 from cli.utils import input_single
 from .exceptions import BadComponentId, BadHubVersion, VersionUpdated
 from cli.hub.component.hub_manager import HubComponentManager
-import requests
+from cli.component.loaders import SpecLoader
 
 
 component_app = typer.Typer(
@@ -95,6 +94,15 @@ def create_input(previous: List[InputParameter], hub: List[InputParameter]):
     for param in hub_inputs.keys():
         if param not in component_inputs.keys():
             result.append(InputParameter(**hub_inputs[param]))
+    # ask for new values
+    for param in result:
+        if param.value is None and param.required:
+            new_value = SpecLoader._prompt_param(param.__dict__,
+                    prefix="Input value for parameter")
+            param.value = new_value
+
+    import ipdb
+    ipdb.set_trace()
     return result
 
 
@@ -145,8 +153,6 @@ def upgrade(
         f"Upgrading component {from_component.name} {from_component.id} to version {version} of {hub_component_name}...")
 
     new_inputs = create_input(from_component.input, hub_component.input)
-    import ipdb
-    ipdb.set_trace()
     return
     from_inputs = from_component.input
     to_inputs = hub_component.input
