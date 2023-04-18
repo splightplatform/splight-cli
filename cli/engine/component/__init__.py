@@ -5,12 +5,12 @@ import typer
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
-from splight_models import Component
+from splight_models import Component, InputParameter
 
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
 from cli.utils import input_single
-from .exceptions import BadComponentId, BadHubVersion
+from .exceptions import BadComponentId, BadHubVersion, VersionUpdated
 from cli.hub.component.hub_manager import HubComponentManager
 import requests
 
@@ -75,6 +75,29 @@ def create(
     manager.create(data=body)
 
 
+def create_input(previous: List[InputParameter], hub: List[InputParameter]):
+    """
+    Create input for a new component from a hub component and a previous input.
+    Assumes that equality in name, type and multiple is enough to match parameters.
+    In such case the value of the previous input is used.
+    """
+    hub_inputs = {(x.name, x.type, x.multiple): {
+        k: v for k, v in vars(x).items()} for x in hub}
+    component_inputs = {(x.name, x.type, x.multiple): {k: v for k,
+                                                       v in vars(x).items()} for x in previous}
+    result = []
+    # overwrite hub inputs with previous values
+    for param in component_inputs.keys():
+        if param in hub_inputs.keys():
+            hub_inputs[param]["value"] = component_inputs[param]["value"]
+            result.append(InputParameter(**hub_inputs[param]))
+    # add new inputs
+    for param in hub_inputs.keys():
+        if param not in component_inputs.keys():
+            result.append(InputParameter(**hub_inputs[param]))
+    return result
+
+
 @component_app.command()
 def upgrade(
         context: typer.Context,
@@ -98,32 +121,36 @@ def upgrade(
     except requests.exceptions.HTTPError:
         console.print(BadComponentId(from_component_id), style=error_style)
 
-    hub_component_name, hub_component_version = from_component.version.split("-", 1)
+    hub_component_name, hub_component_version = from_component.version.split(
+        "-", 1)
     if hub_component_version == version:
         console.print(
-            f"Component {from_component.name} ({from_component.id}) is already at version {version} of {hub_component_name}.",
+            VersionUpdated(from_component.name, version),
             style=error_style
         )
         return
-    console.print(
-        f"Upgrading component {from_component.name} ({from_component.id}) to version {version} of {hub_component_name}...")
 
     manager = HubComponentManager(
         client=context.obj.framework.setup.HUB_CLIENT()
     )
     try:
-        hub_component = manager.fetch_component(name=hub_component_name, version=version)
+        hub_component = manager.fetch_component_version(
+            name=hub_component_name, version=version)
     except Exception:
         console.print(BadHubVersion(
             hub_component_name, version), style=error_style)
-    import ipdb; ipdb.set_trace()
-    return
-    # first: check that the component version is not the same
-    # and then check that the version is available in the hub
+        return
 
-    """
+    console.print(
+        f"Upgrading component {from_component.name} {from_component.id} to version {version} of {hub_component_name}...")
+
+    new_inputs = create_input(from_component.input, hub_component.input)
+    import ipdb
+    ipdb.set_trace()
+    return
     from_inputs = from_component.input
     to_inputs = hub_component.input
+
     for param in to_inputs:
         has_value = False
 
@@ -144,13 +171,10 @@ def upgrade(
                 }
             )
 
-    to_component.input = to_inputs
-
     # TODO: also upgrade component objects
 
     db_client.save(instance=to_component)
 
-    """
 
 @component_app.command()
 def delete(

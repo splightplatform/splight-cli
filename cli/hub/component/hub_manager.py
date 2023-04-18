@@ -129,9 +129,8 @@ class HubComponentManager:
                         ):
                             continue
                         filepath = os.path.join(root, file)
-                        archive.write(
-                            filepath, os.path.join(versioned_name, file)
-                        )
+                        archive.write(filepath, os.path.join(
+                            versioned_name, file))
             data = {
                 "name": name,
                 "version": version,
@@ -175,16 +174,16 @@ class HubComponentManager:
             exists = True
         return exists
 
-    def fetch_component(self, name: str, version: str):
+    def fetch_component_version(self, name: str, version: str):
         public = self._client.public.get(
             HubComponent, name=name, version=version
         )
         private = self._client.private.get(
             HubComponent, name=name, version=version
         )
-        if public:
+        if any(list(public)):
             return public[0]
-        elif private:
+        elif any(list(private)):
             return private[0]
         else:
             raise BadHubVersion(name, version)
