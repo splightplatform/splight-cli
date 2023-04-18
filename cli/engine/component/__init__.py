@@ -94,15 +94,13 @@ def create_input(previous: List[InputParameter], hub: List[InputParameter]):
     for param in hub_inputs.keys():
         if param not in component_inputs.keys():
             result.append(InputParameter(**hub_inputs[param]))
-    # ask for new values
+    # ask for empty values
     for param in result:
         if param.value is None and param.required:
             new_value = SpecLoader._prompt_param(param.__dict__,
-                    prefix="Input value for parameter")
+                                                 prefix="Input value for parameter")
             param.value = new_value
 
-    import ipdb
-    ipdb.set_trace()
     return result
 
 
