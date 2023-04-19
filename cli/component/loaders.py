@@ -5,7 +5,7 @@ import subprocess
 from typing import Dict, List, Union, Optional
 from pathlib import Path
 from splight_lib.component import AbstractComponent
-from splight_lib import logging
+from splight_lib.logging._internal import get_splight_logger
 from cli.component.spec import Spec
 from cli.constants import (
     MAIN_CLASS_NAME,
@@ -18,7 +18,7 @@ from cli.constants import (
 )
 from cli.utils import get_json_from_file, input_single
 
-logger = logging.getLogger(dev=True)
+logger = get_splight_logger()
 Primitive = Union[int, str, float, bool]
 
 
