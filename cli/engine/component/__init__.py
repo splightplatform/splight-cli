@@ -150,8 +150,15 @@ def upgrade(
     console.print(
         f"Upgrading component {from_component.name} {from_component.id} to version {version} of {hub_component_name}...")
 
+    name, bindings, version = from_component.name, hub_component.bindings, f'{from_component.name}-{version}'
+    endpoints, commands, component_type = hub_component.endpoints, hub_component.commands, hub_component.component_type
+    output, description = hub_component.output, hub_component.description
+
     new_inputs = create_input(from_component.input, hub_component.input)
+    import ipdb
+    ipdb.set_trace()
     return
+    new_objects = create_objects(from_component.objects, hub_component.objects)
     from_inputs = from_component.input
     to_inputs = hub_component.input
 

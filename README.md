@@ -308,10 +308,11 @@ splight workspace <sub-command>
 
 The available subcommands are
 
-- `create` for creating new workspace. After the creation of a new worskpace you need to configure _Splight CLI_ with `splightcli configure`.
-- `delete` for deleting an existing workspace.
-- `list` for listing the differents configured workspaces and showing the workspace in use.
-- `select` for switching between the different configured workspaces.
+- `create <name>` to create a new workspace. After the creation of a new worskpace you need to configure _Splight CLI_ with `splightcli configure`.
+- `delete <name>` to delete an existing workspace.
+- `list` to list the differents configured workspaces. Current workspace displays a '*' to the left.
+- `select <name>` to switch between different configured workspaces.
+- `show <name>` to display the contents of an existing workspace.
 
 ## Developing Components
 

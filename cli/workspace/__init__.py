@@ -48,6 +48,20 @@ def create(
         )
         typer.Exit(1)
 
+@workspace_app.command()
+def show(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The workspace name") ) -> None:
+    try:
+        results = ctx.obj.workspace.list_workspace_contents(name)
+        table = Table("WORKSPACE CONTENTS", show_lines=False, show_edge=False)
+        for item in results: table.add_row(*item)
+        console.print(table)
+    except Exception as e:
+        console.print(
+            f"Error showing workspace contents: {str(e)}", style=error_style
+        )
+        typer.Exit(1)
 
 @workspace_app.command()
 def delete(
