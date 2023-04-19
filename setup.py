@@ -1,5 +1,4 @@
 from setuptools import find_packages, setup
-
 from version import __version__
 
 with open("requirements.txt") as fp:
@@ -7,6 +6,11 @@ with open("requirements.txt") as fp:
 
 dependency_links = [
     # External repositories different from pypi
+]
+
+test_requires = [
+    "pytest==7.1.2",
+    "mock==4.0.3",
 ]
 
 setup(
@@ -30,6 +34,18 @@ setup(
     entry_points={
         "console_scripts": [
             "splight = cli.cli:app",
+        ],
+    },
+    extras_require={
+        "test": test_requires,
+        "dev": test_requires
+        + [
+            "flake8==6.0.0",
+            "ipython==8.12.0",
+            "ipdb==0.13.13",
+            "pre-commit==3.2.2",
+            "black==23.3.0",
+            "isort==5.12.0",
         ],
     },
 )
