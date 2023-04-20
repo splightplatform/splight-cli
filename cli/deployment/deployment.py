@@ -1,5 +1,4 @@
 from cli.constants import DEFAULT_NAMESPACE
-from cli.utils import *
 from splight_lib import logging
 from splight_models import Deployment
 

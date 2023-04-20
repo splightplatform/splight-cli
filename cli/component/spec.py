@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from cli.constants import *
-from cli.utils import *
+from cli.constants import VALID_DEPENDS_ON, VALID_PARAMETER_VALUES
 from pydantic import Field, validator
 from splight_models import CommandParameter as ModelCommandParameter
 from splight_models import CustomType as ModelCustomType
@@ -136,7 +135,7 @@ class PrivacyPolicy(str, Enum):
 
 
 class Spec(ModelDeployment):
-    splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
+    splight_cli_version: str = Field(regex=r"^(\d+\.)?(\d+\.)?(\*|\d+)$")
     description: Optional[str] = None
     privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []

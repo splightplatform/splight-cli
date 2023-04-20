@@ -3,7 +3,7 @@ import subprocess
 from unittest.mock import call, patch
 
 from cli.component.component import Component
-from cli.constants import *
+from cli.constants import INIT_FILE
 from cli.tests.test_generic import SplightCLITest
 
 

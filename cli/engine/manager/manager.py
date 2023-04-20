@@ -150,7 +150,7 @@ class DatalakeManager:
         components = [component.dict() for component in components]
         instances.extend(components)
         instances = instances[
-            skip : (limit + skip if limit is not None else None)
+            skip: (limit + skip if limit is not None else None)  # fmt: skip
         ]
         table = Table("", "Name", "Component reference")
         _ = [

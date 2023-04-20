@@ -9,8 +9,8 @@ from splight_lib.execution import Task
 logger = logging.getLogger()
 
 # Custom Types
-## NOTE: In case you want to create new instances of this Class
-## You can find this model in self.custom_model.MyAsset inside the Main class
+# NOTE: In case you want to create new instances of this Class
+# You can find this model in self.custom_model.MyAsset inside the Main class
 MyAsset = TypeVar("MyAsset")
 
 

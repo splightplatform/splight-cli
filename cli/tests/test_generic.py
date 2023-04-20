@@ -1,5 +1,4 @@
 import os
-import shutil
 from unittest import TestCase
 
 from cli.component.spec import Spec

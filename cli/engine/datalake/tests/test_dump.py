@@ -1,6 +1,5 @@
 from unittest.mock import patch
 
-from cli.constants import *
 from cli.engine.datalake import datalake_app
 from cli.engine.manager import DatalakeManager
 from cli.tests.test_generic import SplightCLITest
