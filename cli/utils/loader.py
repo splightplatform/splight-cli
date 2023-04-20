@@ -2,6 +2,7 @@ from itertools import cycle
 from shutil import get_terminal_size
 from threading import Thread
 from time import sleep
+
 from colorama import Fore, Style
 
 
@@ -31,7 +32,11 @@ class Loader:
         for c in cycle(self.steps):
             if self.done:
                 break
-            print(f"\r{c} {Fore.BLUE}{self.desc}{Style.RESET_ALL} ", flush=True, end="")
+            print(
+                f"\r{c} {Fore.BLUE}{self.desc}{Style.RESET_ALL} ",
+                flush=True,
+                end="",
+            )
             sleep(self.timeout)
 
     def __enter__(self):

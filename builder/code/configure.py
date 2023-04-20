@@ -33,7 +33,8 @@ if __name__ == "__main__":
     }
 
     logger.info(
-        f"Configure with {access_id} to configure {hub_name} {hub_version}. Remote set to {api_host}"
+        f"Configure with {access_id} to configure {hub_name} {hub_version}."
+        f" Remote set to {api_host}"
     )
 
     try:

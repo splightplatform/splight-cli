@@ -1,15 +1,14 @@
 import typer
-
 from cli.context import check_credentials
 from cli.engine.alert import alert_app
 from cli.engine.asset import asset_app
 from cli.engine.attribute import attribute_app
 from cli.engine.component import component_app
-from cli.engine.query import query_app
+from cli.engine.datalake import datalake_app
 from cli.engine.file import file_app
+from cli.engine.query import query_app
 from cli.engine.secret import secret_app
 from cli.engine.setpoint import setpoint_app
-from cli.engine.datalake import datalake_app
 
 engine_app = typer.Typer(
     name="Splight Engine",

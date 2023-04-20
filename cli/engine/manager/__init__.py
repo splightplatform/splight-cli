@@ -1,1 +1,6 @@
-from cli.engine.manager.manager import ResourceManager, ResourceManagerException, DatalakeManager, DatalakeManagerException
+from cli.engine.manager.manager import (
+    DatalakeManager,
+    DatalakeManagerException,
+    ResourceManager,
+    ResourceManagerException,
+)

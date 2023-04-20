@@ -1,6 +1,7 @@
 import os
-from jinja2 import Template
+
 from cli.constants import TEMPLATES_FOLDER
+from jinja2 import Template
 
 
 class MissingTemplate(Exception):

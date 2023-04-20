@@ -3,14 +3,17 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
+from cli.component.exceptions import InvalidCSVColumns
+from cli.constants import (
+    REQUIRED_DATALAKE_COLUMNS,
+    success_style,
+    warning_style,
+)
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
 from splight_models import Component, DatalakeModel, SplightBaseModel
-
-from cli.constants import success_style, warning_style, REQUIRED_DATALAKE_COLUMNS
-from cli.component.exceptions import InvalidCSVColumns
 
 SplightModel = Type[SplightBaseModel]
 
@@ -68,7 +71,9 @@ class ResourceManager:
             table.add_row(
                 str(counter),
                 item.id,
-                item.name if hasattr(item, "name") else getattr(item, "title", "")
+                item.name
+                if hasattr(item, "name")
+                else getattr(item, "title", ""),
             )
             for counter, item in enumerate(instances)
         ]
@@ -77,7 +82,8 @@ class ResourceManager:
     def create(self, data: Dict[str, Any]):
         instance = self._client.save(instance=self._model.parse_obj(data))
         table = Table(
-            title=f"{self._resource_name} = {getattr(instance,'name', '')}", show_header=False
+            title=f"{self._resource_name} = {getattr(instance,'name', '')}",
+            show_header=False,
         )
         _ = [
             table.add_row(key, str(value))
@@ -144,7 +150,7 @@ class DatalakeManager:
         components = [component.dict() for component in components]
         instances.extend(components)
         instances = instances[
-            skip: (limit + skip if limit is not None else None)
+            skip : (limit + skip if limit is not None else None)
         ]
         table = Table("", "Name", "Component reference")
         _ = [
