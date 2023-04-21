@@ -1,9 +1,9 @@
 from typing import List
 
 import typer
-from rich.console import Console
 from cli.constants import error_style
 from cli.engine.manager import DatalakeManager, DatalakeManagerException
+from rich.console import Console
 
 datalake_app = typer.Typer(
     name="Splight Engine Datalake",
@@ -17,7 +17,7 @@ console = Console()
 def _parse_filter_option(values):
     result = {}
     for value in values:
-        k, v = value.split('=')
+        k, v = value.split("=")
         result[k] = v
     return result
 
@@ -42,11 +42,9 @@ def list(
 @datalake_app.command()
 def dump(
     ctx: typer.Context,
-    collection: str = typer.Argument(
-        ..., help="Collection name to dump"
-    ),
+    collection: str = typer.Argument(..., help="Collection name to dump"),
     path: str = typer.Option(
-        './dump.csv', "--path", "-p", help="Path name to dump"
+        "./dump.csv", "--path", "-p", help="Path name to dump"
     ),
     filter: List[str] = typer.Option(
         None, "--filter", "-f", help="Filter to apply"
@@ -58,11 +56,7 @@ def dump(
         dl_client=ctx.obj.framework.setup.DATALAKE_CLIENT(),
     )
     try:
-        manager.dump(
-            collection=collection,
-            path=path,
-            filters=filters
-        )
+        manager.dump(collection=collection, path=path, filters=filters)
     except DatalakeManagerException as exc:
         console.print(exc, style=error_style)
 
@@ -71,18 +65,13 @@ def dump(
 def load(
     ctx: typer.Context,
     collection: str = typer.Argument(..., help="Collection name to load"),
-    path: str = typer.Option(
-        ..., "--path", "-p", help="Path to file to load"
-    ),
+    path: str = typer.Option(..., "--path", "-p", help="Path to file to load"),
 ):
     manager = DatalakeManager(
         db_client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         dl_client=ctx.obj.framework.setup.DATALAKE_CLIENT(),
     )
     try:
-        manager.load(
-            collection=collection,
-            path=path
-        )
+        manager.load(collection=collection, path=path)
     except DatalakeManagerException as exc:
         console.print(exc, style=error_style)

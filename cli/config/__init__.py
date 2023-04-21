@@ -1,9 +1,8 @@
-import sys
 import json
+import sys
 
 import typer
-
-from cli.settings import SplightCLISettings, CONFIG_VARS
+from cli.settings import CONFIG_VARS, SplightCLISettings
 
 config_app = typer.Typer(
     name="Splight CLI Configure",
@@ -15,9 +14,8 @@ config_app = typer.Typer(
 def config(
     ctx: typer.Context,
     from_json: str = typer.Option(
-        None,
-        "--from-json",
-        help="Configuration by json instaed of prompt")
+        None, "--from-json", help="Configuration by json instaed of prompt"
+    ),
 ):
     if ctx.invoked_subcommand:
         return
@@ -34,10 +32,10 @@ def config(
                     cli_context.workspace.settings, config_var, None
                 )
                 value = typer.prompt(
-                    typer.style(config_var, fg='yellow'),
+                    typer.style(config_var, fg="yellow"),
                     type=str,
                     default=default,
-                    show_default=True
+                    show_default=True,
                 )
                 new_settings_data.update({config_var: value})
             new_settings = SplightCLISettings.parse_obj(new_settings_data)
@@ -51,7 +49,7 @@ def config(
 @config_app.command(name="get")
 def get_variable(
     ctx: typer.Context,
-    var_name: str = typer.Argument(..., help="The variable name to get value")
+    var_name: str = typer.Argument(..., help="The variable name to get value"),
 ):
     """Prints the value of the requested variable.
 
@@ -74,7 +72,7 @@ def get_variable(
 def set_variable(
     ctx: typer.Context,
     var_name: str = typer.Argument(..., help="The variable name to update"),
-    value: str = typer.Argument(..., help="The new value")
+    value: str = typer.Argument(..., help="The new value"),
 ):
     """Sets a value of a variable in the current workspace.
 

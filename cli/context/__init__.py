@@ -1,11 +1,8 @@
 import typer
-
-from rich.console import Console
-
 from cli.constants import error_style
 from cli.context.framework import FrameworkManager
 from cli.context.workspace import WorkspaceManager
-
+from rich.console import Console
 
 console = Console()
 

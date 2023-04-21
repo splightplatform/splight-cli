@@ -1,17 +1,17 @@
+import base64
+from functools import cached_property
+
+import boto3
+import docker
+import requests
+import typer
+from docker.errors import APIError, BuildError
 from private_splight_models import BuildSpec
-from splight_models import HubComponent
-from splight_models.constants import BuildStatus
+from pydantic import BaseSettings
 from splight_lib import logging
 from splight_lib.webhook import WebhookClient, WebhookEvent
-from pydantic import BaseSettings
-from functools import cached_property
-from docker.errors import BuildError, APIError
-import requests
-import docker
-import base64
-import boto3
-import typer
-
+from splight_models import HubComponent
+from splight_models.constants import BuildStatus
 
 app = typer.Typer(name="Splight Component Builder")
 logger = logging.getLogger(__name__)
@@ -33,21 +33,21 @@ class ComponentManager:
         event = WebhookEvent(
             event_name="hubcomponent-update",
             object_type="HubComponent",
-            data=component.dict()
+            data=component.dict(),
         )
         payload, signature = self.webhook_client.construct_payload(event)
-        headers = {'Splight-Signature': signature}
+        headers = {"Splight-Signature": signature}
         request = requests.Request(
-            "POST",
-            self.url,
-            data=payload,
-            headers=headers
+            "POST", self.url, data=payload, headers=headers
         )
         prepped = request.prepare()
         with requests.Session() as session:
             response = session.send(prepped)
         if response.status_code != 200:
-            raise Exception(f"Error updating component: {response.status_code} - {response.content}")
+            raise Exception(
+                f"Error updating component: {response.status_code} -"
+                f" {response.content}"
+            )
         logger.info(f"{response.status_code} - {response.content}")
 
 
@@ -56,7 +56,7 @@ class Builder:
         ("small", 0.5),
         ("medium", 4),
         ("large", 8),
-        ("very_large", 16)
+        ("very_large", 16),
     ]
 
     _docker_client = None
@@ -69,7 +69,7 @@ class Builder:
             version=self.build_spec.version,
             splight_cli_version=self.build_spec.cli_version,
             build_status=BuildStatus.UNKNOWN,
-            min_component_capacity='small'
+            min_component_capacity="small",
         )
 
     def build_and_push_component(self):
@@ -81,7 +81,7 @@ class Builder:
             self._update_min_component_capacity()
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
-            logger.info('Build failed: ', e)
+            logger.info("Build failed: ", e)
             self._update_component_build_status(BuildStatus.FAILED)
 
     @property
@@ -113,9 +113,15 @@ class Builder:
     @cached_property
     def aws_password(self):
         logger.info("Getting AWS password")
-        ecr_client = boto3.client('ecr', region_name='us-east-1')
+        ecr_client = boto3.client("ecr", region_name="us-east-1")
         token = ecr_client.get_authorization_token()
-        return base64.b64decode(token["authorizationData"][0]["authorizationToken"]).decode().split(":")[1]
+        return (
+            base64.b64decode(
+                token["authorizationData"][0]["authorizationToken"]
+            )
+            .decode()
+            .split(":")[1]
+        )
 
     @cached_property
     def component_manager(self):
@@ -130,7 +136,7 @@ class Builder:
             result = docker_client.login(
                 username="AWS",
                 password=self.aws_password,
-                registry=self.registry
+                registry=self.registry,
             )
             logger.info(f"Login result: {result}")
             self._docker_client = docker_client
@@ -144,11 +150,11 @@ class Builder:
                 tag=self.tag,
                 buildargs={
                     "RUNNER_IMAGE": self.runner_image,
-                    "CONFIGURE_SPEC": self.build_spec.json()
+                    "CONFIGURE_SPEC": self.build_spec.json(),
                 },
                 network_mode="host",
                 pull=True,
-                vervose=True
+                vervose=True,
             )
         except BuildError as e:
             logger.error(f"Error building component: {e}")
@@ -173,7 +179,9 @@ class Builder:
         image = self.docker_client.images.get(self.tag)
         # get image size in GB
         image_size = float(image.attrs["Size"] / 10**9)
-        self.hub_component.min_component_capacity = self._get_min_component_capacity(image_size)
+        self.hub_component.min_component_capacity = (
+            self._get_min_component_capacity(image_size)
+        )
 
     def _get_min_component_capacity(self, image_size: float) -> str:
         for size, cap in self._component_capacity:
@@ -184,18 +192,20 @@ class Builder:
     def _save_component(self):
         logger.info("Saving component")
         try:
-            self.component_manager.update(
-                component=self.hub_component
-            )
+            self.component_manager.update(component=self.hub_component)
         except Exception as e:
             logger.error(f"Error saving component: {e}")
 
 
 @app.command()
 def main(
-    build_spec_str: str = typer.Option(..., "-b", "--build-spec", help="build spec as defined in the private lib")
+    build_spec_str: str = typer.Option(
+        ...,
+        "-b",
+        "--build-spec",
+        help="build spec as defined in the private lib",
+    )
 ):
-
     build_spec = BuildSpec.parse_raw(build_spec_str)
 
     builder = Builder(build_spec)

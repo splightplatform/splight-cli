@@ -1,7 +1,8 @@
 import os
 import shutil
-from cli.component.loaders import ComponentLoader
+
 from cli.component.component import Component
+from cli.component.loaders import ComponentLoader
 from cli.tests.test_generic import SplightCLITest
 
 

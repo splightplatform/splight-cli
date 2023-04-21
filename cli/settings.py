@@ -1,8 +1,7 @@
 from typing import Dict
 
-from pydantic import BaseModel, BaseSettings, Extra
-
 from cli.version import __version__
+from pydantic import BaseModel, BaseSettings, Extra
 
 
 class SplightCLISettings(BaseSettings):

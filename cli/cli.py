@@ -1,7 +1,6 @@
 from typing import Optional
 
 import typer
-
 from cli.component import component_app
 from cli.config import config_app
 from cli.context import Context

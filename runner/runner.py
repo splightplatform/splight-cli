@@ -1,9 +1,10 @@
 import json
-import typer
 import subprocess
 from asyncio.log import logging
 from typing import Dict, List
-from pydantic import BaseModel, BaseSettings, validator, Extra
+
+import typer
+from pydantic import BaseModel, BaseSettings, Extra, validator
 
 app = typer.Typer(name="Splight Component Runner")
 
@@ -33,7 +34,6 @@ class RunnerConfig(BaseSettings):
 
 
 class SplightComponentRunner:
-
     _BASE_CMD = "splight"
 
     def __init__(self):
@@ -72,7 +72,7 @@ class SplightComponentRunner:
                     "--input",
                     json.dumps(component_spec.input),
                     "--component-id",
-                    self._component_id
+                    self._component_id,
                 ],
                 check=True,
             )

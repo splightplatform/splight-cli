@@ -1,2 +1,4 @@
 [tool.black]
 line-length = 79
+# this flag is to fix long string lines (>79)
+experimental-string-processing = true

@@ -1,5 +1,4 @@
 import typer
-
 from cli.context import check_credentials
 from cli.hub.component import component_app
 
