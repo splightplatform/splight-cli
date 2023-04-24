@@ -1,9 +1,8 @@
 from unittest.mock import patch
 
-from splight_models import Component
-
 from cli.engine.datalake import datalake_app
 from cli.tests.test_generic import SplightCLITest
+from splight_models import Component
 
 remote_collections = [
     Component(

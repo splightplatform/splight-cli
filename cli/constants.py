@@ -1,33 +1,31 @@
 import os
 from pathlib import Path
-from pydantic import AnyUrl
-from rich.style import Style
 
 from cli.settings import SplightCLISettings
+from pydantic import AnyUrl
+from rich.style import Style
 
 error_style = Style(color="red", bold=True)
 success_style = Style(color="green")
 warning_style = Style(color="yellow")
 
-SPLIGHT_PATH = os.path.join(os.path.expanduser("~"), '.splight')
+SPLIGHT_PATH = os.path.join(os.path.expanduser("~"), ".splight")
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_FOLDER = os.path.join(BASE_DIR, "cli", "component", "templates")
 
 COMPRESSION_TYPE = "7z"
-DEFAULT_NAMESPACE = 'NO_NAMESPACE'
+DEFAULT_NAMESPACE = "NO_NAMESPACE"
 DEFAULT_COMPONENT_ID = "DEMO"
-DEFAULT_WORKSPACE_NAME = 'default'
+DEFAULT_WORKSPACE_NAME = "default"
 DEFAULT_WORKSPACE = SplightCLISettings().dict()
-DEFAULT_WORKSPACES = {
-    DEFAULT_WORKSPACE_NAME: DEFAULT_WORKSPACE
-}
+DEFAULT_WORKSPACES = {DEFAULT_WORKSPACE_NAME: DEFAULT_WORKSPACE}
 
-CONFIG_FILE = os.path.join(SPLIGHT_PATH, 'config')
+CONFIG_FILE = os.path.join(SPLIGHT_PATH, "config")
 COMPONENT_FILE = "__init__.py"
 SPEC_FILE = "spec.json"
 INIT_FILE = "Initialization"
-README_FILE_1 = "README.md" 
-README_FILE_2 = "README" 
+README_FILE_1 = "README.md"
+README_FILE_2 = "README"
 MAIN_CLASS_NAME = "Main"
 SPLIGHT_IGNORE = ".splightignore"
 TESTS_FILE = "tests.py"
@@ -39,7 +37,7 @@ REQUIRED_DATALAKE_COLUMNS = {
     "asset",
     "attribute",
     "value",
-    "output_format"
+    "output_format",
 }
 
 VALID_PARAMETER_VALUES = {
@@ -55,8 +53,8 @@ VALID_PARAMETER_VALUES = {
     "Attribute": None,  # UUID,
     "Component": None,  # UUID,
     "Graph": None,  # UUID,
-    "Query": None, # UUID,
-    "Mapping": None, # UUID
+    "Query": None,  # UUID,
+    "Mapping": None,  # UUID
 }
 
 VALID_DEPENDS_ON = [

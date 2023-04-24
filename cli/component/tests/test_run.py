@@ -1,15 +1,14 @@
-import os
-
-os.environ["SPLIGHT_ACCESS_ID"] = "access_id"
-os.environ["SPLIGHT_SECRET_KEY"] = "secret_key"
-
 import json
+import os
 import re
 from unittest.mock import patch
 
 from cli.component import component_app
 from cli.component.component import Component
 from cli.tests.test_generic import SplightCLITest
+
+os.environ["SPLIGHT_ACCESS_ID"] = "access_id"
+os.environ["SPLIGHT_SECRET_KEY"] = "secret_key"
 
 
 class TestRun(SplightCLITest):

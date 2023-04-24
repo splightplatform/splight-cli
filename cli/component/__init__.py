@@ -4,12 +4,11 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from rich.console import Console
-
 from cli.component.component import Component
 from cli.constants import error_style, success_style
 from cli.context import check_credentials
 from cli.context.context import local_environment_context
+from rich.console import Console
 
 component_app = typer.Typer(
     name="Splight Component",
@@ -59,10 +58,7 @@ def run(
         None, "--component-id", "-id", help="Component's ID"
     ),
     local_dev: bool = typer.Option(
-        False,
-        "--local",
-        callback=local_environment_context,
-        is_eager=True
+        False, "--local", callback=local_environment_context, is_eager=True
     ),
 ) -> None:
     try:

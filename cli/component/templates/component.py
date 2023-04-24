@@ -1,20 +1,20 @@
 import random
 from typing import TypeVar
+
+from splight_lib import logging
 from splight_lib.component import AbstractComponent
 from splight_lib.execution import Task
-from splight_lib import logging
 
 # Logging tool
 logger = logging.getLogger()
 
 # Custom Types
-## NOTE: In case you want to create new instances of this Class
-## You can find this model in self.custom_model.MyAsset inside the Main class
-MyAsset = TypeVar('MyAsset')
+# NOTE: In case you want to create new instances of this Class
+# You can find this model in self.custom_model.MyAsset inside the Main class
+MyAsset = TypeVar("MyAsset")
 
 
 class Main(AbstractComponent):
-
     # Init
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -22,12 +22,18 @@ class Main(AbstractComponent):
             item.id: item
             for item in self.database_client.get(self.custom_types.MyAsset)
         }
-        logger.info(f"Starting randomizer in range {self.input.min} - {self.input.max}")
+        logger.info(
+            f"Starting randomizer in range {self.input.min} - {self.input.max}"
+        )
 
     # Starting point
     def start(self):
         self.execution_client.start(
-            Task(handler=self._give_a_random_number, args=(self.input.min, self.input.max), period=self.input.period)
+            Task(
+                handler=self._give_a_random_number,
+                args=(self.input.min, self.input.max),
+                period=self.input.period,
+            )
         )
         self.execution_client.start(
             Task(handler=self._list_assets, args=(), period=self.input.period)

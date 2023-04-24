@@ -2,6 +2,7 @@ from itertools import cycle
 from shutil import get_terminal_size
 from threading import Thread
 from time import sleep
+
 from colorama import Fore, Style
 
 
@@ -11,9 +12,11 @@ class Loader:
         A loader-like context manager
 
         Args:
-            desc (str, optional): The loader's description. Defaults to "Loading...".
+            desc (str, optional): The loader's description. Defaults to
+                "Loading...".
             end (str, optional): Final print. Defaults to "Done!".
-            timeout (float, optional): Sleep time between prints. Defaults to 0.1.
+            timeout (float, optional): Sleep time between prints. Defaults to
+                0.1.
         """
         self.desc = desc
         self.end = end
@@ -31,7 +34,11 @@ class Loader:
         for c in cycle(self.steps):
             if self.done:
                 break
-            print(f"\r{c} {Fore.BLUE}{self.desc}{Style.RESET_ALL} ", flush=True, end="")
+            print(
+                f"\r{c} {Fore.BLUE}{self.desc}{Style.RESET_ALL} ",
+                flush=True,
+                end="",
+            )
             sleep(self.timeout)
 
     def __enter__(self):

@@ -5,12 +5,6 @@ from typing import Any, Dict, Optional
 
 import pathspec
 import py7zr
-from rich.console import Console
-from rich.table import Table
-from splight_abstract.hub import AbstractHubClient
-from splight_models import HubComponent, HubComponentVersion
-from splight_models.constants import ComponentType
-
 from cli.constants import (
     COMPRESSION_TYPE,
     README_FILE_1,
@@ -21,11 +15,17 @@ from cli.constants import (
 )
 from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
+    ComponentDirectoryAlreadyExists,
     ComponentPullError,
     ComponentPushError,
     ComponentDirectoryAlreadyExists
 )
 from cli.utils.loader import Loader
+from rich.console import Console
+from rich.table import Table
+from splight_abstract.hub import AbstractHubClient
+from splight_models import HubComponent, HubComponentVersion
+from splight_models.constants import ComponentType
 from cli.component.component import Component
 
 
@@ -103,10 +103,11 @@ class HubComponentManager:
 
     def _get_ignore_pathspec(self, path):
         try:
-            with open(os.path.join(path, SPLIGHT_IGNORE), "r") as splightignore:
+            with open(
+                os.path.join(path, SPLIGHT_IGNORE), "r"
+            ) as splightignore:
                 return pathspec.PathSpec.from_lines(
-                    'gitwildmatch',
-                    splightignore
+                    "gitwildmatch", splightignore
                 )
         except FileNotFoundError:
             return None
@@ -128,10 +129,14 @@ class HubComponentManager:
                     if ignore_pathspec and ignore_pathspec.match_file(root):
                         continue
                     for file in files:
-                        if ignore_pathspec and ignore_pathspec.match_file(os.path.join(root, file)):
+                        if ignore_pathspec and ignore_pathspec.match_file(
+                            os.path.join(root, file)
+                        ):
                             continue
                         filepath = os.path.join(root, file)
-                        archive.write(filepath, os.path.join(versioned_name, file))
+                        archive.write(
+                            filepath, os.path.join(versioned_name, file)
+                        )
             data = {
                 "name": name,
                 "version": version,
@@ -141,7 +146,9 @@ class HubComponentManager:
                 "custom_types": json.dumps(spec.get("custom_types", [])),
                 "input": json.dumps(spec.get("input", [])),
                 "output": json.dumps(spec.get("output", [])),
-                "component_type": spec.get("component_type", ComponentType.CONNECTOR.value),
+                "component_type": spec.get(
+                    "component_type", ComponentType.CONNECTOR.value
+                ),
                 "commands": json.dumps(spec.get("commands", [])),
                 "bindings": json.dumps(spec.get("bindings", [])),
                 "endpoints": json.dumps(spec.get("endpoints", [])),

@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
-from cli.hub.component.hub_manager import HubComponentManager
 from cli.hub.component.exceptions import ComponentAlreadyExists
 from cli.component.exceptions import ComponentTestError
+from cli.hub.component.hub_manager import HubComponentManager
 from cli.tests.test_generic import SplightCLITest
 from cli.component.component import Component
 
