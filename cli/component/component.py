@@ -5,32 +5,10 @@ from subprocess import run
 from typing import Dict, List, Optional
 
 from cli.component.exceptions import (
+    ComponentTestError,
+    ComponentTestFileDoesNotExists,
     InvalidSplightCLIVersion,
     ReadmeExists,
-    ComponentTestFileDoesNotExists,
-    ComponentTestError
-)
-from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
-from cli.component.spec import Spec
-from cli.constants import (
-    COMPONENT_FILE,
-    README_FILE_1,
-    SPLIGHT_IGNORE,
-    TEST_CMD,
-    TESTS_FILE,
-)
-from cli.utils import get_template, input_single
-from cli.version import __version__
-from jinja2 import Template
-from rich.console import Console
-from splight_lib.execution import Thread
-from splight_models import Component as ComponentModel
-
-from cli.component.exceptions import (
-    InvalidSplightCLIVersion,
-    ReadmeExists,
-    ComponentTestFileDoesNotExists,
-    ComponentTestError
 )
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
@@ -215,7 +193,9 @@ class Component:
     ):
         abs_path = str(Path(path).resolve())
         if not os.path.exists(abs_path):
-            console.print("Error: test file passed as argument does not exists")
+            console.print(
+                "Error: test file passed as argument does not exists"
+            )
             raise ComponentTestFileDoesNotExists(TESTS_FILE)
 
         test_path = os.path.join(abs_path, TESTS_FILE)

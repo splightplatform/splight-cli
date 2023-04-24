@@ -49,7 +49,7 @@ class ComponentTestError(Exception):
     def __init__(self):
         self._msg = (
             f"\nAn error occurred running component tests."
-            "\nPlease, review your code and try again."
+            f"\nPlease, review your code and try again."
         )
 
     def __str__(self) -> str:

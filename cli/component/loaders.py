@@ -12,7 +12,8 @@ from cli.constants import (
     MAIN_CLASS_NAME,
     README_FILE_1,
     README_FILE_2,
-    TESTS_FILE
+    SPEC_FILE,
+    TESTS_FILE,
 )
 from cli.utils import get_json_from_file, input_single
 from splight_lib.component import AbstractComponent
@@ -25,7 +26,11 @@ Primitive = Union[int, str, float, bool]
 class ComponentLoader:
     _MAIN_CLASS_NAME: str = "Main"
     REQUIRED_FILES = [
-        COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE_1, TESTS_FILE
+        COMPONENT_FILE,
+        SPEC_FILE,
+        INIT_FILE,
+        README_FILE_1,
+        TESTS_FILE,
     ]
 
     def __init__(self, path: str) -> None:

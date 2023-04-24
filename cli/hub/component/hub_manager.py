@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 
 import pathspec
 import py7zr
+from cli.component.component import Component
 from cli.constants import (
     COMPRESSION_TYPE,
     README_FILE_1,
@@ -18,7 +19,6 @@ from cli.hub.component.exceptions import (
     ComponentDirectoryAlreadyExists,
     ComponentPullError,
     ComponentPushError,
-    ComponentDirectoryAlreadyExists
 )
 from cli.utils.loader import Loader
 from rich.console import Console
@@ -26,8 +26,6 @@ from rich.table import Table
 from splight_abstract.hub import AbstractHubClient
 from splight_models import HubComponent, HubComponentVersion
 from splight_models.constants import ComponentType
-from cli.component.component import Component
-
 
 console = Console()
 

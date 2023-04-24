@@ -25,10 +25,19 @@ def component(mocker):
 
     # TODO: remove, just temportal until define LocalCommunicationClient
     mocker.patch("remote_splight_lib.communication.client.CommunicationClient")
-    initial_setup["COMMUNICATION_CLIENT"] = "splight_lib.client.datalake.LocalDatalakeClient"
-    mocker.patch("splight_lib.component.abstract.AbstractComponent._load_instance_kwargs_for_clients")
-    mocker.patch("splight_lib.component.abstract.AbstractComponent.communication_client_kwargs", clients_config)
-    mocker.patch("splight_lib.component.abstract.BindingsMixin._load_client_bindings")
+    initial_setup[
+        "COMMUNICATION_CLIENT"
+    ] = "splight_lib.client.datalake.LocalDatalakeClient"
+    mocker.patch(
+        "splight_lib.component.abstract.AbstractComponent._load_instance_kwargs_for_clients"
+    )
+    mocker.patch(
+        "splight_lib.component.abstract.AbstractComponent.communication_client_kwargs",
+        clients_config,
+    )
+    mocker.patch(
+        "splight_lib.component.abstract.BindingsMixin._load_client_bindings"
+    )
 
     component_loader = ComponentLoader(path=component_path)
     spec_loader = SpecLoader(path=component_path)

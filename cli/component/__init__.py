@@ -153,11 +153,8 @@ def test(
         help="Name of the only test that you want to run",
     ),
     debug: Optional[bool] = typer.Option(
-        False,
-        "--debug",
-        "-d",
-        help="To enable debug mode using pdb"
-    )
+        False, "--debug", "-d", help="To enable debug mode using pdb"
+    ),
 ) -> None:
     try:
         component = Component(ctx.obj)

@@ -1,4 +1,5 @@
 import pytest
+
 # component is your component loaded as a pytest fixture
 # using local clients for database, datalake and communication
 from cli.testing import component
