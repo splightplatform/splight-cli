@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from cli.component.loaders import ComponentLoader, SpecLoader
 
@@ -17,8 +19,12 @@ def get_tests_initial_setup() -> dict:
 def component(mocker):
     # we don't need execution client to run locally
     mocker.patch("splight_lib.component.abstract.ExecutionClient")
+    mocker.patch(
+        "splight_lib.client.datalake.LocalDatalakeClient.create_index"
+    )
 
-    component_path = "."
+    # TODO: search a better and cleaner solution
+    component_path = os.environ["COMPONENT_PATH_FOR_TESTING"]
     clients_config = {"path": component_path}
     # local database, datalake and communication clients
     initial_setup = get_tests_initial_setup()

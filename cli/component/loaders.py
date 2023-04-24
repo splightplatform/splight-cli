@@ -30,7 +30,6 @@ class ComponentLoader:
         SPEC_FILE,
         INIT_FILE,
         README_FILE_1,
-        TESTS_FILE,
     ]
 
     def __init__(self, path: str) -> None:

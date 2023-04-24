@@ -57,6 +57,7 @@ class Component:
 
         files_to_create = ComponentLoader.REQUIRED_FILES
         files_to_create.append(SPLIGHT_IGNORE)
+        files_to_create.append(TESTS_FILE)
 
         for file_name in files_to_create:
             template_name = file_name
@@ -198,6 +199,8 @@ class Component:
             )
             raise ComponentTestFileDoesNotExists(TESTS_FILE)
 
+        # Add path to environ, used in component fixture tests
+        os.environ["COMPONENT_PATH_FOR_TESTING"] = abs_path
         test_path = os.path.join(abs_path, TESTS_FILE)
         cmd = " ".join([TEST_CMD, test_path])
 
