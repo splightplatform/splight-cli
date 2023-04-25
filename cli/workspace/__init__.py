@@ -54,8 +54,9 @@ def show(
     name: str = typer.Argument(..., help="The workspace name") ) -> None:
     try:
         results = ctx.obj.workspace.list_workspace_contents(name)
-        table = Table("WORKSPACE CONTENTS", show_lines=False, show_edge=False)
-        for item in results: table.add_row(*item)
+        table = Table("WORKSPACE CONTENTS", show_lines=True, show_edge=True)
+        for item in results: 
+            table.add_row(item[0].lower(),item[1])
         console.print(table)
     except Exception as e:
         console.print(

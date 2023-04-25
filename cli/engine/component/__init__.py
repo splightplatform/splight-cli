@@ -4,11 +4,10 @@ from typing import List, Optional
 import typer
 import requests
 from rich.console import Console
-from splight_models import Component, InputParameter
+from splight_models import Component, InputParameter, ComponentObject, Component
 
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
-from cli.utils import input_single
 from .exceptions import BadComponentId, BadHubVersion, VersionUpdated
 from cli.hub.component.hub_manager import HubComponentManager
 from cli.component.loaders import SpecLoader
@@ -74,32 +73,31 @@ def create(
     manager.create(data=body)
 
 
-def create_input(previous: List[InputParameter], hub: List[InputParameter]):
+def update_parameters(previous: List[InputParameter], hub: List[InputParameter]):
     """
-    Create input for a new component from a hub component and a previous input.
+    Create parameters for a new component from lists of InputParameters or Parameters.
     Assumes that equality in name, type and multiple is enough to match parameters.
     In such case the value of the previous input is used.
     """
-    hub_inputs = {(x.name, x.type, x.multiple): {
+    hub_parameters = {(x.name, x.type, x.multiple): {
         k: v for k, v in vars(x).items()} for x in hub}
-    component_inputs = {(x.name, x.type, x.multiple): {k: v for k,
-                                                       v in vars(x).items()} for x in previous}
+    prev_parameters = {(x.name, x.type, x.multiple): {
+        k: v for k, v in vars(x).items()} for x in previous}
     result = []
-    # overwrite hub inputs with previous values
-    for param in component_inputs.keys():
-        if param in hub_inputs.keys():
-            hub_inputs[param]["value"] = component_inputs[param]["value"]
-            result.append(InputParameter(**hub_inputs[param]))
-    # add new inputs
-    for param in hub_inputs.keys():
-        if param not in component_inputs.keys():
-            result.append(InputParameter(**hub_inputs[param]))
-    # ask for empty values
-    for param in result:
-        if param.value is None and param.required:
-            new_value = SpecLoader._prompt_param(param.__dict__,
-                                                 prefix="Input value for parameter")
-            param.value = new_value
+    # overwrite hub parameters with previous values
+    for param in prev_parameters.keys():
+        if param in hub_parameters.keys():
+            hub_parameters[param]["value"] = prev_parameters[param]["value"]
+            result.append(InputParameter(**hub_parameters[param]))
+    # add new parameters
+    for param in hub_parameters.keys():
+        if param not in prev_parameters.keys():
+            parameter = hub_parameters[param]
+            if not parameter['value'] and parameter['required']:
+                new_value = SpecLoader._prompt_param(parameter,
+                                                     prefix="Input value for parameter")
+                parameter['value'] = new_value
+            result.append(InputParameter(**parameter))
 
     return result
 
@@ -119,16 +117,18 @@ def upgrade(
     if not from_component_id or not version:
         console.print(
             "Component id and/or version cannot be empty", style=error_style)
+            
     db_client = context.obj.framework.setup.DATABASE_CLIENT()
     try:
         from_component = db_client.get(
-            Component, id=from_component_id, first=True
+            Component, 
+            id=from_component_id, 
+            first=True
         )
     except requests.exceptions.HTTPError:
         console.print(BadComponentId(from_component_id), style=error_style)
 
-    hub_component_name, hub_component_version = from_component.version.split(
-        "-", 1)
+    hub_component_name, hub_component_version = from_component.version.split("-", 1)
     if hub_component_version == version:
         console.print(
             VersionUpdated(from_component.name, version),
@@ -150,41 +150,32 @@ def upgrade(
     console.print(
         f"Upgrading component {from_component.name} {from_component.id} to version {version} of {hub_component_name}...")
 
-    name, bindings, version = from_component.name, hub_component.bindings, f'{from_component.name}-{version}'
+    name, bindings, version = f'{from_component.name}-{version}', hub_component.bindings, f'{hub_component.name}-{version}'
     endpoints, commands, component_type = hub_component.endpoints, hub_component.commands, hub_component.component_type
     output, description = hub_component.output, hub_component.description
+    custom_types, component_type = hub_component.custom_types, hub_component.component_type
+    new_inputs = update_parameters(from_component.input, hub_component.input)
 
-    new_inputs = create_input(from_component.input, hub_component.input)
+    component = Component(
+        name=name,
+        bindings=bindings,
+        version=version,
+        endpoints=endpoints,
+        commands=commands,
+        component_type=component_type,
+        output=output,
+        description=description,
+        custom_types=custom_types,
+        input=new_inputs
+    )
+
+    new_component = db_client.save(component)
+    from_component_objects = [x for x in db_client.get(ComponentObject, component_id=from_component.id)]
     import ipdb
     ipdb.set_trace()
+    console.print(
+        f"Component {name} upgraded to version {version} of {hub_component_name}!")
     return
-    new_objects = create_objects(from_component.objects, hub_component.objects)
-    from_inputs = from_component.input
-    to_inputs = hub_component.input
-
-    for param in to_inputs:
-        has_value = False
-
-        for old in from_inputs:
-            if param.name == old.name:
-                param.value = old.value
-                has_value = True
-                break
-
-        if not has_value:
-            param.value = input_single(
-                {
-                    "name": param.name,
-                    "type": param.type,
-                    "required": param.required,
-                    "multiple": param.multiple,
-                    "value": param.value,
-                }
-            )
-
-    # TODO: also upgrade component objects
-
-    db_client.save(instance=to_component)
 
 
 @component_app.command()
