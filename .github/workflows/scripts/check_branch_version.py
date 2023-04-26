@@ -1,5 +1,4 @@
 from packaging import version
-import subprocess
 import sys
 
 
