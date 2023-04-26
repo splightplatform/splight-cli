@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from cli.hub import hub_app
 from cli.hub.component.hub_manager import HubComponentManager
-
 from cli.tests.test_generic import SplightCLITest
 
 

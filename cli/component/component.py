@@ -3,17 +3,16 @@ import os
 import uuid
 from typing import Dict, List, Optional
 
-from jinja2 import Template
-from rich.console import Console
-from splight_lib.execution import Thread
-from splight_models import Component as ComponentModel
-
 from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
 from cli.constants import COMPONENT_FILE, README_FILE_1, SPLIGHT_IGNORE
 from cli.utils import get_template, input_single
 from cli.version import __version__
+from jinja2 import Template
+from rich.console import Console
+from splight_lib.execution import Thread
+from splight_models import Component as ComponentModel
 
 console = Console()
 
@@ -78,8 +77,7 @@ class Component:
         if component_id and not input_parameters:
             remote_input_parameters = []
             db_client = self.context.framework.setup.DATABASE_CLIENT(
-                namespace="default",
-                path=path
+                namespace="default", path=path
             )
             component_input = db_client.get(
                 ComponentModel, id=component_id, first=True

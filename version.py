@@ -1,1 +1,1 @@
-exec(open('cli/version.py').read())
+exec(open("cli/version.py").read())

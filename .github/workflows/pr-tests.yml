@@ -17,5 +17,5 @@ jobs:
         with:
           python-version: '3.8'
       - run: pip install -r requirements.txt
-      - run: python setup.py install
-      - run: pytest .
+      - run: make install
+      - run: make test

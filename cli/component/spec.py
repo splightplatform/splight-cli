@@ -1,18 +1,16 @@
 from enum import Enum
-from pydantic import validator, Field
-from typing import List, Dict, Optional
-from cli.utils import *
-from cli.constants import *
-from splight_models import (
-    Parameter as ModelParameter,
-    InputParameter as ModelInputParameter,
-    OutputParameter as ModelOutputParameter,
-    CommandParameter as ModelCommandParameter,
-    CustomType as ModelCustomType,
-    Output as ModelOutput,
-    Deployment as ModelDeployment,
-    Endpoint as ModelEndpoint
-)
+from typing import Dict, List, Optional
+
+from cli.constants import VALID_DEPENDS_ON, VALID_PARAMETER_VALUES
+from pydantic import Field, validator
+from splight_models import CommandParameter as ModelCommandParameter
+from splight_models import CustomType as ModelCustomType
+from splight_models import Deployment as ModelDeployment
+from splight_models import Endpoint as ModelEndpoint
+from splight_models import InputParameter as ModelInputParameter
+from splight_models import Output as ModelOutput
+from splight_models import OutputParameter as ModelOutputParameter
+from splight_models import Parameter as ModelParameter
 from splight_models.constants import ComponentType
 
 
@@ -25,7 +23,9 @@ class ChoiceMixin:
         type_ = values["type"]
 
         if type not in ["str", "int", "float"]:
-            raise ValueError("Choices can only be used with string, int or float types")
+            raise ValueError(
+                "Choices can only be used with string, int or float types"
+            )
 
         # choises type match type field
         try:
@@ -42,7 +42,9 @@ class ChoiceMixin:
 class Parameter(ModelInputParameter, ChoiceMixin):
     @validator("value", check_fields=False)
     def validate_value(cls, v, values, field):
-        if not set(values.keys()).issuperset({"type", "required", "multiple", "choices"}):
+        if not set(values.keys()).issuperset(
+            {"type", "required", "multiple", "choices"}
+        ):
             return v
 
         type_ = values["type"]
@@ -74,7 +76,9 @@ class Parameter(ModelInputParameter, ChoiceMixin):
                 f"value must be of type {str(class_type)}"
             ) from exc
 
-        if values["choices"] is not None and not all([v_ in values["choices"] for v_ in list_v]):
+        if values["choices"] is not None and not all(
+            [v_ in values["choices"] for v_ in list_v]
+        ):
             raise ValueError(f"value must be one of {values['choices']}")
 
         return v
@@ -84,7 +88,9 @@ class OutputParameter(ModelOutputParameter, ChoiceMixin):
     @validator("type", check_fields=False)
     def validate_type(cls, type):
         if type not in VALID_PARAMETER_VALUES:
-            raise ValueError(f"invalid output type {type}, can not be custom type")
+            raise ValueError(
+                f"invalid output type {type}, can not be custom type"
+            )
         return type
 
 
@@ -92,7 +98,9 @@ class CommandParameter(ModelCommandParameter, ChoiceMixin):
     @validator("type", check_fields=False)
     def validate_type(cls, type):
         if type not in VALID_PARAMETER_VALUES:
-            raise ValueError(f"invalid output type {type}, can not be custom type")
+            raise ValueError(
+                f"invalid output type {type}, can not be custom type"
+            )
         return type
 
 
@@ -127,7 +135,7 @@ class PrivacyPolicy(str, Enum):
 
 
 class Spec(ModelDeployment):
-    splight_cli_version: str = Field(regex="^(\d+\.)?(\d+\.)?(\*|\d+)$")
+    splight_cli_version: str = Field(regex=r"^(\d+\.)?(\d+\.)?(\*|\d+)$")
     description: Optional[str] = None
     privacy_policy: PrivacyPolicy = PrivacyPolicy.PUBLIC
     tags: List[str] = []
@@ -143,7 +151,10 @@ class Spec(ModelDeployment):
         if not name[0].isupper():
             raise ValueError("value's first letter must be capitalized")
         if any(x in name for x in invalid_characters):
-            raise Exception(f"name cannot contain any of these characters: {invalid_characters}")
+            raise Exception(
+                "name cannot contain any of these characters:"
+                f" {invalid_characters}"
+            )
         return name
 
     @validator("version", check_fields=False)
@@ -153,7 +164,10 @@ class Spec(ModelDeployment):
             raise Exception("value must be 20 characters maximum")
 
         if any(x in version for x in invalid_characters):
-            raise Exception(f"version cannot contain any of these characters: {invalid_characters}")
+            raise Exception(
+                "version cannot contain any of these characters:"
+                f" {invalid_characters}"
+            )
         return version
 
     @validator("tags")
@@ -177,10 +191,16 @@ class Spec(ModelDeployment):
 
         for custom_type in custom_types:
             for field in custom_type.fields:
-                if field.type not in valid_types and field.type not in custom_type_names:
+                if (
+                    field.type not in valid_types
+                    and field.type not in custom_type_names
+                ):
                     raise ValueError(f"custom_type {field.type} not defined")
                 if field.name in CustomType._reserved_names:
-                    raise ValueError(f"custom_type {field.name} not allowed. Reserved names are: {CustomType._reserved_names}")
+                    raise ValueError(
+                        f"custom_type {field.name} not allowed. Reserved names"
+                        f" are: {CustomType._reserved_names}"
+                    )
             custom_type_names.append(custom_type.name)
 
         return custom_types
@@ -193,7 +213,9 @@ class Spec(ModelDeployment):
         _check_unique_names(v, "input parameters")
 
         custom_type_names: List[str] = [c.name for c in values["custom_types"]]
-        valid_types_names: List[str] = list(VALID_PARAMETER_VALUES.keys()) + custom_type_names
+        valid_types_names: List[str] = (
+            list(VALID_PARAMETER_VALUES.keys()) + custom_type_names
+        )
 
         for parameter in v:
             if parameter.type not in valid_types_names:
@@ -220,13 +242,17 @@ def _check_parameter_depends_on(parameters: List[Parameter]):
             continue
 
         if parameter.depends_on not in parameter_map:
-            raise ValueError(f"depends_on must be one of {parameter_map.keys()}")
+            raise ValueError(
+                f"depends_on must be one of {parameter_map.keys()}"
+            )
 
         depend_parameter = parameter_map[parameter.depends_on]
 
         if (parameter.type, depend_parameter.type) not in VALID_DEPENDS_ON:
-            raise ValueError(f"incompatible dependance: type {parameter.type} can not"
-                             f"depend on type {depend_parameter.type}")
+            raise ValueError(
+                f"incompatible dependance: type {parameter.type} can not"
+                f"depend on type {depend_parameter.type}"
+            )
 
 
 def _check_unique_names(parameters: List[Parameter], type: str):

@@ -1,11 +1,10 @@
 from typing import List, Optional
 
 import typer
-from rich.console import Console
-from splight_models import Secret
-
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
+from rich.console import Console
+from splight_models import Secret
 
 secret_app = typer.Typer(
     name="Splight Engine Secret",
@@ -26,7 +25,7 @@ def list(
         "--filter",
         "-f",
         help="Query param in the form key=value",
-    )
+    ),
 ):
     manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
@@ -54,12 +53,8 @@ def get(
 @secret_app.command()
 def create(
     ctx: typer.Context,
-    name: str = typer.Argument(
-        ..., help="Name of the secret"
-    ),
-    value: str = typer.Argument(
-        ..., help="Value of the secret"
-    ),
+    name: str = typer.Argument(..., help="Name of the secret"),
+    value: str = typer.Argument(..., help="Value of the secret"),
 ):
     manager = ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
