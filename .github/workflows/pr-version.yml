@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Verify version is higher than PyPi package
     steps:
-      - name: Check out to {{ GITHUB_REF }}
+      - name: Check out to feature branch
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -36,7 +36,7 @@ jobs:
       - name: Get version from master branch
         run: echo "MASTER_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
 
-      - name: Check out to {{ GITHUB_REF }}
+      - name: Check out to feature branch
         uses: actions/checkout@v3
 
       - name: Get version from feature branch
