@@ -93,7 +93,11 @@ def update_parameters(previous: List[InputParameter], hub: List[InputParameter])
     for param in hub_parameters.keys():
         if param not in prev_parameters.keys():
             parameter = hub_parameters[param]
-            if not parameter['value'] and parameter['required']:
+            if isinstance(parameter, InputParameter) and not parameter['value'] and parameter['required']:
+                new_value = SpecLoader._prompt_param(parameter,
+                                                     prefix="Input value for parameter")
+                parameter['value'] = new_value
+            elif parameter['required']:
                 new_value = SpecLoader._prompt_param(parameter,
                                                      prefix="Input value for parameter")
                 parameter['value'] = new_value
@@ -117,18 +121,19 @@ def upgrade(
     if not from_component_id or not version:
         console.print(
             "Component id and/or version cannot be empty", style=error_style)
-            
+
     db_client = context.obj.framework.setup.DATABASE_CLIENT()
     try:
         from_component = db_client.get(
-            Component, 
-            id=from_component_id, 
+            Component,
+            id=from_component_id,
             first=True
         )
     except requests.exceptions.HTTPError:
         console.print(BadComponentId(from_component_id), style=error_style)
 
-    hub_component_name, hub_component_version = from_component.version.split("-", 1)
+    hub_component_name, hub_component_version = from_component.version.split(
+        "-", 1)
     if hub_component_version == version:
         console.print(
             VersionUpdated(from_component.name, version),
@@ -170,11 +175,26 @@ def upgrade(
     )
 
     new_component = db_client.save(component)
-    from_component_objects = [x for x in db_client.get(ComponentObject, component_id=from_component.id)]
-    import ipdb
-    ipdb.set_trace()
+
+    console.print('Upgrading component objects...')
+
+    from_component_objects = [x for x in db_client.get(
+        ComponentObject, component_id=from_component.id)]
+    for obj in from_component_objects:
+        matching_hct = next(
+            (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
+        if matching_hct:
+            new_object_data = update_parameters(obj.data, matching_hct.fields)
+            new_object = ComponentObject(
+                name=obj.name,
+                type=obj.type,
+                data=new_object_data,
+                component_id=new_component.id
+            )
+            db_client.save(new_object)
+
     console.print(
-        f"Component {name} upgraded to version {version} of {hub_component_name}!")
+        f"New component name {new_component.name}, id {new_component.id}")
     return
 
 
