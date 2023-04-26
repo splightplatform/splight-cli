@@ -4,7 +4,13 @@ from typing import List, Optional
 import typer
 import requests
 from rich.console import Console
-from splight_models import Component, InputParameter, ComponentObject, Component
+from splight_models import (
+    Component,
+    InputParameter, 
+    Parameter, 
+    ComponentObject, 
+    Component
+)
 
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
@@ -13,41 +19,41 @@ from cli.hub.component.hub_manager import HubComponentManager
 from cli.component.loaders import SpecLoader
 
 
-component_app = typer.Typer(
+component_app=typer.Typer(
     name="Splight Engine Component",
     add_completion=True,
     rich_markup_mode="rich",
     no_args_is_help=True,
 )
 
-console = Console()
-MODEL = Component
+console=Console()
+MODEL=Component
 
 
-@component_app.command()
+@ component_app.command()
 def list(
     ctx: typer.Context,
-    filters: Optional[List[str]] = typer.Option(
+    filters: Optional[List[str]]=typer.Option(
         None,
         "--filter",
         "-f",
         help="Query param in the form key=value",
     ),
 ):
-    manager = ResourceManager(
+    manager=ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
-    params = manager.get_query_params(filters)
+    params=manager.get_query_params(filters)
     manager.list(params=params)
 
 
-@component_app.command()
+@ component_app.command()
 def get(
     ctx: typer.Context,
-    instance_id: str = typer.Argument(..., help="The Asset's ID"),
+    instance_id: str=typer.Argument(..., help="The Asset's ID"),
 ):
-    manager = ResourceManager(
+    manager=ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
@@ -57,62 +63,63 @@ def get(
         console.print(exc, style=error_style)
 
 
-@component_app.command()
+@ component_app.command()
 def create(
     ctx: typer.Context,
-    path: str = typer.Argument(
+    path: str=typer.Argument(
         ..., help="Path to JSON file with resource data"
     ),
 ):
-    manager = ResourceManager(
+    manager=ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     with open(path, "r") as fid:
-        body = json.load(fid)
+        body=json.load(fid)
     manager.create(data=body)
 
 
-def update_parameters(previous: List[InputParameter], hub: List[InputParameter]):
+def update_parameters(previous: List[InputParameter], hub: List[InputParameter or Parameter]):
     """
     Create parameters for a new component from lists of InputParameters or Parameters.
     Assumes that equality in name, type and multiple is enough to match parameters.
     In such case the value of the previous input is used.
     """
-    hub_parameters = {(x.name, x.type, x.multiple): {
+    hub_parameters={(x.name, x.type, x.multiple): {
         k: v for k, v in vars(x).items()} for x in hub}
-    prev_parameters = {(x.name, x.type, x.multiple): {
+    prev_parameters={(x.name, x.type, x.multiple): {
         k: v for k, v in vars(x).items()} for x in previous}
-    result = []
+    result=[]
     # overwrite hub parameters with previous values
     for param in prev_parameters.keys():
         if param in hub_parameters.keys():
-            hub_parameters[param]["value"] = prev_parameters[param]["value"]
+            hub_parameters[param]["value"]=prev_parameters[param]["value"]
             result.append(InputParameter(**hub_parameters[param]))
     # add new parameters
     for param in hub_parameters.keys():
         if param not in prev_parameters.keys():
-            parameter = hub_parameters[param]
+            parameter=hub_parameters[param]
             if isinstance(parameter, InputParameter) and not parameter['value'] and parameter['required']:
-                new_value = SpecLoader._prompt_param(parameter,
+                new_value=SpecLoader._prompt_param(parameter,
                                                      prefix="Input value for parameter")
-                parameter['value'] = new_value
+                parameter['value']=new_value
+            # this is a parameter of a Parameter type
             elif parameter['required']:
-                new_value = SpecLoader._prompt_param(parameter,
+                new_value=SpecLoader._prompt_param(parameter,
                                                      prefix="Input value for parameter")
-                parameter['value'] = new_value
+                parameter['value']=new_value
             result.append(InputParameter(**parameter))
 
     return result
 
 
-@component_app.command()
+@ component_app.command()
 def upgrade(
         context: typer.Context,
-        from_component_id: str = typer.Option(
+        from_component_id: str=typer.Option(
             None, "--from", "-f",
             help="The ID of the component to be upgraded"),
-        version: str = typer.Option(
+        version: str=typer.Option(
             None, "--version", "-v",
             help="The version of the HubComponent to be upgraded to")
 ):
@@ -122,9 +129,9 @@ def upgrade(
         console.print(
             "Component id and/or version cannot be empty", style=error_style)
 
-    db_client = context.obj.framework.setup.DATABASE_CLIENT()
+    db_client=context.obj.framework.setup.DATABASE_CLIENT()
     try:
-        from_component = db_client.get(
+        from_component=db_client.get(
             Component,
             id=from_component_id,
             first=True
@@ -132,7 +139,7 @@ def upgrade(
     except requests.exceptions.HTTPError:
         console.print(BadComponentId(from_component_id), style=error_style)
 
-    hub_component_name, hub_component_version = from_component.version.split(
+    hub_component_name, hub_component_version=from_component.version.split(
         "-", 1)
     if hub_component_version == version:
         console.print(
@@ -141,11 +148,11 @@ def upgrade(
         )
         return
 
-    manager = HubComponentManager(
+    manager=HubComponentManager(
         client=context.obj.framework.setup.HUB_CLIENT()
     )
     try:
-        hub_component = manager.fetch_component_version(
+        hub_component=manager.fetch_component_version(
             name=hub_component_name, version=version)
     except Exception:
         console.print(BadHubVersion(
@@ -155,13 +162,13 @@ def upgrade(
     console.print(
         f"Upgrading component {from_component.name} {from_component.id} to version {version} of {hub_component_name}...")
 
-    name, bindings, version = f'{from_component.name}-{version}', hub_component.bindings, f'{hub_component.name}-{version}'
-    endpoints, commands, component_type = hub_component.endpoints, hub_component.commands, hub_component.component_type
-    output, description = hub_component.output, hub_component.description
-    custom_types, component_type = hub_component.custom_types, hub_component.component_type
-    new_inputs = update_parameters(from_component.input, hub_component.input)
+    name, bindings, version=f'{from_component.name}-{version}', hub_component.bindings, f'{hub_component.name}-{version}'
+    endpoints, commands, component_type=hub_component.endpoints, hub_component.commands, hub_component.component_type
+    output, description=hub_component.output, hub_component.description
+    custom_types, component_type=hub_component.custom_types, hub_component.component_type
+    new_inputs=update_parameters(from_component.input, hub_component.input)
 
-    component = Component(
+    component=Component(
         name=name,
         bindings=bindings,
         version=version,
@@ -174,18 +181,18 @@ def upgrade(
         input=new_inputs
     )
 
-    new_component = db_client.save(component)
+    new_component=db_client.save(component)
 
     console.print('Upgrading component objects...')
 
-    from_component_objects = [x for x in db_client.get(
+    from_component_objects=[x for x in db_client.get(
         ComponentObject, component_id=from_component.id)]
     for obj in from_component_objects:
-        matching_hct = next(
+        matching_hct=next(
             (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
         if matching_hct:
-            new_object_data = update_parameters(obj.data, matching_hct.fields)
-            new_object = ComponentObject(
+            new_object_data=update_parameters(obj.data, matching_hct.fields)
+            new_object=ComponentObject(
                 name=obj.name,
                 type=obj.type,
                 data=new_object_data,
@@ -198,14 +205,14 @@ def upgrade(
     return
 
 
-@component_app.command()
+@ component_app.command()
 def delete(
     ctx: typer.Context,
-    instance_id: str = typer.Argument(
+    instance_id: str=typer.Argument(
         ..., help="The ID of the instance to be removed"
     ),
 ):
-    manager = ResourceManager(
+    manager=ResourceManager(
         client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
