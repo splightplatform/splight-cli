@@ -8,6 +8,7 @@ class VersionError(Exception):
     """Raised when the version is not greater than the one on pypi"""
     pass
 
+
 def get_pypi_version(project_name: str):
     url = f"https://pypi.org/pypi/{project_name}/json"
     response = requests.get(url)
@@ -20,25 +21,25 @@ if __name__ == "__main__":
     and the package on pypi.
 
     Args:
-        VERSION_FILE_PATH (arg 1) (str): path to the version file
+        version_file (arg 1) (str): path to the version file
             must be a one liner containing the version
             number between double quotes.
-        PROJECT_NAME (arg 2) (str): name of the project on pypi
+        project_name (arg 2) (str): name of the project on pypi
     Raises:
         VersionError: if the local version is not greater than
             the one on pypi
     """
-    VERSION_FILE_PATH = sys.argv[1]
-    PROJECT_NAME = sys.argv[2]
+    version_file = sys.argv[1]
+    project_name = sys.argv[2]
 
-    with open(VERSION_FILE_PATH, "r") as f:
+    with open(version_file, "r") as f:
         string_version = f.readline().split('"')[1]
 
     project_version = parse(string_version)
-    public_project_version = get_pypi_version(PROJECT_NAME)
+    public_project_version = get_pypi_version(project_name)
 
-    if project_version < public_project_version:
+    if project_version <= public_project_version:
         raise VersionError(
-            f"local version {project_version} is not greater than"
+            f"Feature version {project_version} is not greater than "
             f"uploaded version {public_project_version}"
         )
