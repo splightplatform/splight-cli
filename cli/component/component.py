@@ -190,7 +190,7 @@ class Component:
         self,
         path: str,
         name: Optional[str] = None,
-        debug: Optional[bool] = False,
+        debug: bool = False,
     ):
         abs_path = str(Path(path).resolve())
         if not os.path.exists(abs_path):
