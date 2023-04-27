@@ -1,18 +1,18 @@
-import pytest
-import os
 import datetime
-from typing import List, Dict
+import os
+from typing import Dict, List
 
+import pytest
 from cli.component.loaders import ComponentLoader, SpecLoader
+from splight_lib.client.database.local_client import LocalDatabaseClient
 from splight_models import (
-    Component,
     Asset,
     Attribute,
+    Component,
     File,
     Query,
     QuerySourceType,
 )
-from splight_lib.client.database.local_client import LocalDatabaseClient
 
 FAKE_NATIVE_TYPES = {
     "int": 1,
@@ -41,13 +41,16 @@ def get_tests_initial_setup() -> dict:
     # TODO: this will be change when we refactor setup.configure to
     # don't override envvars
     return {
-        "DATABASE_CLIENT":
-            "splight_lib.client.database.local_client.LocalDatabaseClient",
-        "DATALAKE_CLIENT":
-            "splight_lib.client.datalake.local_client.LocalDatalakeClient",
-        "COMMUNICATION_CLIENT":
+        "DATABASE_CLIENT": (
+            "splight_lib.client.database.local_client.LocalDatabaseClient"
+        ),
+        "DATALAKE_CLIENT": (
+            "splight_lib.client.datalake.local_client.LocalDatalakeClient"
+        ),
+        "COMMUNICATION_CLIENT": (
             "splight_lib.client.communication.local_client."
-            "LocalCommunicationClient",
+            "LocalCommunicationClient"
+        ),
         "NAMESPACE": "test",
     }
 
@@ -85,7 +88,7 @@ def load_input_parameters(inputs_list, custom_types, db):
 def get_input_parameters(raw_spec: Dict) -> List[Dict]:
     db = LocalDatabaseClient(
         namespace=get_tests_initial_setup().get("NAMESPACE"),
-        path=os.environ["COMPONENT_PATH_FOR_TESTING"]
+        path=os.environ["COMPONENT_PATH_FOR_TESTING"],
     )
     inputs = raw_spec["input"]
     custom_types = raw_spec["custom_types"]
@@ -120,15 +123,16 @@ def component(mocker):
         "_load_instance_kwargs_for_clients"
     )
     mocker.patch(
-        "splight_lib.component.abstract.AbstractComponent."
-        "communication_client_kwargs",
+        (
+            "splight_lib.component.abstract.AbstractComponent."
+            "communication_client_kwargs"
+        ),
         clients_config,
     )
     input_parameters = get_input_parameters(spec_loader.raw_spec)
     mocker.patch(
-        "splight_lib.component.abstract.AbstractComponent."
-        "parse_parameters",
-        return_value=input_parameters
+        "splight_lib.component.abstract.AbstractComponent.parse_parameters",
+        return_value=input_parameters,
     )
     mocker.patch(
         "splight_lib.client.datalake.LocalDatalakeClient.create_index"
