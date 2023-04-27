@@ -12,8 +12,6 @@ from splight_models import (
     Query,
     QuerySourceType,
 )
-from splight_lib.client.database.local_client import LocalDatabaseClient
-
 
 FAKE_VALUES_BY_TYPE = {
     # native types
@@ -45,39 +43,42 @@ def get_tests_initial_setup() -> dict:
             "splight_lib.client.database.local_client.LocalDatabaseClient",
         "DATALAKE_CLIENT":
             "splight_lib.client.datalake.local_client.LocalDatalakeClient",
+        "COMMUNICATION_CLIENT":
+            "splight_lib.client.communication.local_client."
+            "LocalCommunicationClient",
         "NAMESPACE": "test",
     }
 
 
-def get_custom_type(custom_types: List[Dict], type_: str) -> str:
-    # we need to create a custom object into the local db and return its id
-    """
-    setup = get_tests_initial_setup()
-    clients_config = {"path": os.environ["COMPONENT_PATH_FOR_TESTING"]}
-    db = LocalDatabaseClient(namespace=setup["NAMESPACE"], **clients_config)
-    # TODO: load item as python class on instance variable
-    item = [item for item in custom_types if item["name"] == type_][0]
-    instance = ""
-    saved_instance = db.save(instance)
-    return saved_instance.id
-    """
-    return ["c69a7c55-8347-413d-9ad4-856278abb11f"]
+def get_custom_type_fields(param, custom_types):
+    for ct in custom_types:
+        if ct["name"] == param["type"]:
+            return ct["fields"]
 
 
-def get_input_parameters(raw_spec: Dict) -> List[Dict]:
-    custom_types = raw_spec.get("custom_types")
-    inputs = raw_spec.get("input")
-    for param in inputs:
+def parse_input_parameters(inputs_list, custom_types):
+    for param in inputs_list:
         value = param.get("value")
         if value is None:
             type_ = param.get("type")
-            if type_ in [ct["name"] for ct in custom_types]:
-                
-                value = get_custom_type(custom_types, type_)
-            else:  # in splight_models.SIMPLE_TYPES
-                value = FAKE_VALUES_BY_TYPE.get(type_)
-            param.update({"value": value})
-    return inputs
+            multiple = param.get("multiple")
+            if type_ in FAKE_VALUES_BY_TYPE.keys():
+                value = FAKE_VALUES_BY_TYPE.get(type_).dict()
+            else:  # its a custom type
+                fields = get_custom_type_fields(param, custom_types)
+                value = parse_input_parameters(fields, custom_types)
+                if multiple:
+                    value = [value]
+        param.update({"value": value})
+    flat_inputs = {param["name"]: param["value"] for param in inputs_list}
+    return flat_inputs
+
+
+def get_input_parameters(raw_spec: Dict) -> List[Dict]:
+    inputs = raw_spec["input"]
+    custom_types = raw_spec["custom_types"]
+    parsed_inputs = parse_input_parameters(inputs, custom_types)
+    return parsed_inputs
 
 
 @pytest.fixture
@@ -89,22 +90,10 @@ def component(mocker):
     # local database, datalake and communication clients
     initial_setup = get_tests_initial_setup()
 
-    mocker.patch("splight_lib.component.abstract.ExecutionClient")
-    mocker.patch(
-        "splight_lib.client.datalake.LocalDatalakeClient.create_index"
-    )
-    mocker.patch(
-        "splight_lib.component.abstract.BindingsMixin._load_client_bindings"
-    )
-    mocker.patch(
-        "splight_lib.component.abstract.AbstractComponent."
-        "_load_instance_kwargs_for_clients"
-    )
-    mocker.patch(
-        "splight_lib.component.abstract.AbstractComponent."
-        "communication_client_kwargs",
-        clients_config,
-    )
+    component_loader = ComponentLoader(path=component_path)
+    spec_loader = SpecLoader(path=component_path)
+    component_class = component_loader.load()
+    run_spec = spec_loader.load(input_parameters={}, prompt_input=False)
 
     # TODO: remove, just temporal until define LocalCommunicationClient
     # #########################################################################
@@ -114,15 +103,28 @@ def component(mocker):
     ] = "splight_lib.client.datalake.LocalDatalakeClient"
     # #########################################################################
 
-    component_loader = ComponentLoader(path=component_path)
-    spec_loader = SpecLoader(path=component_path)
-
-    input_parameters = get_input_parameters(spec_loader.raw_spec)
-    component_class = component_loader.load()
-    # we need to pass input parameters with values
-    run_spec = spec_loader.load(
-        input_parameters=input_parameters, prompt_input=False
+    mocker.patch(
+        "splight_lib.component.abstract.AbstractComponent."
+        "_load_instance_kwargs_for_clients"
     )
+    mocker.patch(
+        "splight_lib.component.abstract.AbstractComponent."
+        "communication_client_kwargs",
+        clients_config,
+    )
+    input_parameters = get_input_parameters(spec_loader.raw_spec)
+    mocker.patch(
+        "splight_lib.component.abstract.AbstractComponent."
+        "parse_parameters",
+        return_value=input_parameters
+    )
+    mocker.patch(
+        "splight_lib.client.datalake.LocalDatalakeClient.create_index"
+    )
+    mocker.patch(
+        "splight_lib.component.abstract.BindingsMixin._load_client_bindings"
+    )
+    mocker.patch("splight_lib.component.abstract.ExecutionClient")
 
     component = component_class(
         run_spec=run_spec.dict(),
