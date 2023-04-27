@@ -12,16 +12,18 @@ from splight_models import (
     Query,
     QuerySourceType,
 )
+from splight_lib.client.database.local_client import LocalDatabaseClient
 
-FAKE_VALUES_BY_TYPE = {
-    # native types
+FAKE_NATIVE_TYPES = {
     "int": 1,
     "bool": True,
     "str": "fake",
     "float": 5.5,
     "datetime": datetime.datetime(2022, 12, 18),
     "url": "www.google.com",
-    # database types
+}
+
+FAKE_DATABASE_TYPES = {
     "Component": Component(name="ComponentTest", version="1.0.0"),
     "Asset": Asset(name="AssetTest"),
     "Attribute": Attribute(name="AttrTest"),
@@ -56,17 +58,23 @@ def get_custom_type_fields(param, custom_types):
             return ct["fields"]
 
 
-def parse_input_parameters(inputs_list, custom_types):
+def load_input_parameters(inputs_list, custom_types, db):
     for param in inputs_list:
         value = param.get("value")
         if value is None:
             type_ = param.get("type")
             multiple = param.get("multiple")
-            if type_ in FAKE_VALUES_BY_TYPE.keys():
-                value = FAKE_VALUES_BY_TYPE.get(type_).dict()
+            if type_ in FAKE_NATIVE_TYPES.keys():
+                value = FAKE_NATIVE_TYPES.get(type_)
+            elif type_ in FAKE_DATABASE_TYPES.keys():
+                instance = FAKE_DATABASE_TYPES.get(type_)
+                if not instance.id:  # save to db and update fake map
+                    instance = db.save(instance)
+                    FAKE_DATABASE_TYPES.update({type_: instance})
+                value = instance.dict()
             else:  # its a custom type
                 fields = get_custom_type_fields(param, custom_types)
-                value = parse_input_parameters(fields, custom_types)
+                value = load_input_parameters(fields, custom_types, db)
                 if multiple:
                     value = [value]
         param.update({"value": value})
@@ -75,9 +83,13 @@ def parse_input_parameters(inputs_list, custom_types):
 
 
 def get_input_parameters(raw_spec: Dict) -> List[Dict]:
+    db = LocalDatabaseClient(
+        namespace=get_tests_initial_setup().get("NAMESPACE"),
+        path=os.environ["COMPONENT_PATH_FOR_TESTING"]
+    )
     inputs = raw_spec["input"]
     custom_types = raw_spec["custom_types"]
-    parsed_inputs = parse_input_parameters(inputs, custom_types)
+    parsed_inputs = load_input_parameters(inputs, custom_types, db)
     return parsed_inputs
 
 
