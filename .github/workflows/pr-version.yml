@@ -4,7 +4,7 @@ on:
     types:
       [opened, synchronize]
     branches:
-      - 'feature/*'
+      - '*'
 jobs:
   verify_pypi_version:
     runs-on: ubuntu-latest
@@ -28,19 +28,19 @@ jobs:
     runs-on: ubuntu-latest
     name: Verify version is higher than master
     steps:
-      - name: Check out to master
+      - name: Check out to target branch
         uses: actions/checkout@v3
         with:
-          ref: master
+          ref: ${{ env.GITHUB_BASE_REF }}
 
       - name: Get version from master branch
-        run: echo "MASTER_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
+        run: echo "MASTER_VERSION=$(grep -E 'version' cli/version.py | awk -F '\"' '{ print $2 }')" >> "$GITHUB_ENV"
 
       - name: Check out to feature branch
         uses: actions/checkout@v3
 
       - name: Get version from feature branch
-        run: echo "BRANCH_VERSION=$(grep -Eo '__version__ = \"[^\"]+\"' cli/version.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
+        run: echo "BRANCH_VERSION=$(grep -E 'version' cli/version.py | awk -F '\"' '{ print $2 }')" >> "$GITHUB_ENV"
 
       - name: Set up Python
         uses: actions/setup-python@v3
