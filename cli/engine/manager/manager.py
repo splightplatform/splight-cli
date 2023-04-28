@@ -342,12 +342,12 @@ class ComponentUpgradeManager:
                 id=id,
                 first=True
             )
-            return component
         except requests.exceptions.HTTPError:
             raise ComponentUpgradeManagerException(
                 InvalidComponentId(id),
                 style=error_style,
             )
+        return component
 
     def _validate_hub_version(
             self,
@@ -367,12 +367,12 @@ class ComponentUpgradeManager:
                 f"Getting {hub_component_name} version {version} from hub")
             hub_component = manager.fetch_component_version(
                 name=hub_component_name, version=version)
-            return hub_component
         except Exception:
             raise ComponentUpgradeManagerException(
                 HubComponentNotFound(hub_component_name, version),
                 style=error_style,
             )
+        return hub_component
 
     def _create_component_objects(
             self,
@@ -419,13 +419,13 @@ class ComponentUpgradeManager:
         )
         try:
             new_component = self.db_client.save(new_component)
-            return new_component
         except Exception as e:
             raise ComponentUpgradeManagerException(
                 ComponentCreateError(new_component.name,
                                      new_component.version, e),
                 style=error_style,
             )
+        return new_component
 
     def upgrade(self, version: str):
         from_component = self._retrieve_component(self.component_id)

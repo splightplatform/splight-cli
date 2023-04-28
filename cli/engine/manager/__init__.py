@@ -3,5 +3,6 @@ from cli.engine.manager.manager import (
     ResourceManagerException, 
     DatalakeManager, 
     DatalakeManagerException,
-    ComponentUpgradeManager
+    ComponentUpgradeManager,
+    ComponentUpgradeManagerException,
 )
