@@ -31,7 +31,7 @@ jobs:
       - name: Check out to target branch
         uses: actions/checkout@v3
         with:
-          ref: ${{ env.GITHUB_BASE_REF }}
+          ref:  ${{ github.event.pull_request.base.ref }}
 
       - name: Get version from master branch
         run: echo "MASTER_VERSION=$(grep -E 'version' cli/version.py | awk -F '\"' '{ print $2 }')" >> "$GITHUB_ENV"
