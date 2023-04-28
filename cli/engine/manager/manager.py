@@ -31,7 +31,8 @@ from cli.hub.component.hub_manager import HubComponentManager
 from cli.component.loaders import SpecLoader
 from cli.engine.manager.exceptions import (
     VersionUpdateError,
-    InvalidComponentId
+    InvalidComponentId,
+    ComponentCreateError
 )
 from cli.hub.component.exceptions import HubComponentNotFound
 from cli.utils.loader import Loader
@@ -47,8 +48,10 @@ class ResourceManagerException(Exception):
 class DatalakeManagerException(Exception):
     pass
 
-class UpgradeManagerException(Exception):
+
+class ComponentUpgradeManagerException(Exception):
     pass
+
 
 class QueryParam(BaseModel):
     value: Union[List[int], List[float], List[str], int, float, str]
@@ -332,17 +335,20 @@ class ComponentUpgradeManager:
 
         return result
 
-    def _validate_component_id(self, id: str) -> Component:
-        with Loader("Getting component from database", end=''):
-            try:
-                component = self.db_client.get(
-                    Component,
-                    id=id,
-                    first=True
-                )
-                return component
-            except requests.exceptions.HTTPError:
-                self._console.print(InvalidComponentId(id), style=error_style)
+    def _retrieve_component(self, id: str) -> Component:
+        try:
+            self._console.print("Getting component from database")
+            component = self.db_client.get(
+                Component,
+                id=id,
+                first=True
+            )
+            return component
+        except requests.exceptions.HTTPError:
+            raise ComponentUpgradeManagerException(
+                InvalidComponentId(id),
+                style=error_style,
+            )
 
     def _validate_hub_version(
             self,
@@ -351,42 +357,46 @@ class ComponentUpgradeManager:
     ) -> HubComponent:
         hub_component_name, hub_component_version = from_component.version.split(
             "-", 1)
-        with Loader(f"Getting HubComponent {hub_component_name} version {version}", end=''):
-
-            if hub_component_version == version:
-                self._console.print(VersionUpdateError(from_component.name, version),
-                                    style=error_style)
-                raise typer.Exit(1)
-            manager = self.hubmanager
-            try:
-                hub_component = manager.fetch_component_version(
-                    name=hub_component_name, version=version)
-                return hub_component
-            except Exception:
-                self._console.print(HubComponentNotFound(
-                    hub_component_name, version), style=error_style)
+        if hub_component_version == version:
+            raise ComponentUpgradeManagerException(
+                VersionUpdateError(from_component.name, version),
+                style=error_style,
+            )
+        manager = self.hubmanager
+        try:
+            self._console.print(
+                f"Getting {hub_component_name} version {version} from hub")
+            hub_component = manager.fetch_component_version(
+                name=hub_component_name, version=version)
+            return hub_component
+        except Exception:
+            raise ComponentUpgradeManagerException(
+                HubComponentNotFound(hub_component_name, version),
+                style=error_style,
+            )
 
     def _create_component_objects(
             self,
             new_component: Component,
             hub_component: HubComponent
     ):
-        with Loader("Creating component objects", end=''):
-            old_component_objects = self.db_client.get(
-                ComponentObject, component_id=self.component_id)
-            for obj in old_component_objects:
-                matching_hct = next(
-                    (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
-                if matching_hct:
-                    new_object_data = self._update_parameters(
-                        obj.data, matching_hct.fields)
-                    new_object = ComponentObject(
-                        name=obj.name,
-                        type=obj.type,
-                        data=new_object_data,
-                        component_id=new_component.id
-                    )
-                    self.db_client.save(new_object)
+        self._console.print(
+            f"Creating new component objects for {new_component.name}")
+        old_component_objects = self.db_client.get(
+            ComponentObject, component_id=self.component_id)
+        for obj in old_component_objects:
+            matching_hct = next(
+                (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
+            if matching_hct:
+                new_object_data = self._update_parameters(
+                    obj.data, matching_hct.fields)
+                new_object = ComponentObject(
+                    name=obj.name,
+                    type=obj.type,
+                    data=new_object_data,
+                    component_id=new_component.id
+                )
+                self.db_client.save(new_object)
 
     def _create_new_component(
             self,
@@ -394,28 +404,32 @@ class ComponentUpgradeManager:
             hub_component: HubComponent,
             new_inputs: List[InputParameter]
     ):
-        with Loader("Creating new component", end=''):
-            new_component = Component(
-                name=f"{from_component.name}-{hub_component.version}",
-                bindings=hub_component.bindings,
-                version=f"{hub_component.name}-{hub_component.version}",
-                endpoints=hub_component.endpoints,
-                commands=hub_component.commands,
-                component_type=hub_component.component_type,
-                output=hub_component.output,
-                description=hub_component.description,
-                custom_types=hub_component.custom_types,
-                input=new_inputs
+        self._console.print(
+            f"Creating new component {from_component.name}-{hub_component.version}")
+        new_component = Component(
+            name=f"{from_component.name}-{hub_component.version}",
+            bindings=hub_component.bindings,
+            version=f"{hub_component.name}-{hub_component.version}",
+            endpoints=hub_component.endpoints,
+            commands=hub_component.commands,
+            component_type=hub_component.component_type,
+            output=hub_component.output,
+            description=hub_component.description,
+            custom_types=hub_component.custom_types,
+            input=new_inputs
+        )
+        try:
+            new_component = self.db_client.save(new_component)
+            return new_component
+        except Exception as e:
+            raise ComponentUpgradeManagerException(
+                ComponentCreateError(new_component.name,
+                                     new_component.version, e),
+                style=error_style,
             )
-            try:
-                new_component = self.db_client.save(new_component)
-                return new_component
-            except Exception as e:
-                self._console.print(e, style=error_style)
-                raise typer.Exit(1)
 
     def upgrade(self, version: str):
-        from_component = self._validate_component_id(self.component_id)
+        from_component = self._retrieve_component(self.component_id)
 
         hub_component = self._validate_hub_version(from_component, version)
 
