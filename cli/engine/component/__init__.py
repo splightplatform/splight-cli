@@ -97,7 +97,6 @@ def upgrade(
         new_component = manager.upgrade(version)
     except ComponentUpgradeManagerException as exc:
         console.print(exc, style=error_style)
-        raise typer.Exit(code=1)
     
     console.print(
         f"New component name {new_component.name}, id {new_component.id}",

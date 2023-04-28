@@ -308,7 +308,8 @@ class ComponentUpgradeManager:
         Assumes that equality in name, type and multiple is enough to match parameters.
         In such case the value of the previous input is used.
         """
-        self._console.print("Updating parameters, we will ask for missing required parameters if needed.")
+        self._console.print(
+            "Updating parameters, we will ask for missing required parameters if needed.")
         hub_parameters = {(x.name, x.type, x.multiple): {
             k: v for k, v in vars(x).items()} for x in hub}
         prev_parameters = {(x.name, x.type, x.multiple): {
