@@ -174,7 +174,6 @@ class HubComponentManager:
 
     def fetch_component_version(self, name: str, version: str):
         components = self._get_component(name, version)
-        if len(components):
-            return components[0]
-        else:
+        if not components:
             raise HubComponentNotFound(name, version)
+        return components[0]
