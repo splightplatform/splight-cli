@@ -7,6 +7,12 @@ import pathspec
 import py7zr
 from rich.console import Console
 from rich.table import Table
+<<<<<<< HEAD
+=======
+from splight_abstract.hub import AbstractHubClient
+from splight_models import HubComponent, HubComponentVersion
+from splight_models.constants import ComponentType
+>>>>>>> 6e3febd (step 1)
 
 from cli.constants import (
     COMPRESSION_TYPE,
@@ -23,12 +29,16 @@ from cli.hub.component.exceptions import (
     ComponentPushError,
 )
 from cli.utils.loader import Loader
+<<<<<<< HEAD
 from cli.engine.component.exceptions import BadHubVersion
 from rich.console import Console
 from rich.table import Table
 from splight_abstract.hub import AbstractHubClient
 from splight_models import HubComponent, HubComponentVersion
 from splight_models.constants import ComponentType
+=======
+from cli.hub.component.exceptions import HubComponentNotFound 
+>>>>>>> 6e3febd (step 1)
 
 console = Console()
 
@@ -181,9 +191,10 @@ class HubComponentManager:
         private = self._client.private.get(
             HubComponent, name=name, version=version
         )
+
         if any(list(public)):
             return public[0]
         elif any(list(private)):
             return private[0]
         else:
-            raise BadHubVersion(name, version)
+            raise  HubComponentNotFound(name, version)
