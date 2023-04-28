@@ -305,7 +305,8 @@ class ComponentUpgradeManager:
     def _update_parameters(
         self,
         previous: List[InputParameter],
-        hub: List[Union[InputParameter, Parameter]]
+        hub: List[Union[InputParameter, Parameter]],
+        debug: bool = False
     ) -> List[InputParameter]:
         """
         Create parameters for a new component from lists of InputParameters or Parameters.
@@ -317,10 +318,11 @@ class ComponentUpgradeManager:
         prev_parameters = {(x.name, x.type, x.multiple): {
             k: v for k, v in vars(x).items()} for x in previous}
         result = []
-        # overwrite hub parameters with previous values
-        self._console.print(
-            "Updating parameters, we will ask for missing required parameters if needed.")
         step = 1
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required parameters if needed.")
+        # overwrite hub parameters with previous values
         for param in prev_parameters.keys():
             try:
                 if param in hub_parameters.keys():
@@ -395,24 +397,29 @@ class ComponentUpgradeManager:
         old_component_objects = self.db_client.get(
             ComponentObject, component_id=self.component_id)
         for obj in old_component_objects:
-            matching_hct = next(
-                (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
-            if matching_hct:
-                new_object_data = self._update_parameters(
-                    obj.data, matching_hct.fields)
-                new_object = ComponentObject(
-                    name=obj.name,
-                    type=obj.type,
-                    data=new_object_data,
-                    component_id=new_component.id
-                )
-                self.db_client.save(new_object)
+            try:
+                matching_hct = next(
+                    (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
+                if matching_hct:
+                    new_object_data = self._update_parameters(
+                        obj.data, matching_hct.fields)
+                    new_object = ComponentObject(
+                        name=obj.name,
+                        type=obj.type,
+                        data=new_object_data,
+                        component_id=new_component.id
+                    )
+                    self.db_client.save(new_object)
+                    self._console.print(f"Created {new_object.name} object succesfully")
+            except Exception as e:
+                raise ComponentUpgradeManagerException(
+                    e, style=error_style)
 
     def _create_new_component(
             self,
             from_component: Component,
             hub_component: HubComponent,
-            new_inputs: List[InputParameter]
+            inputs: List[InputParameter]
     ):
         self._console.print(
             f"Creating new component {from_component.name}-{hub_component.version}")
@@ -426,7 +433,7 @@ class ComponentUpgradeManager:
             output=hub_component.output,
             description=hub_component.description,
             custom_types=hub_component.custom_types,
-            input=new_inputs
+            input=inputs
         )
         try:
             new_component = self.db_client.save(new_component)
@@ -434,7 +441,7 @@ class ComponentUpgradeManager:
             raise ComponentCreateError(
                 new_component.name,
                 new_component.version,
-                new_inputs,
+                inputs,
                 e
             )
         return new_component
@@ -444,17 +451,13 @@ class ComponentUpgradeManager:
             from_component = self._retrieve_component(self.component_id)
             hub_component = self._validate_hub_version(from_component, version)
             new_inputs = self._update_parameters(
-                from_component.input, hub_component.input)
+                from_component.input, hub_component.input, True)
             new_component = self._create_new_component(
                 from_component, hub_component, new_inputs)
             self._create_component_objects(new_component, hub_component)
-        except InvalidComponentId as e:
-            raise ComponentUpgradeManagerException(str(e))
-        except VersionUpdateError as e:
-            raise ComponentUpgradeManagerException(str(e))
-        except HubComponentNotFound as e:
-            raise ComponentUpgradeManagerException(str(e))
-        except UpdateParametersError as e:
+        except (InvalidComponentId, VersionUpdateError, 
+                ComponentCreateError, UpdateParametersError, 
+                HubComponentNotFound) as e:
             raise ComponentUpgradeManagerException(str(e))
 
         return new_component
