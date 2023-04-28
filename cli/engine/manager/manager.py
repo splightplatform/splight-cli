@@ -327,12 +327,11 @@ class ComponentUpgradeManager:
                                                          prefix="Input value for parameter")
                     parameter['value'] = new_value
                 result.append(InputParameter(**parameter))
-        
 
         return result
 
     def _validate_component_id(self, id: str) -> Component:
-        with Loader("Getting component from database", end='') as loader:
+        with Loader("Getting component from database", end=''):
             try:
                 component = self.db_client.get(
                     Component,
@@ -347,7 +346,7 @@ class ComponentUpgradeManager:
             self,
             from_component: Component,
             version: str
-    ):
+    ) -> HubComponent:
         hub_component_name, hub_component_version = from_component.version.split(
             "-", 1)
         with Loader(f"Getting HubComponent {hub_component_name} version {version}", end=''):
@@ -367,13 +366,12 @@ class ComponentUpgradeManager:
 
     def _create_component_objects(
             self,
-            from_component: Component,
             new_component: Component,
             hub_component: HubComponent
     ):
         with Loader("Creating component objects", end=''):
             old_component_objects = self.db_client.get(
-                ComponentObject, component_id=from_component.id)
+                ComponentObject, component_id=self.component_id)
             for obj in old_component_objects:
                 matching_hct = next(
                     (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
@@ -388,6 +386,32 @@ class ComponentUpgradeManager:
                     )
                     self.db_client.save(new_object)
 
+    def _create_new_component(
+            self,
+            from_component: Component,
+            hub_component: HubComponent,
+            new_inputs: List[InputParameter]
+    ):
+        with Loader("Creating new component", end=''):
+            new_component = Component(
+                name=f"{from_component.name}-{hub_component.version}",
+                bindings=hub_component.bindings,
+                version=f"{hub_component.name}-{hub_component.version}",
+                endpoints=hub_component.endpoints,
+                commands=hub_component.commands,
+                component_type=hub_component.component_type,
+                output=hub_component.output,
+                description=hub_component.description,
+                custom_types=hub_component.custom_types,
+                input=new_inputs
+            )
+            try:
+                new_component = self.db_client.save(new_component)
+                return new_component
+            except Exception as e:
+                self._console.print(e, style=error_style)
+                raise typer.Exit(1)
+
     def upgrade(self, version: str):
         from_component = self._validate_component_id(self.component_id)
 
@@ -396,26 +420,9 @@ class ComponentUpgradeManager:
         new_inputs = self._update_parameters(
             from_component.input, hub_component.input)
 
-        new_component = Component(
-            name=f"{from_component.name}-{version}",
-            bindings=hub_component.bindings,
-            version=f"{hub_component.name}-{version}",
-            endpoints=hub_component.endpoints,
-            commands=hub_component.commands,
-            component_type=hub_component.component_type,
-            output=hub_component.output,
-            description=hub_component.description,
-            custom_types=hub_component.custom_types,
-            input=new_inputs
-        )
+        new_component = self._create_new_component(
+            from_component, hub_component, new_inputs)
 
-        try:
-            new_component = self.db_client.save(new_component)
-        except Exception as e:
-            self._console.print(e, style=error_style)
-            raise typer.Exit(1)
-
-        self._create_component_objects(
-            from_component, new_component, hub_component)
+        self._create_component_objects(new_component, hub_component)
 
         return new_component

@@ -7,7 +7,7 @@ from splight_models import (
     Component,
 )
 
-from cli.constants import error_style
+from cli.constants import error_style, success_style
 from cli.engine.manager import ResourceManager, ResourceManagerException, ComponentUpgradeManager
 
 
@@ -93,8 +93,10 @@ def upgrade(
     )
 
     new_component = manager.upgrade(version)
+    
     console.print(
-        f"New component name {new_component.name}, id {new_component.id}")
+        f"New component name {new_component.name}, id {new_component.id}",
+        style=success_style)
     return
 
 
