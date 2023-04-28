@@ -47,6 +47,8 @@ class ResourceManagerException(Exception):
 class DatalakeManagerException(Exception):
     pass
 
+class UpgradeManagerException(Exception):
+    pass
 
 class QueryParam(BaseModel):
     value: Union[List[int], List[float], List[str], int, float, str]

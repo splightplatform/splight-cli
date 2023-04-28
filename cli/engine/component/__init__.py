@@ -8,7 +8,12 @@ from splight_models import (
 )
 
 from cli.constants import error_style, success_style
-from cli.engine.manager import ResourceManager, ResourceManagerException, ComponentUpgradeManager
+from cli.engine.manager import (
+    ResourceManager,
+    ResourceManagerException,
+    ComponentUpgradeManager,
+    ComponentUpgradeManagerException,
+)
 
 
 component_app = typer.Typer(
@@ -75,24 +80,24 @@ def create(
 def upgrade(
         context: typer.Context,
         from_component_id: str = typer.Option(
-            None, "--from", "-f",
+            ..., "--from", "-f",
             help="The ID of the component to be upgraded"),
         version: str = typer.Option(
-            None, "--version", "-v",
+            ..., "--version", "-v",
             help="The version of the HubComponent to be upgraded to")
 ):
     """Upgrade a component to a new version of its HubComponent."""
-
-    if not from_component_id or not version:
-        console.print(
-            "Component id and/or version cannot be empty", style=error_style)
 
     manager = ComponentUpgradeManager(
         context=context,
         component_id=from_component_id
     )
 
-    new_component = manager.upgrade(version)
+    try:
+        new_component = manager.upgrade(version)
+    except ComponentUpgradeManagerException as exc:
+        console.print(exc, style=error_style)
+        raise typer.Exit(code=1)
     
     console.print(
         f"New component name {new_component.name}, id {new_component.id}",
