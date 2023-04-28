@@ -27,7 +27,19 @@ class ComponentCreateError(Exception):
 
     def __init__(self, name: str, version: str, msg: str = None):
         self._msg = (
-            f"An error occurred creating component {name}-{version}."
+            f"An error occurred creating component {name}-{version}.\
+                {msg}"
+        )
+
+    def __str__(self) -> str:
+        return self._msg
+
+def UpdateParametersError(Exception):
+    """An error ocurred when updating parameters."""
+
+    def __init__(self, msg: str = None):
+        self._msg = (
+            f"Error occurred: {msg}."
         )
 
     def __str__(self) -> str:

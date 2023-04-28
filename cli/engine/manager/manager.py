@@ -32,7 +32,8 @@ from cli.component.loaders import SpecLoader
 from cli.engine.manager.exceptions import (
     VersionUpdateError,
     InvalidComponentId,
-    ComponentCreateError
+    ComponentCreateError,
+    UpdateParametersError,
 )
 from cli.hub.component.exceptions import HubComponentNotFound
 
@@ -313,30 +314,36 @@ class ComponentUpgradeManager:
             k: v for k, v in vars(x).items()} for x in previous}
         result = []
         # overwrite hub parameters with previous values
-        for param in prev_parameters.keys():
-            if param in hub_parameters.keys():
-                hub_parameters[param]["value"] = prev_parameters[param]["value"]
-                result.append(InputParameter(**hub_parameters[param]))
-        # add new parameters
-        for param in hub_parameters.keys():
-            if param not in prev_parameters.keys():
-                parameter = hub_parameters[param]
-                if isinstance(parameter, InputParameter) and not parameter['value'] and parameter['required']:
-                    new_value = SpecLoader._prompt_param(parameter,
-                                                         prefix="Input value for parameter")
-                    parameter['value'] = new_value
-                # this is a parameter of a Parameter type, so we need to convert it to InputParameter
-                elif isinstance(parameter, Parameter) and parameter['required']:
-                    new_value = SpecLoader._prompt_param(parameter,
-                                                         prefix="Input value for parameter")
-                    parameter['value'] = new_value
-                result.append(InputParameter(**parameter))
+        try:
+            for param in prev_parameters.keys():
+                if param in hub_parameters.keys():
+                    hub_parameters[param]["value"] = prev_parameters[param]["value"]
+                    result.append(InputParameter(**hub_parameters[param]))
+            # add new parameters
+            for param in hub_parameters.keys():
+                if param not in prev_parameters.keys():
+                    parameter = hub_parameters[param]
+                    if isinstance(parameter, InputParameter) and not parameter['value'] and parameter['required']:
+                        new_value = SpecLoader._prompt_param(parameter,
+                                                             prefix="Input value for parameter")
+                        parameter['value'] = new_value
+                    # this is a parameter of a Parameter type, so we need to convert it to InputParameter
+                    elif isinstance(parameter, Parameter) and parameter['required']:
+                        new_value = SpecLoader._prompt_param(parameter,
+                                                             prefix="Input value for parameter")
+                        parameter['value'] = new_value
+                    result.append(InputParameter(**parameter))
+        except Exception as e:
+            raise ComponentUpgradeManagerException(
+                UpdateParametersError(e),
+                style=error_style,
+            )
 
         return result
 
     def _retrieve_component(self, id: str) -> Component:
         try:
-            self._console.print("Getting component from database")
+            self._console.print("Getting component from engine")
             component = self.db_client.get(
                 Component,
                 id=id,
