@@ -22,7 +22,7 @@ console = Console()
 MODEL = Component
 
 
-@ component_app.command()
+@component_app.command()
 def list(
     ctx: typer.Context,
     filters: Optional[List[str]] = typer.Option(
@@ -40,7 +40,7 @@ def list(
     manager.list(params=params)
 
 
-@ component_app.command()
+@component_app.command()
 def get(
     ctx: typer.Context,
     instance_id: str = typer.Argument(..., help="The Asset's ID"),
@@ -55,7 +55,7 @@ def get(
         console.print(exc, style=error_style)
 
 
-@ component_app.command()
+@component_app.command()
 def create(
     ctx: typer.Context,
     path: str = typer.Argument(
@@ -71,7 +71,7 @@ def create(
     manager.create(data=body)
 
 
-@ component_app.command()
+@component_app.command()
 def upgrade(
         context: typer.Context,
         from_component_id: str = typer.Option(
@@ -100,7 +100,7 @@ def upgrade(
     return
 
 
-@ component_app.command()
+@component_app.command()
 def delete(
     ctx: typer.Context,
     instance_id: str = typer.Argument(
