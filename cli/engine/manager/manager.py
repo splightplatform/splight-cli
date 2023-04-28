@@ -35,7 +35,6 @@ from cli.engine.manager.exceptions import (
     ComponentCreateError
 )
 from cli.hub.component.exceptions import HubComponentNotFound
-from cli.utils.loader import Loader
 
 
 SplightModel = Type[SplightBaseModel]
