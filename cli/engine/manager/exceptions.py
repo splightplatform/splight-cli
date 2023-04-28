@@ -25,22 +25,25 @@ class VersionUpdateError(Exception):
 class ComponentCreateError(Exception):
     """Exception raised when the component could not be saved."""
 
-    def __init__(self, name: str, version: str, msg: str = None):
+    def __init__(self, name: str, version: str, input_params: dict, msg: str = None):
         self._msg = (
-            f"An error occurred creating component {name}-{version}.\
-                {msg}"
+            f"An error occurred creating component {name}-{version}. "
+            f"Input parameters: {input_params}."
+            f"Error message: {msg}"
         )
 
     def __str__(self) -> str:
         return self._msg
 
-def UpdateParametersError(Exception):
-    """An error ocurred when updating parameters."""
 
-    def __init__(self, msg: str = None):
-        self._msg = (
-            f"Error occurred: {msg}."
+class UpdateParametersError(Exception):
+    """Exception when some parameter could not be updated."""
+
+    def __init__(self, param: dict, step: str, msg: str = None):
+        self._error = (
+            f"An error occurred updating parameter {param} during the {step} step. "
+            f"Error message: {msg}"
         )
 
     def __str__(self) -> str:
-        return self._msg
+        return self._error

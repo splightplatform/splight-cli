@@ -12,7 +12,7 @@ from typing import Optional
 class Loader:
     def __init__(
         self, desc: str = "Loading...",
-        end: Optional[str] = "",
+        end: Optional[str] = None,
         timeout: float = 0.1,
         msg: Optional[str] = None
     ):

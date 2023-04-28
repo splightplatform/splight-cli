@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 import pathspec
 import py7zr
@@ -23,7 +23,7 @@ from cli.hub.component.exceptions import (
     ComponentPushError,
 )
 from cli.utils.loader import Loader
-from cli.hub.component.exceptions import HubComponentNotFound 
+from cli.hub.component.exceptions import HubComponentNotFound
 from rich.console import Console
 from rich.table import Table
 from splight_abstract.hub import AbstractHubClient
@@ -161,30 +161,20 @@ class HubComponentManager:
             if os.path.exists(file_name):
                 os.remove(file_name)
 
-    def _exists_in_hub(self, name: str, version: str) -> bool:
-        exists = False
-
+    def _get_component(self, name: str, version: str):
         public = self._client.public.get(
-            HubComponent, name=name, version=version
-        )
+            HubComponent, name=name, version=version)
         private = self._client.private.get(
-            HubComponent, name=name, version=version
-        )
-        if any([list(public), list(private)]):
-            exists = True
-        return exists
+            HubComponent, name=name, version=version)
+        return list(public) + list(private)
+
+    def _exists_in_hub(self, name: str, version: str) -> bool:
+        components = self._get_component(name, version)
+        return len(components) > 0
 
     def fetch_component_version(self, name: str, version: str):
-        public = self._client.public.get(
-            HubComponent, name=name, version=version
-        )
-        private = self._client.private.get(
-            HubComponent, name=name, version=version
-        )
-
-        if any(list(public)):
-            return public[0]
-        elif any(list(private)):
-            return private[0]
+        components = self._get_component(name, version)
+        if len(components):
+            return components[0]
         else:
-            raise  HubComponentNotFound(name, version)
+            raise HubComponentNotFound(name, version)

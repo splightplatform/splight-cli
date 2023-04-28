@@ -50,7 +50,11 @@ class DatalakeManagerException(Exception):
 
 
 class ComponentUpgradeManagerException(Exception):
-    pass
+    def __init__(self, message=None):
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class QueryParam(BaseModel):
@@ -314,17 +318,22 @@ class ComponentUpgradeManager:
             k: v for k, v in vars(x).items()} for x in previous}
         result = []
         # overwrite hub parameters with previous values
-        try:
-            self._console.print(
-                "Updating parameters, we will ask for missing required parameters if needed.")
-            for param in prev_parameters.keys():
+        self._console.print(
+            "Updating parameters, we will ask for missing required parameters if needed.")
+        step = 1
+        for param in prev_parameters.keys():
+            try:
                 if param in hub_parameters.keys():
                     hub_parameters[param]["value"] = prev_parameters[param]["value"]
                     result.append(InputParameter(**hub_parameters[param]))
+            except Exception as e:
+                raise UpdateParametersError(hub_parameters[param], step, e)
             # add new parameters
-            for param in hub_parameters.keys():
-                if param not in prev_parameters.keys():
-                    parameter = hub_parameters[param]
+        step = 2
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
                     if isinstance(parameter, InputParameter) and not parameter['value'] and parameter['required']:
                         new_value = SpecLoader._prompt_param(parameter,
                                                              prefix="Input value for parameter")
@@ -335,11 +344,8 @@ class ComponentUpgradeManager:
                                                              prefix="Input value for parameter")
                         parameter['value'] = new_value
                     result.append(InputParameter(**parameter))
-        except Exception as e:
-            raise ComponentUpgradeManagerException(
-                UpdateParametersError(e),
-                style=error_style,
-            )
+                except Exception as e:
+                    raise UpdateParametersError(parameter, step, e)
 
         return result
 
@@ -352,10 +358,8 @@ class ComponentUpgradeManager:
                 first=True
             )
         except requests.exceptions.HTTPError:
-            raise ComponentUpgradeManagerException(
-                InvalidComponentId(id),
-                style=error_style,
-            )
+            raise InvalidComponentId(id)
+
         return component
 
     def _validate_hub_version(
@@ -366,10 +370,8 @@ class ComponentUpgradeManager:
         hub_component_name, hub_component_version = from_component.version.split(
             "-", 1)
         if hub_component_version == version:
-            raise ComponentUpgradeManagerException(
-                VersionUpdateError(from_component.name, version),
-                style=error_style,
-            )
+            raise VersionUpdateError(from_component.name, version)
+
         manager = self.hubmanager
         try:
             self._console.print(
@@ -429,24 +431,30 @@ class ComponentUpgradeManager:
         try:
             new_component = self.db_client.save(new_component)
         except Exception as e:
-            raise ComponentUpgradeManagerException(
-                ComponentCreateError(new_component.name,
-                                     new_component.version, e),
-                style=error_style,
+            raise ComponentCreateError(
+                new_component.name,
+                new_component.version,
+                new_inputs,
+                e
             )
         return new_component
 
     def upgrade(self, version: str):
-        from_component = self._retrieve_component(self.component_id)
-
-        hub_component = self._validate_hub_version(from_component, version)
-
-        new_inputs = self._update_parameters(
-            from_component.input, hub_component.input)
-
-        new_component = self._create_new_component(
-            from_component, hub_component, new_inputs)
-
-        self._create_component_objects(new_component, hub_component)
+        try:
+            from_component = self._retrieve_component(self.component_id)
+            hub_component = self._validate_hub_version(from_component, version)
+            new_inputs = self._update_parameters(
+                from_component.input, hub_component.input)
+            new_component = self._create_new_component(
+                from_component, hub_component, new_inputs)
+            self._create_component_objects(new_component, hub_component)
+        except InvalidComponentId as e:
+            raise ComponentUpgradeManagerException(str(e))
+        except VersionUpdateError as e:
+            raise ComponentUpgradeManagerException(str(e))
+        except HubComponentNotFound as e:
+            raise ComponentUpgradeManagerException(str(e))
+        except UpdateParametersError as e:
+            raise ComponentUpgradeManagerException(str(e))
 
         return new_component
