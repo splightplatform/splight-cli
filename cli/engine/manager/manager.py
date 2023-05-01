@@ -302,6 +302,44 @@ class ComponentUpgradeManager:
         self.component_id = component_id
         self._console = Console()
 
+    def _create_objects(self, previous: List[InputParameter], hub: List[Parameter], debug: bool = False):
+        prev_parameters, hub_parameters, result = self._update_parameters(previous, hub)
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required parameters if needed.")        
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
+                    new_value = SpecLoader._prompt_param(parameter,
+                                                            prefix="Input value for parameter")
+                    parameter['value'] = new_value
+                    result.append(InputParameter(**parameter))
+                except Exception as e:
+                    raise UpdateParametersError(parameter, step, e)
+
+        return result
+
+    def _update_input(self, previous: List[InputParameter], hub: List[InputParameter], debug: bool = False):
+        prev_parameters, hub_parameters, result = self._update_parameters(previous, hub)
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required parameters if needed.")
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
+                    if not parameter['value'] and parameter['required']:
+                        new_value = SpecLoader._prompt_param(parameter,
+                                                             prefix="Input value for parameter")
+                        parameter['value'] = new_value
+                    # this is a parameter of a Parameter type, so we need to convert it to InputParameter
+                    result.append(InputParameter(**parameter))
+                except Exception as e:
+                    raise UpdateParametersError(parameter, step, e)
+
     def _update_parameters(
         self,
         previous: List[InputParameter],
@@ -319,9 +357,6 @@ class ComponentUpgradeManager:
             k: v for k, v in vars(x).items()} for x in previous}
         result = []
         step = 1
-        if debug:
-            self._console.print(
-                "Updating parameters, we will ask for missing required parameters if needed.")
         # overwrite hub parameters with previous values
         for param in prev_parameters.keys():
             try:
@@ -330,26 +365,7 @@ class ComponentUpgradeManager:
                     result.append(InputParameter(**hub_parameters[param]))
             except Exception as e:
                 raise UpdateParametersError(hub_parameters[param], step, e)
-            # add new parameters
-        step = 2
-        for param in hub_parameters.keys():
-            if param not in prev_parameters.keys():
-                parameter = hub_parameters[param]
-                try:
-                    if isinstance(parameter, InputParameter) and not parameter['value'] and parameter['required']:
-                        new_value = SpecLoader._prompt_param(parameter,
-                                                             prefix="Input value for parameter")
-                        parameter['value'] = new_value
-                    # this is a parameter of a Parameter type, so we need to convert it to InputParameter
-                    elif isinstance(parameter, Parameter) and parameter['required']:
-                        new_value = SpecLoader._prompt_param(parameter,
-                                                             prefix="Input value for parameter")
-                        parameter['value'] = new_value
-                    result.append(InputParameter(**parameter))
-                except Exception as e:
-                    raise UpdateParametersError(parameter, step, e)
-
-        return result
+        return prev_parameters, hub_parameters, result
 
     def _retrieve_component(self, id: str) -> Component:
         try:
@@ -401,7 +417,7 @@ class ComponentUpgradeManager:
                 matching_hct = next(
                     (hct for hct in hub_component.custom_types if hct.name == obj.type), None)
                 if matching_hct:
-                    new_object_data = self._update_parameters(
+                    new_object_data = self._create_objects(
                         obj.data, matching_hct.fields)
                     new_object = ComponentObject(
                         name=obj.name,
@@ -450,7 +466,7 @@ class ComponentUpgradeManager:
         try:
             from_component = self._retrieve_component(self.component_id)
             hub_component = self._validate_hub_version(from_component, version)
-            new_inputs = self._update_parameters(
+            new_inputs = self._update_input(
                 from_component.input, hub_component.input, True)
             new_component = self._create_new_component(
                 from_component, hub_component, new_inputs)
