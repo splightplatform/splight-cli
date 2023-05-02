@@ -131,9 +131,7 @@ class SpecLoader:
         return input_parameters
 
     @staticmethod
-    def _prompt_param(
-        param: Dict, prefix: str = ""
-    ) -> Primitive:
+    def _prompt_param(param: Dict, prefix: str = "") -> Primitive:
         """
         Prompt the user for a single parameter
         :param param: The parameter to prompt for

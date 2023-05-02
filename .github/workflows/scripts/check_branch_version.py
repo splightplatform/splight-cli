@@ -4,6 +4,7 @@ import sys
 
 class VersionError(Exception):
     """Raised when the feature version is not greater than the master version."""
+
     pass
 
 

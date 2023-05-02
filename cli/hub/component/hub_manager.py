@@ -129,8 +129,9 @@ class HubComponentManager:
                         ):
                             continue
                         filepath = os.path.join(root, file)
-                        archive.write(filepath, os.path.join(
-                            versioned_name, file))
+                        archive.write(
+                            filepath, os.path.join(versioned_name, file)
+                        )
             data = {
                 "name": name,
                 "version": version,
@@ -163,9 +164,11 @@ class HubComponentManager:
 
     def _get_component(self, name: str, version: str):
         public = self._client.public.get(
-            HubComponent, name=name, version=version)
+            HubComponent, name=name, version=version
+        )
         private = self._client.private.get(
-            HubComponent, name=name, version=version)
+            HubComponent, name=name, version=version
+        )
         return list(public) + list(private)
 
     def _exists_in_hub(self, name: str, version: str) -> bool:

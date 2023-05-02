@@ -11,10 +11,11 @@ from typing import Optional
 
 class Loader:
     def __init__(
-        self, desc: str = "Loading...",
+        self,
+        desc: str = "Loading...",
         end: Optional[str] = None,
         timeout: float = 0.1,
-        msg: Optional[str] = None
+        msg: Optional[str] = None,
     ):
         """
         A loader-like context manager
@@ -57,8 +58,7 @@ class Loader:
         cols = get_terminal_size((80, 20)).columns
         print("\r" + " " * cols, end="", flush=True)
         if self.msg is not None:
-            print(
-                f"\r{self.msg}", flush=True)
+            print(f"\r{self.msg}", flush=True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:

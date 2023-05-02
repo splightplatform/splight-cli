@@ -78,19 +78,21 @@ def create(
 
 @component_app.command()
 def upgrade(
-        context: typer.Context,
-        from_component_id: str = typer.Argument(
-            ...,
-            help="The ID of the component to be upgraded"),
-        version: str = typer.Option(
-            ..., "--version", "-v",
-            help="The version of the HubComponent to be upgraded to")
+    context: typer.Context,
+    from_component_id: str = typer.Argument(
+        ..., help="The ID of the component to be upgraded"
+    ),
+    version: str = typer.Option(
+        ...,
+        "--version",
+        "-v",
+        help="The version of the HubComponent to be upgraded to",
+    ),
 ):
     """Upgrade a component to a new version of its HubComponent."""
 
     manager = ComponentUpgradeManager(
-        context=context,
-        component_id=from_component_id
+        context=context, component_id=from_component_id
     )
 
     try:
@@ -98,10 +100,11 @@ def upgrade(
     except ComponentUpgradeManagerException as exc:
         console.print(exc, style=error_style)
         return
-    
+
     console.print(
         f"New component name: {new_component.name}, id: {new_component.id}",
-        style=success_style)
+        style=success_style,
+    )
     return
 
 

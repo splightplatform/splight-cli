@@ -99,7 +99,7 @@ class WorkspaceManager:
         self._config.current_workspace = workspace_name
         self._current_workspace = workspace_name
         save_yaml_to_file(self._config.dict(), self.config_file)
-    
+
     def list_workspace_contents(self, workspace_name: str):
         if workspace_name not in self._config.workspaces:
             raise NotExistingWorkspace(workspace_name)
