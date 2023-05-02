@@ -125,7 +125,7 @@ class Builder:
 
     @cached_property
     def component_manager(self):
-        logger.info("Creating commponent manager")
+        logger.info("Creating component manager")
         return ComponentManager(self.context.SPLIGHT_API_HOST)
 
     @property

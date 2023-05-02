@@ -6,6 +6,7 @@ import requests
 
 class VersionError(Exception):
     """Raised when the version is not greater than the one on pypi"""
+
     pass
 
 
@@ -15,6 +16,7 @@ def get_pypi_version(project_name: str):
     response.raise_for_status()
     version = json.loads(response.content)["info"]["version"]
     return parse(version)
+
 
 if __name__ == "__main__":
     """Compares versions between the local repository

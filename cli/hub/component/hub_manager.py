@@ -1,10 +1,13 @@
 import json
 import os
 import shutil
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 import pathspec
 import py7zr
+from rich.console import Console
+from rich.table import Table
+
 from cli.constants import (
     COMPRESSION_TYPE,
     README_FILE_1,
@@ -20,6 +23,7 @@ from cli.hub.component.exceptions import (
     ComponentPushError,
 )
 from cli.utils.loader import Loader
+from cli.hub.component.exceptions import HubComponentNotFound
 from rich.console import Console
 from rich.table import Table
 from splight_abstract.hub import AbstractHubClient
@@ -158,15 +162,21 @@ class HubComponentManager:
             if os.path.exists(file_name):
                 os.remove(file_name)
 
-    def _exists_in_hub(self, name: str, version: str) -> bool:
-        exists = False
-
+    def _get_component(self, name: str, version: str):
         public = self._client.public.get(
             HubComponent, name=name, version=version
         )
         private = self._client.private.get(
             HubComponent, name=name, version=version
         )
-        if any([list(public), list(private)]):
-            exists = True
-        return exists
+        return list(public) + list(private)
+
+    def _exists_in_hub(self, name: str, version: str) -> bool:
+        components = self._get_component(name, version)
+        return len(components) > 0
+
+    def fetch_component_version(self, name: str, version: str):
+        components = self._get_component(name, version)
+        if not components:
+            raise HubComponentNotFound(name, version)
+        return components[0]

@@ -6,21 +6,30 @@ from time import sleep
 from colorama import Fore, Style
 
 
+from typing import Optional
+
+
 class Loader:
-    def __init__(self, desc="Loading...", end="", timeout=0.1):
+    def __init__(
+        self,
+        desc: str = "Loading...",
+        end: Optional[str] = None,
+        timeout: float = 0.1,
+        msg: Optional[str] = None,
+    ):
         """
         A loader-like context manager
 
         Args:
-            desc (str, optional): The loader's description. Defaults to
-                "Loading...".
-            end (str, optional): Final print. Defaults to "Done!".
-            timeout (float, optional): Sleep time between prints. Defaults to
-                0.1.
+            desc (str, optional): The loader's description. Defaults to "Loading...".
+            end (str, optional): Final print. Defaults to None.
+            timeout (float, optional): Sleep time between prints. Defaults to 0.1.
+            msg (str, optional): Custom message to print when stopping. Defaults to None.
         """
         self.desc = desc
-        self.end = end
+        self.end = end if end is not None else "Done!"
         self.timeout = timeout
+        self.msg = msg
 
         self._thread = Thread(target=self._animate, daemon=True)
         self.steps = ["⢿", "⣻", "⣽", "⣾", "⣷", "⣯", "⣟", "⡿"]
@@ -48,8 +57,11 @@ class Loader:
         self.done = True
         cols = get_terminal_size((80, 20)).columns
         print("\r" + " " * cols, end="", flush=True)
-        print(f"\r{self.end}", flush=True)
+        if self.msg is not None:
+            print(f"\r{self.msg}", flush=True)
 
-    def __exit__(self, exc_type, exc_value, tb):
-        # handle exceptions with those variables ^
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.stop()
+            raise exc_type(exc_val)
         self.stop()
