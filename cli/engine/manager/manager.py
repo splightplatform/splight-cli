@@ -303,27 +303,30 @@ class ComponentUpgradeManager:
         self._console = Console()
 
     def _create_objects(self, previous: List[InputParameter], hub: List[Parameter], debug: bool = False):
-        prev_parameters, hub_parameters, result = self._update_parameters(previous, hub)
+        prev_parameters, hub_parameters, result = self._update_parameters(
+            previous, hub)
         step = 2
         if debug:
             self._console.print(
-                "Updating parameters, we will ask for missing required parameters if needed.")        
+                "Updating parameters, we will ask for missing required parameters if needed.")
         for param in hub_parameters.keys():
             if param not in prev_parameters.keys():
                 parameter = hub_parameters[param]
                 try:
                     if parameter['required']:
                         new_value = SpecLoader._prompt_param(parameter,
-                                                            prefix="Input value for parameter")
+                                                             prefix="Input value for parameter")
                         parameter['value'] = new_value
                         result.append(InputParameter(**parameter))
                 except Exception as e:
-                    raise UpdateParametersError(parameter, step, e)
+                    raise UpdateParametersError(
+                        parameter, step, "Failed Creating Object") from e
 
         return result
 
     def _update_input(self, previous: List[InputParameter], hub: List[InputParameter], debug: bool = False):
-        prev_parameters, hub_parameters, result = self._update_parameters(previous, hub)
+        prev_parameters, hub_parameters, result = self._update_parameters(
+            previous, hub)
         step = 2
         if debug:
             self._console.print(
@@ -338,7 +341,8 @@ class ComponentUpgradeManager:
                         parameter['value'] = new_value
                     result.append(InputParameter(**parameter))
                 except Exception as e:
-                    raise UpdateParametersError(parameter, step, e)
+                    raise UpdateParametersError(
+                        parameter, step, "Failed Updating Input") from e
 
     def _update_parameters(
         self,
@@ -364,7 +368,8 @@ class ComponentUpgradeManager:
                     hub_parameters[param]["value"] = prev_parameters[param]["value"]
                     result.append(InputParameter(**hub_parameters[param]))
             except Exception as e:
-                raise UpdateParametersError(hub_parameters[param], step, e)
+                raise UpdateParametersError(
+                    hub_parameters[param], step, "Failed Updating Parameters") from e
         return prev_parameters, hub_parameters, result
 
     def _retrieve_component(self, id: str) -> Component:
@@ -396,11 +401,8 @@ class ComponentUpgradeManager:
                 f"Getting {hub_component_name} version {version} from hub")
             hub_component = manager.fetch_component_version(
                 name=hub_component_name, version=version)
-        except Exception:
-            raise ComponentUpgradeManagerException(
-                HubComponentNotFound(hub_component_name, version),
-                style=error_style,
-            )
+        except Exception as e:
+            raise HubComponentNotFound(hub_component_name, version) from e
         return hub_component
 
     def _create_component_objects(
@@ -426,10 +428,11 @@ class ComponentUpgradeManager:
                         component_id=new_component.id
                     )
                     self.db_client.save(new_object)
-                    self._console.print(f"Created {new_object.name} object succesfully")
+                    self._console.print(
+                        f"Created {new_object.name} object succesfully")
             except Exception as e:
                 raise ComponentUpgradeManagerException(
-                    e, style=error_style)
+                    f"Could not create object {new_object.name}") from e
 
     def _create_new_component(
             self,
@@ -458,8 +461,8 @@ class ComponentUpgradeManager:
                 new_component.name,
                 new_component.version,
                 inputs,
-                e
-            )
+                "Could not create new component"
+            ) from e
         return new_component
 
     def upgrade(self, version: str):
@@ -471,8 +474,8 @@ class ComponentUpgradeManager:
             new_component = self._create_new_component(
                 from_component, hub_component, new_inputs)
             self._create_component_objects(new_component, hub_component)
-        except (InvalidComponentId, VersionUpdateError, 
-                ComponentCreateError, UpdateParametersError, 
+        except (InvalidComponentId, VersionUpdateError,
+                ComponentCreateError, UpdateParametersError,
                 HubComponentNotFound) as e:
             raise ComponentUpgradeManagerException(str(e))
 

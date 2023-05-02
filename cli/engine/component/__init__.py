@@ -79,8 +79,8 @@ def create(
 @component_app.command()
 def upgrade(
         context: typer.Context,
-        from_component_id: str = typer.Option(
-            ..., "--from", "-f",
+        from_component_id: str = typer.Argument(
+            ...,
             help="The ID of the component to be upgraded"),
         version: str = typer.Option(
             ..., "--version", "-v",
@@ -100,7 +100,7 @@ def upgrade(
         return
     
     console.print(
-        f"New component name {new_component.name}, id {new_component.id}",
+        f"New component name: {new_component.name}, id: {new_component.id}",
         style=success_style)
     return
 
