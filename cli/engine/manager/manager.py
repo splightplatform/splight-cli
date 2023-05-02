@@ -312,10 +312,11 @@ class ComponentUpgradeManager:
             if param not in prev_parameters.keys():
                 parameter = hub_parameters[param]
                 try:
-                    new_value = SpecLoader._prompt_param(parameter,
+                    if parameter['required']:
+                        new_value = SpecLoader._prompt_param(parameter,
                                                             prefix="Input value for parameter")
-                    parameter['value'] = new_value
-                    result.append(InputParameter(**parameter))
+                        parameter['value'] = new_value
+                        result.append(InputParameter(**parameter))
                 except Exception as e:
                     raise UpdateParametersError(parameter, step, e)
 
@@ -335,7 +336,6 @@ class ComponentUpgradeManager:
                         new_value = SpecLoader._prompt_param(parameter,
                                                              prefix="Input value for parameter")
                         parameter['value'] = new_value
-                    # this is a parameter of a Parameter type, so we need to convert it to InputParameter
                     result.append(InputParameter(**parameter))
                 except Exception as e:
                     raise UpdateParametersError(parameter, step, e)
