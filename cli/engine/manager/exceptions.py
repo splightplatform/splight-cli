@@ -1,3 +1,6 @@
+from typing import Dict
+
+
 class InvalidComponentId(Exception):
     """Exception raised when a component id is invalid."""
 
@@ -22,7 +25,7 @@ class ComponentCreateError(Exception):
     """Exception raised when the component could not be saved."""
 
     def __init__(
-        self, name: str, version: str, input_params: dict, msg: str = None
+        self, name: str, version: str, input_params: Dict, msg: str = None
     ):
         self._msg = (
             f"An error occurred creating component {name}-{version}. "
@@ -37,10 +40,9 @@ class ComponentCreateError(Exception):
 class UpdateParametersError(Exception):
     """Exception when some parameter could not be updated."""
 
-    def __init__(self, param: dict, step: str, msg: str = None):
+    def __init__(self, param: Dict):
         self._error = (
-            f"An error occurred updating parameter {param} during the"
-            f" {step} step. Error message: {msg}"
+            f"An error occurred updating parameter {param}"
         )
 
     def __str__(self) -> str:
