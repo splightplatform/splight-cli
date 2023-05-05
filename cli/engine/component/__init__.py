@@ -99,13 +99,45 @@ def upgrade(
         new_component = manager.upgrade(version)
     except ComponentUpgradeManagerException as exc:
         console.print(exc, style=error_style)
-        return
+        raise typer.Exit(1)
 
     console.print(
         f"New component name: {new_component.name}, id: {new_component.id}",
         style=success_style,
     )
-    return
+
+
+@component_app.command()
+def clone(
+    context: typer.Context,
+    from_component_id: str = typer.Argument(
+        ..., help="The ID of the component to be upgraded"
+    ),
+    version: Optional[str] = typer.Option(
+        None,
+        "--version",
+        "-v",
+        help="The version of the HubComponent to be upgraded to",
+    ),
+):
+    """Creates a new component from an existing component in the engine. If the
+    version parameter is used it also updates the version of the Hub Component
+    used.
+    """
+    manager = ComponentUpgradeManager(
+        context=context, component_id=from_component_id
+    )
+
+    try:
+        new_component = manager.clone_component(version)
+    except ComponentUpgradeManagerException as exc:
+        console.print(exc, style=error_style)
+        raise typer.Exit(1)
+
+    console.print(
+        f"New component name: {new_component.name}, id: {new_component.id}",
+        style=success_style,
+    )
 
 
 @component_app.command()
