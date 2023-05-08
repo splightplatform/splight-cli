@@ -3,17 +3,34 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
-from cli.component.exceptions import InvalidCSVColumns
-from cli.constants import (
-    REQUIRED_DATALAKE_COLUMNS,
-    success_style,
-    warning_style,
-)
+import requests
+import typer
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
-from splight_models import Component, DatalakeModel, SplightBaseModel
+from splight_models import (
+    Component,
+    ComponentObject,
+    DatalakeModel,
+    HubComponent,
+    InputParameter,
+    Parameter,
+    SplightBaseModel,
+)
+
+from cli.component.exceptions import InvalidCSVColumns
+from cli.component.loaders import SpecLoader
+from cli.constants import REQUIRED_DATALAKE_COLUMNS  # error_style,
+from cli.constants import success_style, warning_style
+from cli.engine.manager.exceptions import (
+    ComponentCreateError,
+    InvalidComponentId,
+    UpdateParametersError,
+    VersionUpdateError,
+)
+from cli.hub.component.exceptions import HubComponentNotFound
+from cli.hub.component.hub_manager import HubComponentManager
 
 SplightModel = Type[SplightBaseModel]
 
@@ -24,6 +41,14 @@ class ResourceManagerException(Exception):
 
 class DatalakeManagerException(Exception):
     pass
+
+
+class ComponentUpgradeManagerException(Exception):
+    def __init__(self, message=None):
+        self.message = message
+
+    def __str__(self):
+        return self.message
 
 
 class QueryParam(BaseModel):
@@ -261,3 +286,270 @@ class DatalakeManager:
 
         if not required_columns.issubset(set(data.columns)):
             raise InvalidCSVColumns(columns=required_columns)
+
+
+class ComponentUpgradeManager:
+    def __init__(self, context: typer.Context, component_id: str):
+        self.db_client = context.obj.framework.setup.DATABASE_CLIENT()
+        self.hubmanager = HubComponentManager(
+            client=context.obj.framework.setup.HUB_CLIENT()
+        )
+        self.component_id = component_id
+        self._console = Console()
+
+    def _create_objects(
+        self,
+        previous: List[InputParameter],
+        hub: List[Parameter],
+        debug: bool = False,
+    ):
+        prev_parameters, hub_parameters, result = self._update_parameters(
+            previous, hub
+        )
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required"
+                " parameters if needed."
+            )
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
+                    if parameter["required"]:
+                        new_value = SpecLoader._prompt_param(
+                            parameter, prefix="Input value for parameter"
+                        )
+                        parameter["value"] = new_value
+                        result.append(InputParameter(**parameter))
+                except Exception as e:
+                    raise UpdateParametersError(
+                        parameter, step, "Failed Creating Object"
+                    ) from e
+
+        return result
+
+    def _update_input(
+        self,
+        previous: List[InputParameter],
+        hub: List[InputParameter],
+        debug: bool = False,
+    ):
+        prev_parameters, hub_parameters, result = self._update_parameters(
+            previous, hub
+        )
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required"
+                " parameters if needed."
+            )
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
+                    if not parameter["value"] and parameter["required"]:
+                        new_value = SpecLoader._prompt_param(
+                            parameter, prefix="Input value for parameter"
+                        )
+                        parameter["value"] = new_value
+                    result.append(InputParameter(**parameter))
+                except Exception as e:
+                    raise UpdateParametersError(
+                        parameter, step, "Failed Updating Input"
+                    ) from e
+        return result
+
+    def _update_parameters(
+        self,
+        previous: List[InputParameter],
+        hub: List[Union[InputParameter, Parameter]],
+    ) -> List[InputParameter]:
+        """
+        Create parameters for a new component from lists of InputParameters
+        or Parameters. Assumes that equality in name, type and multiple is
+        enough to match parameters. In such case the value of the previous
+        input is used.
+        """
+        hub_parameters = {
+            (x.name, x.type, x.multiple): {k: v for k, v in x.dict().items()}
+            for x in hub
+        }
+        prev_parameters = {
+            (x.name, x.type, x.multiple): {k: v for k, v in x.dict().items()}
+            for x in previous
+        }
+        result = []
+        # overwrite hub parameters with previous values
+        for param in prev_parameters.keys():
+            try:
+                if param in hub_parameters.keys():
+                    hub_parameters[param]["value"] = prev_parameters[param][
+                        "value"
+                    ]
+                    result.append(InputParameter(**hub_parameters[param]))
+            except Exception as e:
+                raise UpdateParametersError(hub_parameters[param]) from e
+        return prev_parameters, hub_parameters, result
+
+    def _retrieve_component(self, id: str) -> Component:
+        try:
+            self._console.print("Getting component from engine")
+            component = self.db_client.get(Component, id=id, first=True)
+        except requests.exceptions.HTTPError as exc:
+            raise InvalidComponentId(id) from exc
+
+        if not component:
+            raise InvalidComponentId(id)
+        return component
+
+    def _update_component(self, component: Component) -> Component:
+        updated = self.db_client.save(component)
+        return updated
+
+    def _validate_hub_version(
+        self,
+        from_component: Component,
+        version: str,
+        check_version: bool = True,
+    ) -> HubComponent:
+        (
+            hub_component_name,
+            hub_component_version,
+        ) = from_component.version.split("-", 1)
+        if check_version and hub_component_version == version:
+            raise VersionUpdateError(from_component.name, version)
+
+        manager = self.hubmanager
+        try:
+            self._console.print(
+                f"Getting {hub_component_name} version {version} from hub"
+            )
+            hub_component = manager.fetch_component_version(
+                name=hub_component_name, version=version
+            )
+        except Exception as e:
+            raise HubComponentNotFound(hub_component_name, version) from e
+        return hub_component
+
+    def _create_component_objects(
+        self, new_component: Component, hub_component: HubComponent
+    ):
+        self._console.print(
+            f"Creating component objects for {new_component.name}"
+        )
+        old_component_objects = self.db_client.get(
+            ComponentObject, component_id=self.component_id
+        )
+        for obj in old_component_objects:
+            try:
+                matching_hct = next(
+                    (
+                        hct
+                        for hct in hub_component.custom_types
+                        if hct.name == obj.type
+                    ),
+                    None,
+                )
+                if matching_hct:
+                    new_object_data = self._create_objects(
+                        obj.data, matching_hct.fields
+                    )
+                    new_object = ComponentObject(
+                        name=obj.name,
+                        type=obj.type,
+                        data=new_object_data,
+                        component_id=new_component.id,
+                    )
+                    self.db_client.save(new_object)
+                    self._console.print(
+                        f"Created {new_object.name} object succesfully"
+                    )
+            except Exception as e:
+                raise ComponentUpgradeManagerException(
+                    f"Could not create object {new_object.name}"
+                ) from e
+
+    def _create_new_component(
+        self,
+        from_component: Component,
+        hub_component: HubComponent,
+        inputs: List[InputParameter],
+    ):
+        self._console.print(
+            "Creating new component"
+            f" {from_component.name}-{hub_component.version}"
+        )
+        new_component = Component(
+            name=f"{from_component.name}-{hub_component.version}",
+            bindings=hub_component.bindings,
+            version=f"{hub_component.name}-{hub_component.version}",
+            endpoints=hub_component.endpoints,
+            commands=hub_component.commands,
+            component_type=hub_component.component_type,
+            output=hub_component.output,
+            description=hub_component.description,
+            custom_types=hub_component.custom_types,
+            input=inputs,
+        )
+        try:
+            new_component = self.db_client.save(new_component)
+        except Exception as e:
+            raise ComponentCreateError(
+                new_component.name,
+                new_component.version,
+                inputs,
+                "Could not create new component",
+            ) from e
+        return new_component
+
+    def upgrade(self, version: str):
+        try:
+            from_component = self._retrieve_component(self.component_id)
+            hub_component = self._validate_hub_version(
+                from_component, version, check_version=True
+            )
+            new_inputs = self._update_input(
+                from_component.input, hub_component.input, True
+            )
+            from_component.input = new_inputs
+            new_hub_version = f"{hub_component.name}-{hub_component.version}"
+            from_component.version = new_hub_version
+            self._update_component(from_component)
+            self._create_component_objects(from_component, hub_component)
+        except (
+            InvalidComponentId,
+            VersionUpdateError,
+            ComponentCreateError,
+            UpdateParametersError,
+            HubComponentNotFound,
+        ) as e:
+            raise ComponentUpgradeManagerException(str(e))
+
+        return from_component
+
+    def clone_component(self, version: Optional[str] = None):
+        try:
+            from_component = self._retrieve_component(self.component_id)
+            hub_name, hub_version = from_component.version.split("-")
+            new_version = version if version else hub_version
+            hub_component = self._validate_hub_version(
+                from_component, new_version, check_version=False
+            )
+            new_inputs = self._update_input(
+                from_component.input, hub_component.input, True
+            )
+            new_component = self._create_new_component(
+                from_component, hub_component, new_inputs
+            )
+            self._create_component_objects(new_component, hub_component)
+        except (
+            InvalidComponentId,
+            VersionUpdateError,
+            ComponentCreateError,
+            UpdateParametersError,
+            HubComponentNotFound,
+        ) as e:
+            raise ComponentUpgradeManagerException(str(e))
+
+        return new_component

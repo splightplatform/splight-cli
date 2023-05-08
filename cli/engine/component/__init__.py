@@ -2,10 +2,19 @@ import json
 from typing import List, Optional
 
 import typer
-from cli.constants import error_style
-from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
-from splight_models import Component
+from splight_models import (
+    Component,
+)
+
+from cli.constants import error_style, success_style
+from cli.engine.manager import (
+    ResourceManager,
+    ResourceManagerException,
+    ComponentUpgradeManager,
+    ComponentUpgradeManagerException,
+)
+
 
 component_app = typer.Typer(
     name="Splight Engine Component",
@@ -65,6 +74,70 @@ def create(
     with open(path, "r") as fid:
         body = json.load(fid)
     manager.create(data=body)
+
+
+@component_app.command()
+def upgrade(
+    context: typer.Context,
+    from_component_id: str = typer.Argument(
+        ..., help="The ID of the component to be upgraded"
+    ),
+    version: str = typer.Option(
+        ...,
+        "--version",
+        "-v",
+        help="The version of the HubComponent to be upgraded to",
+    ),
+):
+    """Upgrade a component to a new version of its HubComponent."""
+
+    manager = ComponentUpgradeManager(
+        context=context, component_id=from_component_id
+    )
+
+    try:
+        new_component = manager.upgrade(version)
+    except ComponentUpgradeManagerException as exc:
+        console.print(exc, style=error_style)
+        raise typer.Exit(1)
+
+    console.print(
+        f"New component name: {new_component.name}, id: {new_component.id}",
+        style=success_style,
+    )
+
+
+@component_app.command()
+def clone(
+    context: typer.Context,
+    from_component_id: str = typer.Argument(
+        ..., help="The ID of the component to be upgraded"
+    ),
+    version: Optional[str] = typer.Option(
+        None,
+        "--version",
+        "-v",
+        help="The version of the HubComponent to be upgraded to",
+    ),
+):
+    """Creates a new component from an existing component in the engine. If the
+    version parameter is used it also updates the version of the Hub Component
+    used.
+    """
+    manager = ComponentUpgradeManager(
+        context=context, component_id=from_component_id
+    )
+
+    try:
+        new_component = manager.clone_component(version)
+    except ComponentUpgradeManagerException as exc:
+        console.print(exc, style=error_style)
+        raise typer.Exit(1)
+
+    console.print(
+        f"New component name: {new_component.name}, id: {new_component.id}",
+        style=success_style,
+    )
 
 
 @component_app.command()
