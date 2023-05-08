@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, List
 
 import pathspec
 import py7zr
+from cli.component.component import Component
 from rich.console import Console
 from rich.table import Table
 
@@ -46,6 +47,12 @@ class HubComponentManager:
 
         if not force and self._exists_in_hub(name, version):
             raise ComponentAlreadyExists(name, version)
+
+        # run test before push to hub. To run test, ctx isn't needed
+        console.print(
+            "Testing component before push to hub...", style=success_style
+        )
+        Component(context=None).test(path)
 
         with Loader("Pushing Component to Splight Hub"):
             self._upload_component(spec, path)

@@ -32,3 +32,25 @@ class ReadmeExists(Exception):
 
     def __str__(self) -> str:
         return self._msg
+
+
+class ComponentTestFileDoesNotExists(Exception):
+    def __init__(self, filename: str):
+        self._msg = (
+            f"\nTest file: {filename} doesn't exists."
+            "\nTo start testing your component, create tests file."
+        )
+
+    def __str__(self) -> str:
+        return self._msg
+
+
+class ComponentTestError(Exception):
+    def __init__(self):
+        self._msg = (
+            f"\nAn error occurred running component tests."
+            f"\nPlease, review your code and try again."
+        )
+
+    def __str__(self) -> str:
+        return self._msg

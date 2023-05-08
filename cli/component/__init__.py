@@ -115,3 +115,27 @@ def readme(
             f"Error generating component README: {str(e)}", style=error_style
         )
         typer.Exit(1)
+
+
+@component_app.command()
+def test(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component test code"),
+    name: Optional[str] = typer.Option(
+        None,
+        "--name",
+        "-n",
+        help="Name of the only test that you want to run",
+    ),
+    debug: Optional[bool] = typer.Option(
+        False, "--debug", "-d", help="To enable debug mode using pdb"
+    ),
+) -> None:
+    try:
+        component = Component(ctx.obj)
+        console.print("Testing component...", style=success_style)
+        component.test(path=path, name=name, debug=debug)
+    except Exception as e:
+        logger.exception(e)
+        console.print(f"Error testing component: {str(e)}", style=error_style)
+        typer.Exit(1)

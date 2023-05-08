@@ -1,13 +1,25 @@
 import json
 import os
-import uuid
+from pathlib import Path
+from subprocess import run
 from typing import Dict, List, Optional
 
-from cli.component.exceptions import InvalidSplightCLIVersion, ReadmeExists
+from cli.component.exceptions import (
+    ComponentTestError,
+    ComponentTestFileDoesNotExists,
+    InvalidSplightCLIVersion,
+    ReadmeExists,
+)
 from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
 from cli.component.spec import Spec
-from cli.constants import COMPONENT_FILE, README_FILE_1, SPLIGHT_IGNORE
-from cli.utils import get_template
+from cli.constants import (
+    COMPONENT_FILE,
+    README_FILE_1,
+    SPLIGHT_IGNORE,
+    TEST_CMD,
+    TESTS_FILE,
+)
+from cli.utils import get_template, input_single
 from cli.version import __version__
 from jinja2 import Template
 from rich.console import Console
@@ -45,18 +57,17 @@ class Component:
 
         files_to_create = ComponentLoader.REQUIRED_FILES
         files_to_create.append(SPLIGHT_IGNORE)
+        files_to_create.append(TESTS_FILE)
 
         for file_name in files_to_create:
             template_name = file_name
             file_path = os.path.join(absolute_path, file_name)
-            component_id = str(uuid.uuid4())
             if file_name == COMPONENT_FILE:
                 template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
                 component_name=name,
                 version=version,
-                component_id=component_id,
                 splight_cli_version=__version__,
             )
             with open(file_path, "w+") as f:
@@ -137,3 +148,37 @@ class Component:
         with open(os.path.join(path, README_FILE_1), "w+") as f:
             f.write(readme)
         console.print(f"{README_FILE_1} created for {name} {version}")
+
+    def test(
+        self,
+        path: str,
+        name: Optional[str] = None,
+        debug: bool = False,
+    ):
+        abs_path = str(Path(path).resolve())
+        if not os.path.exists(abs_path):
+            console.print(
+                "Error: test file passed as argument does not exists"
+            )
+            raise ComponentTestFileDoesNotExists(TESTS_FILE)
+
+        # Add path to environ, used in component fixture tests
+        os.environ["COMPONENT_PATH_FOR_TESTING"] = abs_path
+        test_path = os.path.join(abs_path, TESTS_FILE)
+        cmd = " ".join([TEST_CMD, test_path])
+
+        if name:
+            cmd = "::".join([cmd, name])
+
+        if debug:
+            cmd = " ".join([cmd, "-s"])
+
+        r = run(cmd, shell=True, check=True)
+        stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
+
+        if returncode != 0:
+            if stderr:
+                console.print(stderr)
+            raise ComponentTestError
+        if stdout:
+            console.print(stdout.decode())
