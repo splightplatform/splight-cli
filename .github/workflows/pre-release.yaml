@@ -52,7 +52,7 @@ jobs:
           ref: master
 
       - name: Get version from master branch
-        run: echo "MASTER_VERSION=$(grep -E 'version' setup.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
+        run: echo "MASTER_VERSION=$(grep -E 'version' cli/version.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
 
       # get current branch version
       - name: Checkout to feature branch
@@ -64,7 +64,7 @@ jobs:
           python-version: "3.8"
 
       - name: Get version from feature branch
-        run: echo "CURRENT_VERSION=$(grep -E 'version' setup.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
+        run: echo "CURRENT_VERSION=$(grep -E 'version' cli/version.py | awk -F'"' '{ print $2 }')" >> "$GITHUB_ENV"
 
       # validate versions
       - name: Verify version is a valid release version
