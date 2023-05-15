@@ -16,7 +16,7 @@ class TestPull(SplightCLITest):
         )
 
     @patch(
-        "remote_splight_lib.hub.SplightHubClient.download",
+        "splight_lib.client.hub.SplightHubClient.download",
         return_value=(b"file content", 200),
     )
     @patch("builtins.open", new_callable=mock_open())
@@ -31,7 +31,7 @@ class TestPull(SplightCLITest):
         mock1.assert_called_with(file_name, path)
 
     @patch(
-        "remote_splight_lib.hub.SplightHubClient.download",
+        "splight_lib.client.hub.SplightHubClient.download",
         return_value=(b"file content", 200),
     )
     def test_pull_already_exists_in_local(self, mock):

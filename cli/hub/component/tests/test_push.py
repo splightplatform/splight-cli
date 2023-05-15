@@ -16,31 +16,32 @@ class TestPush(SplightCLITest):
         )
 
     @patch.object(Component, "test", return_value=True)
-    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
+    @patch("splight_lib.client.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
     def test_push_no_force(self, mock1, mock2, mock3):
         self._manager.push(path=self.path, force=False)
 
     @patch.object(Component, "test", return_value=True)
-    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
+    @patch("splight_lib.client.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
     def test_push_exists_in_hub(self, mock1, mock2, mock3):
         with self.assertRaises(ComponentAlreadyExists):
             self._manager.push(path=self.path, force=False)
 
     @patch.object(Component, "test", return_value=True)
-    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
+    @patch("splight_lib.client.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
     @patch.object(HubComponentManager, "_upload_component", return_value=None)
     def test_push_exists_with_force(self, mock1, mock2, mock3, mock4):
         self._manager.push(path=self.path, force=True)
         mock1.assert_called_once()
 
+    @patch("os.path.exists", return_value=True)
     @patch.object(Component, "test", side_effect=ComponentTestError)
     @patch.object(HubComponentManager, "_upload_component", return_value=None)
-    @patch("remote_splight_lib.hub.SplightHubClient.upload", return_value=None)
+    @patch("splight_lib.client.hub.SplightHubClient.upload", return_value=None)
     @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
-    def test_push_failing_tests(self, mock1, mock2, mock3, mock4):
+    def test_push_failing_tests(self, mock1, mock2, mock3, mock4, mock5):
         with self.assertRaises(ComponentTestError):
             self._manager.push(path=self.path)
         mock3.assert_not_called()
