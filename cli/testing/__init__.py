@@ -112,7 +112,7 @@ def component(mocker):
 
     # TODO: remove, just temporal until define LocalCommunicationClient
     # #########################################################################
-    mocker.patch("splight_lib.client.communication.CommunicationClient")
+    mocker.patch("splight_lib.client.communication.RemoteCommunicationClient")
     initial_setup[
         "COMMUNICATION_CLIENT"
     ] = "splight_lib.client.datalake.LocalDatalakeClient"
