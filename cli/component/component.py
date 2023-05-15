@@ -19,7 +19,7 @@ from cli.constants import (
     TEST_CMD,
     TESTS_FILE,
 )
-from cli.utils import get_template, input_single
+from cli.utils import get_template
 from cli.version import __version__
 from jinja2 import Template
 from rich.console import Console

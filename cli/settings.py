@@ -11,9 +11,9 @@ class SplightCLISettings(BaseSettings):
     # FRAMEWORK
     DATABASE_CLIENT: str = "splight_lib.client.database.RemoteDatabaseClient"
     DATALAKE_CLIENT: str = "splight_lib.client.datalake.RemoteDatalakeClient"
-    HUB_CLIENT: str = "remote_splight_lib.hub.SplightHubClient"
+    HUB_CLIENT: str = "splight_lib.client.hub.SplightHubClient"
     COMMUNICATION_CLIENT: str = (
-        "remote_splight_lib.communication.CommunicationClient"
+        "splight_lib.client.communication.RemoteCommunicationClient"
     )
     NAMESPACE: str = "NO_NAMESPACE"
 
