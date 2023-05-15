@@ -17,6 +17,9 @@ class TestDump(SplightCLITest):
                 ["dump", "collection"],
                 obj=self.context,
                 catch_exceptions=False,
+                env={
+                    "SPLIGHT_ACCESS_ID": "access_id",
+                    "SPLIGHT_SECRET_KEY": "secret_key",
+                }
             )
-            # self.assertTrue("DATALAKE" in result.output)
             mocked_dump.assert_called_once()
