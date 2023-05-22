@@ -61,10 +61,10 @@ def run(
     ),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager(ctx.obj)
         console.print("Running component...", style=success_style)
         input = json.loads(input) if input else None
-        component.run(
+        manager.run(
             path,
             input_parameters=input,
             component_id=component_id,
@@ -81,11 +81,11 @@ def install_requirements(
     path: str = typer.Argument(..., help="Path to component source code"),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager(ctx.obj)
         console.print(
             "Installing component requirements...", style=success_style
         )
-        component.install_requirements(path)
+        manager.install_requirements(path)
     except Exception as e:
         console.print(
             f"Error installing component requirements: {str(e)}",
@@ -131,9 +131,9 @@ def test(
     ),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager(ctx.obj)
         console.print("Testing component...", style=success_style)
-        component.test(path=path, name=name, debug=debug)
+        manager.test(path=path, name=name, debug=debug)
     except Exception as e:
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)
