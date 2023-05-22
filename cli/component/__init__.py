@@ -106,9 +106,9 @@ def readme(
     ),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager(ctx.obj)
         console.print("Generating component README...", style=success_style)
-        component.readme(path, force)
+        manager.readme(path, force)
     except Exception as e:
         console.print(
             f"Error generating component README: {str(e)}", style=error_style
