@@ -1,14 +1,13 @@
-import json
 import logging
 from pathlib import Path
 from typing import Optional
 
 import typer
+from rich.console import Console
+
 from cli.component.component import ComponentManager
 from cli.constants import error_style, success_style
 from cli.context import check_credentials
-from cli.context.context import local_environment_context
-from rich.console import Console
 
 component_app = typer.Typer(
     name="Splight Component",
@@ -52,22 +51,16 @@ def create(
 def run(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),
-    input: str = typer.Option(None, "--input", "-i", help="Input Values"),
     component_id: str = typer.Option(
         None, "--component-id", "-id", help="Component's ID"
     ),
-    local_dev: bool = typer.Option(
-        False, "--local", callback=local_environment_context, is_eager=True
-    ),
+    local_dev: bool = typer.Option(False, "--local"),
 ) -> None:
     try:
         manager = ComponentManager(ctx.obj)
         console.print("Running component...", style=success_style)
-        input = json.loads(input) if input else None
         manager.run(
-            path,
-            input_parameters=input,
-            component_id=component_id,
+            path, component_id=component_id, local_environment=local_dev
         )
     except Exception as e:
         logger.exception(e)

@@ -10,12 +10,11 @@ from cli.constants import (
     COMPONENT_FILE,
     INIT_FILE,
     MAIN_CLASS_NAME,
-    README_FILE_1,
+    README_FILE,
     README_FILE_2,
     SPEC_FILE,
 )
 from cli.utils import get_json_from_file, input_single
-from splight_lib.component import AbstractComponent
 from splight_lib.logging._internal import get_splight_logger
 
 logger = get_splight_logger()
@@ -24,7 +23,7 @@ Primitive = Union[int, str, float, bool]
 
 class ComponentLoader:
     _MAIN_CLASS_NAME: str = "Main"
-    REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE_1]
+    REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE]
 
     def __init__(self, path: str) -> None:
         abs_path = str(Path(path).resolve())
@@ -52,7 +51,7 @@ class ComponentLoader:
     def _validate(self):
         # VALIDATE FILES
         for required_file in [
-            x for x in self.REQUIRED_FILES if x != README_FILE_1
+            x for x in self.REQUIRED_FILES if x != README_FILE
         ]:
             if not os.path.isfile(os.path.join(self.base_path, required_file)):
                 raise Exception(
@@ -60,10 +59,10 @@ class ComponentLoader:
                 )
         # retrocompatibility for components with README without extension
         if not os.path.isfile(
-            os.path.join(self.base_path, README_FILE_1)
+            os.path.join(self.base_path, README_FILE)
         ) and not os.path.isfile(os.path.join(self.base_path, README_FILE_2)):
             raise Exception(
-                f"No {README_FILE_1} or {README_FILE_2} found in"
+                f"No {README_FILE} or {README_FILE_2} found in"
                 f" {self.base_path}"
             )
         if self.module:
@@ -72,19 +71,20 @@ class ComponentLoader:
                 raise Exception(
                     f"Component does not have a class called {MAIN_CLASS_NAME}"
                 )
-            # VALIDATE MAIN CLASS IS INHERITING FROM ABSTRACTCOMPONENT
-            if not any(
-                [
-                    parent_class.__name__ == AbstractComponent.__name__
-                    for parent_class in getattr(
-                        self.module, MAIN_CLASS_NAME
-                    ).__mro__
-                ]
-            ):
-                raise Exception(
-                    f"Component class {MAIN_CLASS_NAME} must inherit from one"
-                    " of Splight's component classes"
-                )
+
+            # # VALIDATE MAIN CLASS IS INHERITING FROM ABSTRACTCOMPONENT
+            # if not any(
+            #     [
+            #         parent_class.__name__ == AbstractComponent.__name__
+            #         for parent_class in getattr(
+            #             self.module, MAIN_CLASS_NAME
+            #         ).__mro__
+            #     ]
+            # ):
+            #     raise Exception(
+            #         f"Component class {MAIN_CLASS_NAME} must inherit from one"
+            #         " of Splight's component classes"
+            #     )
 
 
 class SpecLoader:
