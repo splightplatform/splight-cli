@@ -1,7 +1,7 @@
 from typing import Optional
 
 import typer
-# from cli.component import component_app
+from cli.component import component_app
 from cli.config import config_app
 from cli.context import Context
 # from cli.engine import engine_app
@@ -17,7 +17,7 @@ app = typer.Typer(
 )
 
 app.add_typer(config_app, name="configure")
-# app.add_typer(component_app, name="component")
+app.add_typer(component_app, name="component")
 # app.add_typer(engine_app, name="engine")
 # app.add_typer(hub_app, name="hub")
 app.add_typer(workspace_app, name="workspace")
