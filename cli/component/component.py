@@ -14,7 +14,7 @@ from cli.component.exceptions import (
 #     InvalidSplightCLIVersion,
     ReadmeExists,
 )
-# from cli.component.loaders import ComponentLoader  # , InitLoader, SpecLoader
+from cli.component.loaders import InitLoader  # ComponentLoader  # , InitLoader, SpecLoader
 
 # from cli.component.spec import Spec
 from cli.constants import (
@@ -103,6 +103,10 @@ class ComponentManager:
             f.write(readme)
         console.print(f"{README_FILE} created for {name} {version}")
 
+    def install_requirements(self, path: str):
+        loader = InitLoader(path=path)
+        loader.load()
+
     # def run(
     #     self,
     #     path: str,
@@ -140,9 +144,6 @@ class ComponentManager:
     #     )
     #     component.execution_client.start(Thread(target=component.start))
     #
-    # def install_requirements(self, path: str):
-    #     loader = InitLoader(path=path)
-    #     loader.load()
     #
     # def _validate_cli_version(self, component_cli_version: str):
     #     if component_cli_version != __version__:
