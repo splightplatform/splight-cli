@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import typer
-from cli.component.component import Component
+from cli.component.component import ComponentManager
 from cli.constants import error_style, success_style
 from cli.context import check_credentials
 from cli.context.context import local_environment_context
@@ -36,14 +36,13 @@ def create(
     path: str = typer.Option(".", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
-        component = Component(ctx.obj)
-        component.create(name, version, path)
+        manager = ComponentManager(ctx.obj)
+        manager.create(name, version, path)
         abs_path = str(Path(path).resolve())
         console.print(
             f"Component {name} created successfully in {abs_path}",
             style=success_style,
         )
-
     except Exception as e:
         console.print(f"Error creating component: {str(e)}", style=error_style)
         typer.Exit(1)

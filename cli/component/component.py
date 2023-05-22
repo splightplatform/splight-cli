@@ -1,13 +1,9 @@
 # import json
 import os
-# from pathlib import Path
-# from subprocess import run
-# from typing import Dict, List, Optional
 
 from jinja2 import Template
 from rich.console import Console
-# from splight_lib.execution import Thread
-# from splight_models import Component as ComponentModel
+from caseconverter import pascalcase
 
 # from cli.component.exceptions import (
 #     ComponentTestError,
@@ -15,24 +11,43 @@ from rich.console import Console
 #     InvalidSplightCLIVersion,
 #     ReadmeExists,
 # )
-# from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
-from cli.component.spec import Spec
+from cli.component.loaders import ComponentLoader  # , InitLoader, SpecLoader
+
+# from cli.component.spec import Spec
 from cli.constants import (
     COMPONENT_FILE,
-    # README_FILE_1,
+    INIT_FILE,
+    README_FILE,
+    SPEC_FILE,
     SPLIGHT_IGNORE,
-    # TEST_CMD,
     TESTS_FILE,
 )
 from cli.utils import get_template
 from cli.version import __version__
 
+# from pathlib import Path
+# from subprocess import run
+# from typing import Dict, List, Optional
+
+# from splight_lib.execution import Thread
+# from splight_models import Component as ComponentModel
+
+
 console = Console()
 
 
-class Component:
-    name = None
-    version = None
+class ComponentManager:
+
+    _COMPONENT_REQUIRED_FILES = [
+        COMPONENT_FILE,
+        INIT_FILE,
+        README_FILE,
+        SPEC_FILE,
+        SPLIGHT_IGNORE,
+        TESTS_FILE,
+    ]
+    # name = None
+    # version = None
 
     def __init__(self, context):
         self.context = context
@@ -40,34 +55,23 @@ class Component:
     def create(
         self, name: str, version: str = "0.1.0", component_path: str = "."
     ):
-        Spec.verify(
-            {
-                "name": name,
-                "version": version,
-                "splight_cli_version": __version__,
-                "custom_types": [],
-                "input": [],
-                "output": [],
-                "endpoints": [],
-            }
-        )
-
+        component_name = pascalcase(name)
         absolute_path = os.path.abspath(component_path)
         if not os.path.exists(absolute_path):
             os.makedirs(absolute_path)
 
-        files_to_create = ComponentLoader.REQUIRED_FILES
-        files_to_create.append(SPLIGHT_IGNORE)
-        files_to_create.append(TESTS_FILE)
+        # files_to_create = self._COMPONENT_REQUIRED_FILES
+        # files_to_create.append(SPLIGHT_IGNORE)
+        # files_to_create.append(TESTS_FILE)
 
-        for file_name in files_to_create:
+        for file_name in self._COMPONENT_REQUIRED_FILES:
             template_name = file_name
             file_path = os.path.join(absolute_path, file_name)
-            if file_name == COMPONENT_FILE:
-                template_name = "component.py"
+            # if file_name == COMPONENT_FILE:
+            #     template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
-                component_name=name,
+                component_name=component_name,
                 version=version,
                 splight_cli_version=__version__,
             )
