@@ -8,14 +8,6 @@ class SplightCLISettings(BaseSettings):
     SPLIGHT_ACCESS_ID: str = ""
     SPLIGHT_SECRET_KEY: str = ""
     SPLIGHT_PLATFORM_API_HOST: str = "https://api.splight-ai.com"
-    # FRAMEWORK
-    DATABASE_CLIENT: str = "splight_lib.client.database.RemoteDatabaseClient"
-    DATALAKE_CLIENT: str = "splight_lib.client.datalake.RemoteDatalakeClient"
-    HUB_CLIENT: str = "splight_lib.client.hub.SplightHubClient"
-    COMMUNICATION_CLIENT: str = (
-        "splight_lib.client.communication.RemoteCommunicationClient"
-    )
-    NAMESPACE: str = "NO_NAMESPACE"
 
     class Config:
         extra = Extra.ignore
