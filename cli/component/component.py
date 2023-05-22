@@ -1,17 +1,20 @@
-# import json
+import json
 import os
+from typing import Optional
 
 from jinja2 import Template
 from rich.console import Console
 from caseconverter import pascalcase
 
-# from cli.component.exceptions import (
+from splight_lib.component.spec import Spec
+
+from cli.component.exceptions import (
 #     ComponentTestError,
 #     ComponentTestFileDoesNotExists,
 #     InvalidSplightCLIVersion,
-#     ReadmeExists,
-# )
-from cli.component.loaders import ComponentLoader  # , InitLoader, SpecLoader
+    ReadmeExists,
+)
+# from cli.component.loaders import ComponentLoader  # , InitLoader, SpecLoader
 
 # from cli.component.spec import Spec
 from cli.constants import (
@@ -60,15 +63,9 @@ class ComponentManager:
         if not os.path.exists(absolute_path):
             os.makedirs(absolute_path)
 
-        # files_to_create = self._COMPONENT_REQUIRED_FILES
-        # files_to_create.append(SPLIGHT_IGNORE)
-        # files_to_create.append(TESTS_FILE)
-
         for file_name in self._COMPONENT_REQUIRED_FILES:
             template_name = file_name
             file_path = os.path.join(absolute_path, file_name)
-            # if file_name == COMPONENT_FILE:
-            #     template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
                 component_name=component_name,
@@ -77,6 +74,34 @@ class ComponentManager:
             )
             with open(file_path, "w+") as f:
                 f.write(file)
+
+    def readme(self, path: str, force: Optional[bool] = False):
+        spec_file_path = os.path.join(path, SPEC_FILE)
+        spec = Spec.from_file(spec_file_path)
+        name = spec.name
+        version = spec.version
+        description = spec.description
+        if os.path.exists(os.path.join(path, README_FILE)) and not force:
+            raise ReadmeExists(path)
+        template = get_template("auto_readme.md")
+        parsed_bindings = [
+            json.loads(binding.json()) for binding in spec.bindings
+        ]
+        readme = template.render(
+            component_name=name,
+            version=version,
+            description=description,
+            component_type=spec.component_type,
+            inputs=spec.input,
+            custom_types=spec.custom_types,
+            bindings=parsed_bindings,
+            commands=spec.commands,
+            output=spec.output,
+            endpoints=spec.endpoints,
+        )
+        with open(os.path.join(path, README_FILE), "w+") as f:
+            f.write(readme)
+        console.print(f"{README_FILE} created for {name} {version}")
 
     # def run(
     #     self,
@@ -123,36 +148,6 @@ class ComponentManager:
     #     if component_cli_version != __version__:
     #         raise InvalidSplightCLIVersion(component_cli_version, __version__)
     #
-    # def readme(self, path: str, force: Optional[bool] = False):
-    #     loader = SpecLoader(path=path)
-    #     spec = loader.load(prompt_input=False)
-    #     name = spec.name
-    #     version = spec.version
-    #     description = spec.description
-    #     if os.path.exists(os.path.join(path, README_FILE_1)):
-    #         if not force:
-    #             raise ReadmeExists(path)
-    #         else:
-    #             os.remove(os.path.join(path, README_FILE_1))
-    #     template = get_template("auto_readme.md")
-    #     parsed_bindings = [
-    #         json.loads(binding.json()) for binding in spec.bindings
-    #     ]
-    #     readme = template.render(
-    #         component_name=name,
-    #         version=version,
-    #         description=description,
-    #         component_type=spec.component_type,
-    #         inputs=spec.input,
-    #         custom_types=spec.custom_types,
-    #         bindings=parsed_bindings,
-    #         commands=spec.commands,
-    #         output=spec.output,
-    #         endpoints=spec.endpoints,
-    #     )
-    #     with open(os.path.join(path, README_FILE_1), "w+") as f:
-    #         f.write(readme)
-    #     console.print(f"{README_FILE_1} created for {name} {version}")
     #
     # def test(
     #     self,
