@@ -35,7 +35,7 @@ def create(
     path: str = typer.Option(".", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
-        manager = ComponentManager(ctx.obj)
+        manager = ComponentManager()
         manager.create(name, version, path)
         abs_path = str(Path(path).resolve())
         console.print(
@@ -57,7 +57,7 @@ def run(
     local_dev: bool = typer.Option(False, "--local"),
 ) -> None:
     try:
-        manager = ComponentManager(ctx.obj)
+        manager = ComponentManager()
         console.print("Running component...", style=success_style)
         manager.run(
             path, component_id=component_id, local_environment=local_dev
@@ -74,7 +74,7 @@ def install_requirements(
     path: str = typer.Argument(..., help="Path to component source code"),
 ) -> None:
     try:
-        manager = ComponentManager(ctx.obj)
+        manager = ComponentManager()
         console.print(
             "Installing component requirements...", style=success_style
         )
@@ -99,7 +99,7 @@ def readme(
     ),
 ) -> None:
     try:
-        manager = ComponentManager(ctx.obj)
+        manager = ComponentManager()
         console.print("Generating component README...", style=success_style)
         manager.readme(path, force)
     except Exception as e:
@@ -124,7 +124,7 @@ def test(
     ),
 ) -> None:
     try:
-        manager = ComponentManager(ctx.obj)
+        manager = ComponentManager()
         console.print("Testing component...", style=success_style)
         manager.test(path=path, name=name, debug=debug)
     except Exception as e:
