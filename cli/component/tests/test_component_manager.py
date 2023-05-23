@@ -66,7 +66,6 @@ def test_create_component():
         manager.create(
             name="new_component", version="1.1.1", component_path=path
         )
-        # mocked_file.assert_called()
         mocked_file.assert_has_calls(
             [
                 call(os.path.join(abs_path, file_name), "w+")
