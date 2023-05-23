@@ -14,6 +14,7 @@ MyAsset = Type["MyAsset"]
 class {{component_name}}(SplightBaseComponent):
     def __init__(self, component_id: str):
         super().__init__(component_id)
+        self._logger = getLogger("MyComponent")
 
     def start(self):
         self.execution_engine.start(
@@ -32,7 +33,7 @@ class {{component_name}}(SplightBaseComponent):
             value=value,
         )
         preds.save()
-        print(f"\nValue = {value}\n")
+        self._logger.info(f"\nValue = {value}\n")
 
     def command_myasset_print(self, my_asset: MyAsset):
         print("Command for MyAsset")
