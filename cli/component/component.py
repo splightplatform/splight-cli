@@ -14,6 +14,7 @@ from strenum import LowercaseStrEnum
 from cli.component.exceptions import (
     InvalidSplightCLIVersion,
     ReadmeExists,
+    ComponentExecutionError,
 )
 from cli.component.loaders import (
     InitLoader,
@@ -33,10 +34,6 @@ from cli.version import __version__
 console = Console()
 
 
-class ComponentExecutionError(Exception):
-    pass
-
-
 class AvailableLanguages(LowercaseStrEnum):
     PYTHON = auto()
 
@@ -54,9 +51,6 @@ class ComponentManager:
         SPLIGHT_IGNORE,
         TESTS_FILE,
     ]
-
-    def __init__(self, context):
-        self.context = context
 
     def create(
         self, name: str, version: str = "0.1.0", component_path: str = "."
@@ -143,6 +137,7 @@ class ComponentManager:
     def _validate_cli_version(self, component_cli_version: str):
         if component_cli_version != __version__:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
+
     #
     # def test(
     #     self,
