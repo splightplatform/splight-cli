@@ -54,8 +54,6 @@ class ComponentManager:
         SPLIGHT_IGNORE,
         TESTS_FILE,
     ]
-    # name = None
-    # version = None
 
     def __init__(self, context):
         self.context = context
