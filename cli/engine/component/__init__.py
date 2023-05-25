@@ -3,9 +3,7 @@ from typing import List, Optional
 
 import typer
 from rich.console import Console
-from splight_models import (
-    Component,
-)
+from splight_lib.models import Component
 
 from cli.constants import error_style, success_style
 from cli.engine.manager import (
@@ -38,7 +36,6 @@ def list(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     params = manager.get_query_params(filters)
@@ -51,7 +48,6 @@ def get(
     instance_id: str = typer.Argument(..., help="The Asset's ID"),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     try:
@@ -68,7 +64,6 @@ def create(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     with open(path, "r") as fid:
@@ -148,7 +143,6 @@ def delete(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     manager.delete(instance_id)

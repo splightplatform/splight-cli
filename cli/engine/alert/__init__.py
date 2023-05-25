@@ -5,7 +5,7 @@ import typer
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
-from splight_models import Alert
+from splight_lib.models import Alert
 
 alert_app = typer.Typer(
     name="Splight Engine Alert",
@@ -29,7 +29,6 @@ def list(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     params = manager.get_query_params(filters)
@@ -42,7 +41,6 @@ def get(
     instance_id: str = typer.Argument(..., help="The Alert's ID"),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     try:
@@ -59,7 +57,6 @@ def create(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     with open(path, "r") as fid:
@@ -75,7 +72,6 @@ def delete(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     manager.delete(instance_id)

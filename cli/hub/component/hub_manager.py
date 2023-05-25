@@ -28,16 +28,15 @@ from cli.utils.loader import Loader
 from cli.hub.component.exceptions import HubComponentNotFound
 from rich.console import Console
 from rich.table import Table
-from splight_abstract.hub import AbstractHubClient
-from splight_models import HubComponent, HubComponentVersion
-from splight_models.constants import ComponentType
+from splight_lib.client.hub import SplightHubClient
+from splight_lib.models import HubComponent, HubComponentVersion
 
 console = Console()
 
 
 class HubComponentManager:
-    def __init__(self, client: AbstractHubClient):
-        self._client = client
+    def __init__(self):
+        self._client: SplightHubClient = SplightHubClient()
 
     def push(self, path: str, force: Optional[bool] = False):
         with open(os.path.join(path, SPEC_FILE)) as fid:
@@ -97,7 +96,7 @@ class HubComponentManager:
 
     def versions(self, name: str):
         components = self._client.mine.get(HubComponentVersion, name=name)
-
+        print(components)
         table = Table("Name", "Version", "Verification", "Privacy Policy")
         for item in components:
             table.add_row(
@@ -151,7 +150,7 @@ class HubComponentManager:
                 "input": json.dumps(spec.get("input", [])),
                 "output": json.dumps(spec.get("output", [])),
                 "component_type": spec.get(
-                    "component_type", ComponentType.CONNECTOR.value
+                    "component_type", HubComponent.Type.CONNECTOR.value
                 ),
                 "commands": json.dumps(spec.get("commands", [])),
                 "bindings": json.dumps(spec.get("bindings", [])),

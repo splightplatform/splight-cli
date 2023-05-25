@@ -2,7 +2,7 @@ import typer
 from cli.constants import error_style
 from cli.hub.component.hub_manager import HubComponentManager
 from rich.console import Console
-from splight_models import Component
+from splight_lib.models import Component
 
 component_app = typer.Typer(
     name="Splight Engine Component",
@@ -27,9 +27,7 @@ def push(
     ),
 ):
     try:
-        manager = HubComponentManager(
-            client=ctx.obj.framework.setup.HUB_CLIENT()
-        )
+        manager = HubComponentManager()
         manager.push(path, force=force)
     except Exception as exc:
         console.print(f"Error pushing component {exc}", style=error_style)
@@ -43,9 +41,7 @@ def pull(
     version: str = typer.Argument(..., help="The component's version"),
 ):
     try:
-        manager = HubComponentManager(
-            client=ctx.obj.framework.setup.HUB_CLIENT()
-        )
+        manager = HubComponentManager()
         manager.pull(name=name, version=version)
     except Exception as exc:
         console.print(f"Error pulling component {exc}", style=error_style)
@@ -55,9 +51,7 @@ def pull(
 @component_app.command()
 def list(ctx: typer.Context):
     try:
-        manager = HubComponentManager(
-            client=ctx.obj.framework.setup.HUB_CLIENT()
-        )
+        manager = HubComponentManager()
         manager.list_components()
     except Exception as exc:
         console.print(f"Error listing components {exc}", style=error_style)
@@ -69,9 +63,7 @@ def versions(
     ctx: typer.Context, name: str = typer.Argument(..., help="Componet's name")
 ):
     try:
-        manager = HubComponentManager(
-            client=ctx.obj.framework.setup.HUB_CLIENT()
-        )
+        manager = HubComponentManager()
         manager.versions(name=name)
     except Exception as exc:
         console.print(
