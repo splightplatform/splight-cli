@@ -19,21 +19,24 @@ class {{component_name}}(SplightBaseComponent):
     def start(self):
         self.execution_engine.start(
             Task(
-                handler=self._get_random_value,
+                handler=self._run,
                 args=(self.input.min, self.input.max),
                 period=self.input.period,
             )
         )
 
-    def _get_random_value(self, min_value: float, max_value: float):
-        value = (
-            self.input.upper_bound - self.input.lower_bound
-        ) * random.random() + self.input.lower_bound
+    def _run(self, min_value: float, max_value: float):
+        value = self._give_a_random_value(
+            self.input.lower_bound, self.input.upper_bound
+        )
         preds = Number(
             value=value,
         )
         preds.save()
         self._logger.info(f"\nValue = {value}\n")
+
+    def _give_a_random_value(self, min: float, max: float) -> float:
+        return (max - min) * random.random() + min
 
     def command_myasset_print(self, my_asset: MyAsset):
         print("Command for MyAsset")
