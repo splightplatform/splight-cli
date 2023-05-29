@@ -20,6 +20,6 @@ class TestDump(SplightCLITest):
                 env={
                     "SPLIGHT_ACCESS_ID": "access_id",
                     "SPLIGHT_SECRET_KEY": "secret_key",
-                }
+                },
             )
             mocked_dump.assert_called_once()
