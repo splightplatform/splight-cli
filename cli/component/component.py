@@ -13,10 +13,10 @@ from strenum import LowercaseStrEnum
 
 from cli.component.exceptions import (
     ComponentExecutionError,
+    ComponentTestError,
+    ComponentTestFileDoesNotExists,
     InvalidSplightCLIVersion,
     ReadmeExists,
-    ComponentTestFileDoesNotExists,
-    ComponentTestError,
 )
 from cli.component.loaders import InitLoader
 from cli.constants import (
@@ -25,8 +25,8 @@ from cli.constants import (
     README_FILE,
     SPEC_FILE,
     SPLIGHT_IGNORE,
-    TESTS_FILE,
     TEST_CMD,
+    TESTS_FILE,
 )
 from cli.utils import get_template
 from cli.version import __version__
@@ -176,34 +176,35 @@ class ComponentManager:
         name: Optional[str] = None,
         debug: bool = False,
     ):
-        todo()
-        # abs_path = str(Path(path).resolve())
-        # if not os.path.exists(abs_path):
-        #     console.print(
-        #         "Error: test file passed as argument does not exists"
-        #     )
-        #     raise ComponentTestFileDoesNotExists(TESTS_FILE)
-        #
-        # # Add path to environ, used in component fixture tests
-        # os.environ["COMPONENT_PATH_FOR_TESTING"] = abs_path
-        # test_path = os.path.join(abs_path, TESTS_FILE)
-        # cmd = " ".join([TEST_CMD, test_path])
-        #
-        # if name:
-        #     cmd = "::".join([cmd, name])
-        #
-        # if debug:
-        #     cmd = " ".join([cmd, "-s"])
-        #
-        # r = subprocess.run(cmd, shell=True, check=True)
-        # stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
-        #
-        # if returncode != 0:
-        #     if stderr:
-        #         console.print(stderr)
-        #     raise ComponentTestError
-        # if stdout:
-        #     console.print(stdout.decode())
+        abs_path = str(Path(path).resolve())
+        if not os.path.exists(abs_path):
+            console.print(
+                "Error: test file passed as argument does not exists"
+            )
+            raise ComponentTestFileDoesNotExists(TESTS_FILE)
+
+        test_path = os.path.join(abs_path, TESTS_FILE)
+        cmd = " ".join([TEST_CMD, test_path])
+
+        if name:
+            cmd = "::".join([cmd, name])
+
+        if debug:
+            cmd = " ".join([cmd, "-s"])
+
+        environment = os.environ.copy()
+        environment.update({"LOCAL_ENVIRONMENT": "True"})
+        r = subprocess.run(
+            cmd, shell=True, check=True, cwd=abs_path, env=environment
+        )
+        stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
+
+        if returncode != 0:
+            if stderr:
+                console.print(stderr)
+            raise ComponentTestError
+        if stdout:
+            console.print(stdout.decode())
 
     def _generate_command(
         self, language: AvailableLanguages, component_id: str
