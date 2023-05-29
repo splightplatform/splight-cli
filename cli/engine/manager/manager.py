@@ -268,8 +268,8 @@ class ComponentUpgradeManager:
 
     def _create_objects(
         self,
-        #        previous: List[InputParameter],
-        #        hub: List[Parameter],
+        previous: List[InputParameter],
+        hub: List[Parameter],
         debug: bool = False,
     ):
         prev_parameters, hub_parameters, result = self._update_parameters(
@@ -300,8 +300,8 @@ class ComponentUpgradeManager:
 
     def _update_input(
         self,
-        #       previous: List[InputParameter],
-        #       hub: List[InputParameter],
+        previous: List[InputParameter],
+        hub: List[InputParameter],
         debug: bool = False,
     ):
         prev_parameters, hub_parameters, result = self._update_parameters(
@@ -331,9 +331,9 @@ class ComponentUpgradeManager:
 
     def _update_parameters(
         self,
-        #      previous: List[InputParameter],
-        #     hub: List[Union[InputParameter, Parameter]],
-    ) -> None:  # List[InputParameter]:
+        previous: List[InputParameter],
+            hub: List[Union[InputParameter, Parameter]],
+    ) -> List[InputParameter]:
         """
         Create parameters for a new component from lists of InputParameters
         or Parameters. Assumes that equality in name, type and multiple is
@@ -378,10 +378,10 @@ class ComponentUpgradeManager:
 
     def _validate_hub_version(
         self,
-        #        from_component: Component,
+        from_component: Component,
         version: str,
         check_version: bool = True,
-    ):  # -> HubComponent:
+    ) -> HubComponent:
         (
             hub_component_name,
             hub_component_version,
@@ -402,7 +402,7 @@ class ComponentUpgradeManager:
         return hub_component
 
     def _create_component_objects(
-        self, new_component,  # : Component, hub_component: HubComponent
+        self, new_component, Component, hub_component: HubComponent
     ):
         self._console.print(
             f"Creating component objects for {new_component.name}"
@@ -441,9 +441,9 @@ class ComponentUpgradeManager:
 
     def _create_new_component(
         self,
-        #        from_component: Component,
-        #       hub_component: HubComponent,
-        #      inputs: List[InputParameter],
+        from_component: Component,
+        hub_component: HubComponent,
+        inputs: List[InputParameter],
     ):
         self._console.print(
             "Creating new component"

@@ -96,7 +96,6 @@ class HubComponentManager:
 
     def versions(self, name: str):
         components = self._client.mine.get(HubComponentVersion, name=name)
-        print(components)
         table = Table("Name", "Version", "Verification", "Privacy Policy")
         for item in components:
             table.add_row(
