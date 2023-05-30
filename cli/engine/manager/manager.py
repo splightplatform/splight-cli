@@ -8,17 +8,10 @@ import typer
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
-from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
-from splight_models import (
-    Component,
-    ComponentObject,
-    DatalakeModel,
-    HubComponent,
-    InputParameter,
-    Parameter,
-    SplightBaseModel,
+from splight_lib.models.base import (
+    SplightDatabaseBaseModel,
+    SplightDatalakeBaseModel
 )
-
 from cli.component.exceptions import InvalidCSVColumns
 from cli.component.loaders import SpecLoader
 from cli.constants import REQUIRED_DATALAKE_COLUMNS  # error_style,
@@ -32,7 +25,7 @@ from cli.engine.manager.exceptions import (
 from cli.hub.component.exceptions import HubComponentNotFound
 from cli.hub.component.hub_manager import HubComponentManager
 
-SplightModel = Type[SplightBaseModel]
+SplightModel = Type[SplightDatabaseBaseModel]
 
 
 class ResourceManagerException(Exception):
@@ -58,20 +51,18 @@ class QueryParam(BaseModel):
 class ResourceManager:
     def __init__(
         self,
-        client: AbstractDatabaseClient,
-        model: SplightModel,
+        model: SplightDatabaseBaseModel,
     ):
-        self._client = client
         self._model = model
         self._resource_name = model.__name__
         self._console = Console()
 
     def get(self, instance_id: str, exclude_fields: List[str] = None):
         exclude_fields = exclude_fields if exclude_fields is not None else []
-        instance = self._client.get(self._model, id=instance_id, first=True)
+        instance = self._model.retrieve(resource_id=instance_id)
         if not instance:
             raise ResourceManagerException(
-                f"No {self._resources_name} found with ID = {instance_id}",
+                f"No {self._model.__name__} found with ID = {instance_id}",
                 style=warning_style,
             )
 
@@ -87,10 +78,8 @@ class ResourceManager:
         self._console.print(table)
 
     def list(self, params: Dict[str, Any]):
-        instances = self._client.get(
-            resource_type=self._model,
-            **params,
-        )
+        instances = self._model.list(**params)
+
         table = Table("", "ID", "Name")
         _ = [
             table.add_row(
@@ -105,7 +94,9 @@ class ResourceManager:
         self._console.print(table)
 
     def create(self, data: Dict[str, Any]):
-        instance = self._client.save(instance=self._model.parse_obj(data))
+        instance = self._model.parse_obj(data)
+        instance.save()
+
         table = Table(
             title=f"{self._resource_name} = {getattr(instance,'name', '')}",
             show_header=False,
@@ -117,12 +108,13 @@ class ResourceManager:
         self._console.print(table)
 
     def delete(self, instance_id: str):
-        self._client.delete(resource_type=self._model, id=instance_id)
+        self._model.retrieve(resource_id=instance_id).delete()
         self._console.print(
             f"{self._resource_name}={instance_id} deleted", style=warning_style
         )
 
     def download(self, instance_id: str, path: str):
+        raise NotImplementedError
         instance = self._client.get(self._model, id=instance_id, first=True)
         download = self._client.download(instance, decrypt=False)
         if not instance:
@@ -161,34 +153,13 @@ class ResourceManager:
 
 class DatalakeManager:
     def __init__(
-        self,
-        db_client: AbstractDatabaseClient,
-        dl_client: AbstractDatalakeClient,
+            self,
+            model: SplightDatalakeBaseModel,
     ):
-        self._db_client = db_client
-        self._dl_client = dl_client
+        self._model = model
         self._console = Console()
 
-    def list(self, skip, limit):
-        instances = [{"id": "default", "name": "-"}]
-        components = self._db_client.get(resource_type=Component)
-        components = [component.dict() for component in components]
-        instances.extend(components)
-        instances = instances[
-            skip: (limit + skip if limit is not None else None)  # fmt: skip
-        ]
-        table = Table("", "Name", "Component reference")
-        _ = [
-            table.add_row(
-                str(counter),
-                item.get("id"),
-                item.get("name"),
-            )
-            for counter, item in enumerate(instances)
-        ]
-        self._console.print(table)
-
-    def dump(self, collection, path, filters):
+    def dump(self, path, filters):
         if os.path.exists(path):
             raise Exception(f"File {path} already exists")
         if os.path.isdir(path):
@@ -196,13 +167,12 @@ class DatalakeManager:
         elif not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
 
-        DatalakeModel.Meta.collection_name = collection
-        dataframe = self._dl_client.get_dataframe(
-            resource_type=DatalakeModel, **self._get_filters(filters)
+        dataframe = self._model.get_dataframe(
+            **self._get_filters(filters)
         )
         dataframe.to_csv(path)
         self._console.print(
-            f"Succesfully dumpped {collection} in {path}",
+            f"Succesfully dumpped {self._model.__name__}'s in {path}",
             style=success_style,
         )
 
@@ -215,10 +185,9 @@ class DatalakeManager:
         dataframe = pd.read_csv(path)
         self._validate_csv(dataframe)
         dataframe = dataframe.set_index("timestamp")
-        DatalakeModel.Meta.collection_name = collection
-        self._dl_client.save_dataframe(DatalakeModel, dataframe)
+        self._model.save_dataframe(dataframe)
         self._console.print(
-            f"Succesfully loaded {path} in {collection}",
+            f"Succesfully loaded {path} in {self._model.__name__}",
             style=success_style,
         )
 
@@ -363,7 +332,7 @@ class ComponentUpgradeManager:
     def _update_parameters(
         self,
         previous: List[InputParameter],
-        hub: List[Union[InputParameter, Parameter]],
+            hub: List[Union[InputParameter, Parameter]],
     ) -> List[InputParameter]:
         """
         Create parameters for a new component from lists of InputParameters
@@ -392,7 +361,7 @@ class ComponentUpgradeManager:
                 raise UpdateParametersError(hub_parameters[param]) from e
         return prev_parameters, hub_parameters, result
 
-    def _retrieve_component(self, id: str) -> Component:
+    def _retrieve_component(self, id: str) -> None:  # Component:
         try:
             self._console.print("Getting component from engine")
             component = self.db_client.get(Component, id=id, first=True)
@@ -403,7 +372,7 @@ class ComponentUpgradeManager:
             raise InvalidComponentId(id)
         return component
 
-    def _update_component(self, component: Component) -> Component:
+    def _update_component(self, component):  # : Component) -> Component:
         updated = self.db_client.save(component)
         return updated
 
@@ -433,7 +402,7 @@ class ComponentUpgradeManager:
         return hub_component
 
     def _create_component_objects(
-        self, new_component: Component, hub_component: HubComponent
+        self, new_component, Component, hub_component: HubComponent
     ):
         self._console.print(
             f"Creating component objects for {new_component.name}"

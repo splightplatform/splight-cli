@@ -6,7 +6,6 @@ from cli.engine.attribute import attribute_app
 from cli.engine.component import component_app
 from cli.engine.datalake import datalake_app
 from cli.engine.file import file_app
-from cli.engine.query import query_app
 from cli.engine.secret import secret_app
 from cli.engine.setpoint import setpoint_app
 
@@ -21,11 +20,10 @@ engine_app.add_typer(alert_app, name="alert")
 engine_app.add_typer(asset_app, name="asset")
 engine_app.add_typer(attribute_app, name="attribute")
 engine_app.add_typer(component_app, name="component")
-engine_app.add_typer(query_app, name="query")
+engine_app.add_typer(datalake_app, name="datalake")
 engine_app.add_typer(file_app, name="file")
 engine_app.add_typer(secret_app, name="secret")
 engine_app.add_typer(setpoint_app, name="setpoint")
-engine_app.add_typer(datalake_app, name="datalake")
 
 
 @engine_app.callback(invoke_without_command=True)

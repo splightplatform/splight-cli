@@ -4,6 +4,11 @@ import typer
 from cli.constants import error_style
 from cli.engine.manager import DatalakeManager, DatalakeManagerException
 from rich.console import Console
+from splight_lib.models import (
+    Number,
+    String,
+    Boolean,
+)
 
 datalake_app = typer.Typer(
     name="Splight Engine Datalake",
@@ -12,6 +17,12 @@ datalake_app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+
+MODEL_MAP = {
+    "Number": Number,
+    "String": String,
+    "Boolean": Boolean,
+}
 
 
 def _parse_filter_option(values):
@@ -23,26 +34,11 @@ def _parse_filter_option(values):
 
 
 @datalake_app.command()
-def list(
-    ctx: typer.Context,
-    skip: int = typer.Option(
-        0, "--skip", "-s", help="Number of element to skip"
-    ),
-    limit: int = typer.Option(
-        -1, "--limit", "-l", help="Limit the number of listed elements"
-    ),
-):
-    manager = DatalakeManager(
-        db_client=ctx.obj.framework.setup.DATABASE_CLIENT(),
-        dl_client=ctx.obj.framework.setup.DATALAKE_CLIENT(),
-    )
-    manager.list(skip, limit)
-
-
-@datalake_app.command()
 def dump(
     ctx: typer.Context,
-    collection: str = typer.Argument(..., help="Collection name to dump"),
+    type: str = typer.Argument(..., help="Data type to dump eg. Number, String, Boolean"),
+    asset: str = typer.Argument(..., help="Asset id to dump"),
+    attribute: str = typer.Argument(..., help="Attribute id to dump"),
     path: str = typer.Option(
         "./dump.csv", "--path", "-p", help="Path name to dump"
     ),
@@ -50,13 +46,21 @@ def dump(
         None, "--filter", "-f", help="Filter to apply"
     ),
 ):
+    if type not in MODEL_MAP:
+        raise typer.BadParameter(f"Type {type} not supported")
+
     filters = _parse_filter_option(filter)
+    filters.update(
+        {
+            "asset": asset,
+            "attribute": attribute
+        }
+    )
     manager = DatalakeManager(
-        db_client=ctx.obj.framework.setup.DATABASE_CLIENT(),
-        dl_client=ctx.obj.framework.setup.DATALAKE_CLIENT(),
+        model=MODEL_MAP[type],
     )
     try:
-        manager.dump(collection=collection, path=path, filters=filters)
+        manager.dump(path=path, filters=filters)
     except DatalakeManagerException as exc:
         console.print(exc, style=error_style)
 
@@ -64,14 +68,17 @@ def dump(
 @datalake_app.command()
 def load(
     ctx: typer.Context,
-    collection: str = typer.Argument(..., help="Collection name to load"),
+    type: str = typer.Argument(..., help="Data type to dump eg. Number, String, Boolean"),
     path: str = typer.Option(..., "--path", "-p", help="Path to file to load"),
 ):
+    if type not in MODEL_MAP:
+        raise typer.BadParameter(f"Type {type} not supported")
+
     manager = DatalakeManager(
-        db_client=ctx.obj.framework.setup.DATABASE_CLIENT(),
-        dl_client=ctx.obj.framework.setup.DATALAKE_CLIENT(),
+        model=MODEL_MAP[type],
     )
+
     try:
-        manager.load(collection=collection, path=path)
+        manager.load(path=path)
     except DatalakeManagerException as exc:
         console.print(exc, style=error_style)

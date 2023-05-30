@@ -4,7 +4,7 @@ import typer
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
-from splight_models import File
+from splight_lib.models import File
 
 file_app = typer.Typer(
     name="Splight Engine File",
@@ -28,7 +28,6 @@ def list(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     params = manager.get_query_params(filters)
@@ -44,7 +43,6 @@ def get(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     try:
@@ -65,7 +63,6 @@ def create(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     file = MODEL(
@@ -84,7 +81,6 @@ def delete(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     manager.delete(instance_id)
