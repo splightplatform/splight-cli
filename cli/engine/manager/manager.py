@@ -261,11 +261,7 @@ class DatalakeManager:
 
 
 class ComponentUpgradeManager:
-    def __init__(self, context: typer.Context, component_id: str):
-        self.db_client = context.obj.framework.setup.DATABASE_CLIENT()
-        self.hubmanager = HubComponentManager(
-            client=context.obj.framework.setup.HUB_CLIENT()
-        )
+    def __init__(self, component_id: str):
         self.component_id = component_id
         self._console = Console()
 
@@ -364,20 +360,13 @@ class ComponentUpgradeManager:
                 raise UpdateParametersError(hub_parameters[param]) from e
         return prev_parameters, hub_parameters, result
 
-    def _retrieve_component(self, id: str) -> None:  # Component:
+    def _retrieve_component(self, id: str) -> Component:
         try:
             self._console.print("Getting component from engine")
-            component = self.db_client.get(Component, id=id, first=True)
-        except requests.exceptions.HTTPError as exc:
+            component = Component.retrieve(resource_id=id)
+        except Exception as exc:
             raise InvalidComponentId(id) from exc
-
-        if not component:
-            raise InvalidComponentId(id)
         return component
-
-    def _update_component(self, component):  # : Component) -> Component:
-        updated = self.db_client.save(component)
-        return updated
 
     def _validate_hub_version(
         self,
@@ -392,26 +381,27 @@ class ComponentUpgradeManager:
         if check_version and hub_component_version == version:
             raise VersionUpdateError(from_component.name, version)
 
-        manager = self.hubmanager
         try:
             self._console.print(
                 f"Getting {hub_component_name} version {version} from hub"
             )
-            hub_component = manager.fetch_component_version(
+            hub_component = HubComponent.list_all(
                 name=hub_component_name, version=version
             )
-        except Exception as e:
-            raise HubComponentNotFound(hub_component_name, version) from e
-        return hub_component
+        except Exception as exc:
+            raise HubComponentNotFound(hub_component_name, version) from exc
+        if not hub_component:
+            raise HubComponentNotFound(hub_component_name, version)
+        return hub_component[0]
 
     def _create_component_objects(
-        self, new_component, Component, hub_component: HubComponent
+        self, new_component: Component, hub_component: HubComponent
     ):
         self._console.print(
             f"Creating component objects for {new_component.name}"
         )
-        old_component_objects = self.db_client.get(
-            ComponentObject, component_id=self.component_id
+        old_component_objects = ComponentObject.list(
+            component_id=self.component_id
         )
         for obj in old_component_objects:
             try:
@@ -433,7 +423,7 @@ class ComponentUpgradeManager:
                         data=new_object_data,
                         component_id=new_component.id,
                     )
-                    self.db_client.save(new_object)
+                    new_object.save()
                     self._console.print(
                         f"Created {new_object.name} object succesfully"
                     )
@@ -465,7 +455,7 @@ class ComponentUpgradeManager:
             input=inputs,
         )
         try:
-            new_component = self.db_client.save(new_component)
+            new_component = Component.save()
         except Exception as e:
             raise ComponentCreateError(
                 new_component.name,
@@ -487,7 +477,7 @@ class ComponentUpgradeManager:
             from_component.input = new_inputs
             new_hub_version = f"{hub_component.name}-{hub_component.version}"
             from_component.version = new_hub_version
-            self._update_component(from_component)
+            from_component.save()
             self._create_component_objects(from_component, hub_component)
         except (
             InvalidComponentId,
