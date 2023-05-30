@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional
 
 import pathspec
 import py7zr
@@ -29,6 +29,7 @@ from cli.hub.component.exceptions import HubComponentNotFound
 from rich.console import Console
 from rich.table import Table
 from splight_lib.client.hub import SplightHubClient
+from splight_lib.models.component import ComponentType
 from splight_lib.models import HubComponent, HubComponentVersion
 
 console = Console()
@@ -149,7 +150,7 @@ class HubComponentManager:
                 "input": json.dumps(spec.get("input", [])),
                 "output": json.dumps(spec.get("output", [])),
                 "component_type": spec.get(
-                    "component_type", HubComponent.Type.CONNECTOR.value
+                    "component_type", ComponentType.CONNECTOR.value
                 ),
                 "commands": json.dumps(spec.get("commands", [])),
                 "bindings": json.dumps(spec.get("bindings", [])),
