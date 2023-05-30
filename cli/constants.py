@@ -28,7 +28,7 @@ README_FILE = "README.md"
 README_FILE_2 = "README"
 MAIN_CLASS_NAME = "Main"
 SPLIGHT_IGNORE = ".splightignore"
-TESTS_FILE = "tests.py"
+PYTHON_TESTS_FILE = "tests.py"
 
 PYTHON_CMD = "python"
 PYTHON_TEST_CMD = "pytest"
