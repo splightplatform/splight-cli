@@ -1,90 +1,15 @@
-import importlib
 import os
 import subprocess
-import sys
-from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from cli.component.spec import Spec
-from cli.constants import (
-    COMPONENT_FILE,
-    INIT_FILE,
-    MAIN_CLASS_NAME,
-    README_FILE_1,
-    README_FILE_2,
-    SPEC_FILE,
-)
-from cli.utils import get_json_from_file, input_single
-from splight_lib.component import AbstractComponent
 from splight_lib.logging._internal import get_splight_logger
+
+from cli.component.spec import Spec
+from cli.constants import INIT_FILE, SPEC_FILE
+from cli.utils import get_json_from_file, input_single
 
 logger = get_splight_logger()
 Primitive = Union[int, str, float, bool]
-
-
-class ComponentLoader:
-    _MAIN_CLASS_NAME: str = "Main"
-    REQUIRED_FILES = [COMPONENT_FILE, SPEC_FILE, INIT_FILE, README_FILE_1]
-
-    def __init__(self, path: str) -> None:
-        abs_path = str(Path(path).resolve())
-
-        self.base_path = abs_path
-        self.component_directory_name = abs_path.split(os.sep)[-1]
-        self.module = None
-        sys.path.append(os.path.dirname(abs_path))
-        self._validate()
-
-    def load(self):
-        try:
-            self.module = importlib.import_module(
-                self.component_directory_name
-            )
-        except Exception as e:
-            raise Exception(
-                f"Failed importing component {self.component_directory_name}:"
-                f" {str(e)}"
-            ) from e
-        self._validate()
-        self.main_class = getattr(self.module, MAIN_CLASS_NAME)
-        return self.main_class
-
-    def _validate(self):
-        # VALIDATE FILES
-        for required_file in [
-            x for x in self.REQUIRED_FILES if x != README_FILE_1
-        ]:
-            if not os.path.isfile(os.path.join(self.base_path, required_file)):
-                raise Exception(
-                    f"{required_file} file is missing in {self.base_path}"
-                )
-        # retrocompatibility for components with README without extension
-        if not os.path.isfile(
-            os.path.join(self.base_path, README_FILE_1)
-        ) and not os.path.isfile(os.path.join(self.base_path, README_FILE_2)):
-            raise Exception(
-                f"No {README_FILE_1} or {README_FILE_2} found in"
-                f" {self.base_path}"
-            )
-        if self.module:
-            # VALIDATE MODULE HAS MAIN CLASS
-            if not hasattr(self.module, MAIN_CLASS_NAME):
-                raise Exception(
-                    f"Component does not have a class called {MAIN_CLASS_NAME}"
-                )
-            # VALIDATE MAIN CLASS IS INHERITING FROM ABSTRACTCOMPONENT
-            if not any(
-                [
-                    parent_class.__name__ == AbstractComponent.__name__
-                    for parent_class in getattr(
-                        self.module, MAIN_CLASS_NAME
-                    ).__mro__
-                ]
-            ):
-                raise Exception(
-                    f"Component class {MAIN_CLASS_NAME} must inherit from one"
-                    " of Splight's component classes"
-                )
 
 
 class SpecLoader:
@@ -106,7 +31,9 @@ class SpecLoader:
         self._validate()
 
     def load(
-        self, input_parameters: Optional[List[Dict]] = None, prompt_input=True
+        self,
+        input_parameters: Optional[List[Dict]] = None,
+        prompt_input: bool = True,
     ):
         input_parameters = (
             input_parameters if input_parameters else self.raw_spec["input"]
@@ -132,10 +59,18 @@ class SpecLoader:
 
     @staticmethod
     def _prompt_param(param: Dict, prefix: str = "") -> Primitive:
-        """
-        Prompt the user for a single parameter
-        :param param: The parameter to prompt for
-        :param prefix: The prefix to use for the parameter name
+        """Prompt the user for a single parameter
+
+        Parameters
+        ----------
+        param: Dict
+            The parameter to prompt
+        prefix: str
+            Prefix for the parameter name
+
+        Returns
+        -------
+        Primitive
         """
         param_name = param["name"]
         new_value = input_single(
