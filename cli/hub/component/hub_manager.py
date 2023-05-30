@@ -103,7 +103,7 @@ class HubComponentManager:
         console.print(table)
 
     def versions(self, name: str):
-        components = HubComponentVersion.list_mine()
+        components = HubComponentVersion.list_mine(name=name)
         table = Table("Name", "Version", "Verification", "Privacy Policy")
         for item in components:
             table.add_row(
