@@ -87,7 +87,7 @@ def upgrade(
     """Upgrade a component to a new version of its HubComponent."""
 
     manager = ComponentUpgradeManager(
-        context=context, component_id=from_component_id
+        component_id=from_component_id
     )
 
     try:
