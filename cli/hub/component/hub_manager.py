@@ -5,17 +5,20 @@ from typing import Any, Dict, Optional
 
 import pathspec
 import py7zr
-from cli.component.component import Component
 from rich.console import Console
 from rich.table import Table
+from splight_lib.client.hub import SplightHubClient
+from splight_lib.models import HubComponent, HubComponentVersion
+from splight_lib.models.component import ComponentType
 
+from cli.component.component import ComponentManager
 from cli.constants import (
     COMPRESSION_TYPE,
-    README_FILE_1,
+    README_FILE,
     README_FILE_2,
     SPEC_FILE,
     SPLIGHT_IGNORE,
-    TESTS_FILE,
+    PYTHON_TESTS_FILE,
     success_style,
 )
 from cli.hub.component.exceptions import (
@@ -23,14 +26,9 @@ from cli.hub.component.exceptions import (
     ComponentDirectoryAlreadyExists,
     ComponentPullError,
     ComponentPushError,
+    HubComponentNotFound,
 )
 from cli.utils.loader import Loader
-from cli.hub.component.exceptions import HubComponentNotFound
-from rich.console import Console
-from rich.table import Table
-from splight_lib.client.hub import SplightHubClient
-from splight_lib.models.component import ComponentType
-from splight_lib.models import HubComponent, HubComponentVersion
 
 console = Console()
 
@@ -49,12 +47,12 @@ class HubComponentManager:
         if not force and self._exists_in_hub(name, version):
             raise ComponentAlreadyExists(name, version)
 
-        if os.path.exists(os.path.join(path, TESTS_FILE)):
+        if os.path.exists(os.path.join(path, PYTHON_TESTS_FILE)):
             # run test before push to hub. To run test, ctx isn't needed
             console.print(
                 "Testing component before push to hub...", style=success_style
             )
-            Component(context=None).test(path)
+            ComponentManager(context=None).test(path)
 
         with Loader("Pushing Component to Splight Hub"):
             self._upload_component(spec, path)
@@ -121,7 +119,7 @@ class HubComponentManager:
 
         file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
         versioned_name = f"{name}-{version}"
-        readme_path = os.path.join(path, README_FILE_1)
+        readme_path = os.path.join(path, README_FILE)
         if not os.path.exists(readme_path):
             readme_path = os.path.join(path, README_FILE_2)
 

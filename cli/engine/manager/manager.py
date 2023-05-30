@@ -8,10 +8,13 @@ import typer
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
+from splight_lib.models import Component, ComponentObject, HubComponent
 from splight_lib.models.base import (
     SplightDatabaseBaseModel,
-    SplightDatalakeBaseModel
+    SplightDatalakeBaseModel,
 )
+from splight_lib.models.component import InputParameter, Parameter
+
 from cli.component.exceptions import InvalidCSVColumns
 from cli.component.loaders import SpecLoader
 from cli.constants import REQUIRED_DATALAKE_COLUMNS  # error_style,
@@ -153,8 +156,8 @@ class ResourceManager:
 
 class DatalakeManager:
     def __init__(
-            self,
-            model: SplightDatalakeBaseModel,
+        self,
+        model: SplightDatalakeBaseModel,
     ):
         self._model = model
         self._console = Console()
@@ -167,9 +170,7 @@ class DatalakeManager:
         elif not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
 
-        dataframe = self._model.get_dataframe(
-            **self._get_filters(filters)
-        )
+        dataframe = self._model.get_dataframe(**self._get_filters(filters))
         dataframe.to_csv(path)
         self._console.print(
             f"Succesfully dumpped {self._model.__name__}'s in {path}",
@@ -332,7 +333,7 @@ class ComponentUpgradeManager:
     def _update_parameters(
         self,
         previous: List[InputParameter],
-            hub: List[Union[InputParameter, Parameter]],
+        hub: List[Union[InputParameter, Parameter]],
     ) -> List[InputParameter]:
         """
         Create parameters for a new component from lists of InputParameters
