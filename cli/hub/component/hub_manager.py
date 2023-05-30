@@ -10,15 +10,16 @@ from rich.table import Table
 from splight_lib.client.hub import SplightHubClient
 from splight_lib.models import HubComponent, HubComponentVersion
 from splight_lib.models.component import ComponentType
+from splight_lib.settings import settings
 
 from cli.component.component import ComponentManager
 from cli.constants import (
     COMPRESSION_TYPE,
+    PYTHON_TESTS_FILE,
     README_FILE,
     README_FILE_2,
     SPEC_FILE,
     SPLIGHT_IGNORE,
-    PYTHON_TESTS_FILE,
     success_style,
 )
 from cli.hub.component.exceptions import (
@@ -34,8 +35,12 @@ console = Console()
 
 
 class HubComponentManager:
-    def __init__(self):
-        self._client: SplightHubClient = SplightHubClient()
+    # def __init__(self):
+    #     self._client: SplightHubClient = SplightHubClient(
+    #         api_host=settings.SPLIGHT_PLATFORM_API_HOST,
+    #         access_key=settings.SPLIGHT_ACCESS_ID,
+    #         secret_key=settings.SPLIGHT_SECRET_KEY,
+    #     )
 
     def push(self, path: str, force: Optional[bool] = False):
         with open(os.path.join(path, SPEC_FILE)) as fid:
@@ -55,15 +60,19 @@ class HubComponentManager:
             ComponentManager(context=None).test(path)
 
         with Loader("Pushing Component to Splight Hub"):
-            self._upload_component(spec, path)
+            component = self._upload_component(path, name, version)
 
-        console.print("Component pushed succesfully", style=success_style)
+        console.print(
+            f"Component {component.id} pushed succesfully", style=success_style
+        )
 
     def pull(self, name: str, version: str):
         with Loader("Pulling component from Splight Hub"):
-            response = self._client.download(
-                data={"name": name, "version": version}
-            )
+            components = HubComponent.list_mine(name=name, version=version)
+            if not components:
+                raise HubComponentNotFound(name, version)
+
+            component_data = components[0].download()
 
             # TODO: search for a better approach
             version_modified = version.replace(".", "_")
@@ -75,7 +84,7 @@ class HubComponentManager:
 
             try:
                 with open(file_name, "wb") as fid:
-                    fid.write(response[0])
+                    fid.write(component_data)
 
                 with py7zr.SevenZipFile(file_name, "r") as z:
                     z.extractall(path=".")
@@ -87,14 +96,14 @@ class HubComponentManager:
                     os.remove(file_name)
 
     def list_components(self):
-        components = self._client.mine.get(HubComponent)
+        components = HubComponent.list_mine()
         table = Table("Name")
         for item in components:
             table.add_row(item.name)
         console.print(table)
 
     def versions(self, name: str):
-        components = self._client.mine.get(HubComponentVersion, name=name)
+        components = HubComponentVersion.list_mine()
         table = Table("Name", "Version", "Verification", "Privacy Policy")
         for item in components:
             table.add_row(
@@ -113,68 +122,18 @@ class HubComponentManager:
         except FileNotFoundError:
             return None
 
-    def _upload_component(self, spec: Dict[str, Any], path: str):
-        name = spec["name"]
-        version = spec["version"]
-
-        file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
-        versioned_name = f"{name}-{version}"
-        readme_path = os.path.join(path, README_FILE)
-        if not os.path.exists(readme_path):
-            readme_path = os.path.join(path, README_FILE_2)
-
+    def _upload_component(
+        self, path: str, name: str, version: str
+    ) -> HubComponent:
         try:
-            ignore_pathspec = self._get_ignore_pathspec(path)
-            with py7zr.SevenZipFile(file_name, "w") as archive:
-                for root, _, files in os.walk(path):
-                    if ignore_pathspec and ignore_pathspec.match_file(root):
-                        continue
-                    for file in files:
-                        if ignore_pathspec and ignore_pathspec.match_file(
-                            os.path.join(root, file)
-                        ):
-                            continue
-                        filepath = os.path.join(root, file)
-                        archive.write(
-                            filepath, os.path.join(versioned_name, file)
-                        )
-            data = {
-                "name": name,
-                "version": version,
-                "splight_cli_version": spec["splight_cli_version"],
-                "privacy_policy": spec.get("privacy_policy", "private"),
-                "tags": spec.get("tags", []),
-                "custom_types": json.dumps(spec.get("custom_types", [])),
-                "input": json.dumps(spec.get("input", [])),
-                "output": json.dumps(spec.get("output", [])),
-                "component_type": spec.get(
-                    "component_type", ComponentType.CONNECTOR.value
-                ),
-                "commands": json.dumps(spec.get("commands", [])),
-                "bindings": json.dumps(spec.get("bindings", [])),
-                "endpoints": json.dumps(spec.get("endpoints", [])),
-            }
-            files = {
-                "file": open(file_name, "rb"),
-                "readme": open(readme_path, "rb"),
-            }
-            self._client.upload(
-                data=data,
-                files=files,
-            )
+            component = HubComponent.upload(path)
         except Exception as exc:
             raise ComponentPushError(name, version) from exc
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
+        return component
 
     def _get_component(self, name: str, version: str):
-        public = self._client.public.get(
-            HubComponent, name=name, version=version
-        )
-        private = self._client.private.get(
-            HubComponent, name=name, version=version
-        )
+        public = HubComponent.list_public(name=name, version=version)
+        private = HubComponent.list_private(name=name, version=version)
         return list(public) + list(private)
 
     def _exists_in_hub(self, name: str, version: str) -> bool:

@@ -30,6 +30,8 @@ def push(
         manager = HubComponentManager()
         manager.push(path, force=force)
     except Exception as exc:
+        import traceback, sys
+        traceback.print_exc(file=sys.stdout)
         console.print(f"Error pushing component {exc}", style=error_style)
         raise typer.Exit(1)
 
@@ -55,6 +57,8 @@ def list(ctx: typer.Context):
         manager.list_components()
     except Exception as exc:
         console.print(f"Error listing components {exc}", style=error_style)
+        import traceback, sys
+        traceback.print_exc(file=sys.stdout)
         raise typer.Exit(1)
 
 

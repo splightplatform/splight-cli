@@ -40,7 +40,7 @@ class DatalakeManagerException(Exception):
 
 
 class ComponentUpgradeManagerException(Exception):
-    def __init__(self, message=None):
+    def __init__(self, message: str):
         self.message = message
 
     def __str__(self):
@@ -60,7 +60,9 @@ class ResourceManager:
         self._resource_name = model.__name__
         self._console = Console()
 
-    def get(self, instance_id: str, exclude_fields: List[str] = None):
+    def get(
+        self, instance_id: str, exclude_fields: Optional[List[str]] = None
+    ):
         exclude_fields = exclude_fields if exclude_fields is not None else []
         instance = self._model.retrieve(resource_id=instance_id)
         if not instance:
@@ -116,23 +118,23 @@ class ResourceManager:
             f"{self._resource_name}={instance_id} deleted", style=warning_style
         )
 
-    def download(self, instance_id: str, path: str):
-        raise NotImplementedError
-        instance = self._client.get(self._model, id=instance_id, first=True)
-        download = self._client.download(instance, decrypt=False)
-        if not instance:
-            raise ResourceManagerException(
-                f"No {self._resources_name} found with ID = {instance_id}",
-                style=warning_style,
-            )
-        if not path:
-            path = instance.file
-        with open(path, "wb+") as file:
-            file.write(download.read())
-        self._console.print(
-            f"{self._resource_name}={instance_id} downloaded to {path}",
-            style=warning_style,
-        )
+    # def download(self, instance_id: str, path: str):
+    #     raise NotImplementedError
+    #     instance = self._client.get(self._model, id=instance_id, first=True)
+    #     download = self._client.download(instance, decrypt=False)
+    #     if not instance:
+    #         raise ResourceManagerException(
+    #             f"No {self._resources_name} found with ID = {instance_id}",
+    #             style=warning_style,
+    #         )
+    #     if not path:
+    #         path = instance.file
+    #     with open(path, "wb+") as file:
+    #         file.write(download.read())
+    #     self._console.print(
+    #         f"{self._resource_name}={instance_id} downloaded to {path}",
+    #         style=warning_style,
+    #     )
 
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
