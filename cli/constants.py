@@ -21,7 +21,7 @@ DEFAULT_WORKSPACE = SplightCLISettings().dict()
 DEFAULT_WORKSPACES = {DEFAULT_WORKSPACE_NAME: DEFAULT_WORKSPACE}
 
 CONFIG_FILE = os.path.join(SPLIGHT_PATH, "config")
-COMPONENT_FILE = "main.py"
+PYTHON_COMPONENT_FILE = "main.py"
 SPEC_FILE = "spec.json"
 INIT_FILE = "Initialization"
 README_FILE = "README.md"
@@ -30,7 +30,8 @@ MAIN_CLASS_NAME = "Main"
 SPLIGHT_IGNORE = ".splightignore"
 TESTS_FILE = "tests.py"
 
-TEST_CMD = "pytest"
+PYTHON_CMD = "python"
+PYTHON_TEST_CMD = "pytest"
 
 REQUIRED_DATALAKE_COLUMNS = {
     "timestamp",
