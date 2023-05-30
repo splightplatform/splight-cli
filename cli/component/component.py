@@ -20,13 +20,14 @@ from cli.component.exceptions import (
 )
 from cli.component.loaders import InitLoader
 from cli.constants import (
-    COMPONENT_FILE,
     INIT_FILE,
+    PYTHON_CMD,
+    PYTHON_COMPONENT_FILE,
+    PYTHON_TEST_CMD,
+    PYTHON_TESTS_FILE,
     README_FILE,
     SPEC_FILE,
     SPLIGHT_IGNORE,
-    TEST_CMD,
-    TESTS_FILE,
 )
 from cli.utils import get_template
 from cli.version import __version__
@@ -38,17 +39,22 @@ class AvailableLanguages(LowercaseStrEnum):
     PYTHON = auto()
 
 
-BASE_COMMANDS = {AvailableLanguages.PYTHON: ["python", "main.py"]}
+BASE_COMMANDS = {
+    AvailableLanguages.PYTHON: [PYTHON_CMD, PYTHON_COMPONENT_FILE]
+}
+TEST_COMMANDS = {
+    AvailableLanguages.PYTHON: [PYTHON_TEST_CMD, PYTHON_TESTS_FILE]
+}
 
 
 class ComponentManager:
     _COMPONENT_REQUIRED_FILES = [
-        COMPONENT_FILE,
+        PYTHON_COMPONENT_FILE,
         INIT_FILE,
         README_FILE,
         SPEC_FILE,
         SPLIGHT_IGNORE,
-        TESTS_FILE,
+        PYTHON_TESTS_FILE,
     ]
 
     def create(
@@ -155,7 +161,7 @@ class ComponentManager:
         """
         spec = Spec.from_file(os.path.join(path, SPEC_FILE))
         self._validate_cli_version(spec.splight_cli_version)
-        component_cmd = self._generate_command("python", component_id)
+        component_cmd = self._execution_command("python", component_id)
         component_path = Path(path).resolve()
         environment = os.environ.copy()
         environment.update({"LOCAL_ENVIRONMENT": f"{local_environment}"})
@@ -176,24 +182,27 @@ class ComponentManager:
         name: Optional[str] = None,
         debug: bool = False,
     ):
+        """Runs component's tests.
+
+        Parameters
+        ----------
+        path: str
+            The component's path
+        name: Optional[str]
+            The name of the test to be executed
+        debug: bool
+            Wether to use debug mode for running tests
+        """
         abs_path = str(Path(path).resolve())
         if not os.path.exists(abs_path):
             console.print(
                 "Error: test file passed as argument does not exists"
             )
-            raise ComponentTestFileDoesNotExists(TESTS_FILE)
-
-        test_path = os.path.join(abs_path, TESTS_FILE)
-        cmd = " ".join([TEST_CMD, test_path])
-
-        if name:
-            cmd = "::".join([cmd, name])
-
-        if debug:
-            cmd = " ".join([cmd, "-s"])
+            raise ComponentTestFileDoesNotExists(PYTHON_TESTS_FILE)
 
         environment = os.environ.copy()
         environment.update({"LOCAL_ENVIRONMENT": "True"})
+        cmd = self._test_command("python", name, debug)
         r = subprocess.run(
             cmd, shell=True, check=True, cwd=abs_path, env=environment
         )
@@ -206,11 +215,24 @@ class ComponentManager:
         if stdout:
             console.print(stdout.decode())
 
-    def _generate_command(
+    def _execution_command(
         self, language: AvailableLanguages, component_id: str
     ) -> List[str]:
         cmd = BASE_COMMANDS[language]
         cmd.extend(["--component-id", f"{component_id}"])
+        return cmd
+
+    def _test_command(
+        self,
+        language: AvailableLanguages,
+        name: Optional[str] = None,
+        debug: bool = False,
+    ) -> str:
+        cmd = " ".join(TEST_COMMANDS[language])
+        if name:
+            cmd = "::".join([cmd, name])
+        if debug:
+            cmd = " ".join([cmd, "-s"])
         return cmd
 
     def _validate_cli_version(self, component_cli_version: str):
