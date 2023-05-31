@@ -1,23 +1,23 @@
 import json
 import os
 import shutil
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import pathspec
 import py7zr
 from rich.console import Console
 from rich.table import Table
-from splight_lib.client.hub import SplightHubClient
+# from splight_lib.client.hub import SplightHubClient
 from splight_lib.models import HubComponent, HubComponentVersion
-from splight_lib.models.component import ComponentType
-from splight_lib.settings import settings
+# from splight_lib.models.component import ComponentType
+# from splight_lib.settings import settings
 
 from cli.component.component import ComponentManager
 from cli.constants import (
     COMPRESSION_TYPE,
     PYTHON_TESTS_FILE,
-    README_FILE,
-    README_FILE_2,
+    # README_FILE,
+    # README_FILE_2,
     SPEC_FILE,
     SPLIGHT_IGNORE,
     success_style,
@@ -57,7 +57,7 @@ class HubComponentManager:
             console.print(
                 "Testing component before push to hub...", style=success_style
             )
-            ComponentManager(context=None).test(path)
+            ComponentManager().test(path)
 
         with Loader("Pushing Component to Splight Hub"):
             component = self._upload_component(path, name, version)
@@ -67,33 +67,33 @@ class HubComponentManager:
         )
 
     def pull(self, name: str, version: str):
-        with Loader("Pulling component from Splight Hub"):
-            components = HubComponent.list_mine(name=name, version=version)
-            if not components:
-                raise HubComponentNotFound(name, version)
+        # with Loader("Pulling component from Splight Hub"):
+        components = HubComponent.list_mine(name=name, version=version)
+        if not components:
+            raise HubComponentNotFound(name, version)
 
-            component_data = components[0].download()
+        component_data = components[0].download()
 
-            # TODO: search for a better approach
-            version_modified = version.replace(".", "_")
-            component_path = f"{name}/{version_modified}"
-            versioned_name = f"{name}-{version}"
-            file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
-            if os.path.exists(component_path):
-                raise ComponentDirectoryAlreadyExists(component_path)
+        # TODO: search for a better approach
+        version_modified = version.replace(".", "_")
+        component_path = f"{name}/{version_modified}"
+        versioned_name = f"{name}-{version}"
+        file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
+        if os.path.exists(component_path):
+            raise ComponentDirectoryAlreadyExists(component_path)
 
-            try:
-                with open(file_name, "wb") as fid:
-                    fid.write(component_data)
+        try:
+            with open(file_name, "wb") as fid:
+                fid.write(component_data)
 
-                with py7zr.SevenZipFile(file_name, "r") as z:
-                    z.extractall(path=".")
-                shutil.move(f"{versioned_name}", component_path)
-            except Exception as exc:
-                raise ComponentPullError(name, version) from exc
-            finally:
-                if os.path.exists(file_name):
-                    os.remove(file_name)
+            with py7zr.SevenZipFile(file_name, "r") as z:
+                z.extractall(path=".")
+            shutil.move(f"{versioned_name}", component_path)
+        except Exception as exc:
+            raise ComponentPullError(name, version) from exc
+        finally:
+            if os.path.exists(file_name):
+                os.remove(file_name)
 
     def list_components(self):
         components = HubComponent.list_mine()
