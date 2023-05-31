@@ -10,6 +10,7 @@ from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     HubComponentNotFound,
 )
+from cli.utils.loader import Loader
 from cli.hub.component.hub_manager import HubComponentManager
 
 BASE_PATH = os.getcwd()
@@ -75,4 +76,4 @@ def test_pull_not_found(
 ):
     manager = HubComponentManager()
     with pytest.raises(HubComponentNotFound):
-        manager.pull(name="TestComponent", version="1.1.0")
+        manager._pull_component(name="TestComponent", version="1.1.0")

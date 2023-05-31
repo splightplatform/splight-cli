@@ -57,32 +57,35 @@ class HubComponentManager:
 
     def pull(self, name: str, version: str):
         with Loader("Pulling component from Splight Hub"):
-            components = HubComponent.list_mine(name=name, version=version)
-            if not components:
-                raise HubComponentNotFound(name, version)
+            self._pull_component(name, version)
 
-            component_data = components[0].download()
+    def _pull_component(self, name: str, version: str):
+        components = HubComponent.list_mine(name=name, version=version)
+        if not components:
+            raise HubComponentNotFound(name, version)
 
-            # TODO: search for a better approach
-            version_modified = version.replace(".", "_")
-            component_path = f"{name}/{version_modified}"
-            versioned_name = f"{name}-{version}"
-            file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
-            if os.path.exists(component_path):
-                raise ComponentDirectoryAlreadyExists(component_path)
+        component_data = components[0].download()
 
-            try:
-                with open(file_name, "wb") as fid:
-                    fid.write(component_data)
+        # TODO: search for a better approach
+        version_modified = version.replace(".", "_")
+        component_path = f"{name}/{version_modified}"
+        versioned_name = f"{name}-{version}"
+        file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
+        if os.path.exists(component_path):
+            raise ComponentDirectoryAlreadyExists(component_path)
 
-                with py7zr.SevenZipFile(file_name, "r") as z:
-                    z.extractall(path=".")
-                shutil.move(f"{versioned_name}", component_path)
-            except Exception as exc:
-                raise ComponentPullError(name, version) from exc
-            finally:
-                if os.path.exists(file_name):
-                    os.remove(file_name)
+        try:
+            with open(file_name, "wb") as fid:
+                fid.write(component_data)
+
+            with py7zr.SevenZipFile(file_name, "r") as z:
+                z.extractall(path=".")
+            shutil.move(f"{versioned_name}", component_path)
+        except Exception as exc:
+            raise ComponentPullError(name, version) from exc
+        finally:
+            if os.path.exists(file_name):
+                os.remove(file_name)
 
     def list_components(self):
         components = HubComponent.list_mine()
