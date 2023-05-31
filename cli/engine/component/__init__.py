@@ -146,3 +146,17 @@ def delete(
         model=MODEL,
     )
     manager.delete(instance_id)
+
+
+@component_app.command()
+def download(
+    ctx: typer.Context,
+    instance_id: str = typer.Argument(
+        ..., help="The ID of the instance to download"
+    ),
+    path: str = typer.Option(".", help="Path to download file")
+):
+    manager = ResourceManager(
+        model=MODEL,
+    )
+    manager.download(instance_id, path=path)

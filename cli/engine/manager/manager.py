@@ -1,4 +1,6 @@
+import json
 import os
+import shutil
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
@@ -6,7 +8,7 @@ import pandas as pd
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
-from splight_lib.models import Component, ComponentObject, HubComponent
+from splight_lib.models import Component, ComponentObject, File, HubComponent
 from splight_lib.models.base import (
     SplightDatabaseBaseModel,
     SplightDatalakeBaseModel,
@@ -113,6 +115,19 @@ class ResourceManager:
         self._console.print(
             f"{self._resource_name}={instance_id} deleted", style=warning_style
         )
+
+    def download(self, instance_id: str, path: str):
+        instance = self._model.retrieve(instance_id)
+        if isinstance(instance, File):
+            file_path = os.path.join(path, instance.name)
+            downloaded = instance.download()
+            shutil.copy(downloaded.name, file_path)
+        else:
+            file_path = os.path.join(
+                path, f"{instance.__class__.__name__}-{instance.id}.json"
+            )
+            with open(file_path, "w") as fid:
+                json.dump(instance.dict(), fid, indent=2)
 
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:

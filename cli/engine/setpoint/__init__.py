@@ -62,3 +62,17 @@ def create(
     with open(path, "r") as fid:
         body = json.load(fid)
     manager.create(data=body)
+
+
+@setpoint_app.command()
+def download(
+    ctx: typer.Context,
+    instance_id: str = typer.Argument(
+        ..., help="The ID of the instance to download"
+    ),
+    path: str = typer.Option(".", help="Path to download file")
+):
+    manager = ResourceManager(
+        model=MODEL,
+    )
+    manager.download(instance_id, path=path)
