@@ -10,7 +10,6 @@ from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     HubComponentNotFound,
 )
-from cli.utils.loader import Loader
 from cli.hub.component.hub_manager import HubComponentManager
 
 BASE_PATH = os.getcwd()
