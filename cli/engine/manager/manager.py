@@ -3,8 +3,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
-import requests
-import typer
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
@@ -26,7 +24,6 @@ from cli.engine.manager.exceptions import (
     VersionUpdateError,
 )
 from cli.hub.component.exceptions import HubComponentNotFound
-from cli.hub.component.hub_manager import HubComponentManager
 
 SplightModel = Type[SplightDatabaseBaseModel]
 
@@ -67,8 +64,7 @@ class ResourceManager:
         instance = self._model.retrieve(resource_id=instance_id)
         if not instance:
             raise ResourceManagerException(
-                f"No {self._model.__name__} found with ID = {instance_id}",
-                style=warning_style,
+                f"No {self._model.__name__} found with ID = {instance_id}"
             )
 
         name = instance.name if hasattr(instance, "name") else instance.title
@@ -117,24 +113,6 @@ class ResourceManager:
         self._console.print(
             f"{self._resource_name}={instance_id} deleted", style=warning_style
         )
-
-    # def download(self, instance_id: str, path: str):
-    #     raise NotImplementedError
-    #     instance = self._client.get(self._model, id=instance_id, first=True)
-    #     download = self._client.download(instance, decrypt=False)
-    #     if not instance:
-    #         raise ResourceManagerException(
-    #             f"No {self._resources_name} found with ID = {instance_id}",
-    #             style=warning_style,
-    #         )
-    #     if not path:
-    #         path = instance.file
-    #     with open(path, "wb+") as file:
-    #         file.write(download.read())
-    #     self._console.print(
-    #         f"{self._resource_name}={instance_id} downloaded to {path}",
-    #         style=warning_style,
-    #     )
 
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
