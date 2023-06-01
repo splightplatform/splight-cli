@@ -83,7 +83,7 @@ def download(
     instance_id: str = typer.Argument(
         ..., help="The ID of the instance to be removed"
     ),
-    path: str = typer.Option(".", help="Path to download file")
+    path: str = typer.Option(".", help="Path to download file"),
 ):
     manager = ResourceManager(
         model=MODEL,

@@ -4,9 +4,8 @@ from uuid import uuid4
 
 import pandas as pd
 import pytest
-from splight_lib.models import Number
-
 from cli.engine.manager import DatalakeManager
+from splight_lib.models import Number
 
 ASSET_ID = str(uuid4())
 ATTR_ID = str(uuid4())

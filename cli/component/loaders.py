@@ -2,11 +2,10 @@ import os
 import subprocess
 from typing import Dict, List, Optional, Union
 
-from splight_lib.logging._internal import get_splight_logger
-
 from cli.component.spec import Spec
 from cli.constants import INIT_FILE, SPEC_FILE
 from cli.utils import get_json_from_file, input_single
+from splight_lib.logging._internal import get_splight_logger
 
 logger = get_splight_logger()
 Primitive = Union[int, str, float, bool]

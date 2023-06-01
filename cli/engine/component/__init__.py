@@ -2,17 +2,15 @@ import json
 from typing import List, Optional
 
 import typer
-from rich.console import Console
-from splight_lib.models import Component
-
 from cli.constants import error_style, success_style
 from cli.engine.manager import (
-    ResourceManager,
-    ResourceManagerException,
     ComponentUpgradeManager,
     ComponentUpgradeManagerException,
+    ResourceManager,
+    ResourceManagerException,
 )
-
+from rich.console import Console
+from splight_lib.models import Component
 
 component_app = typer.Typer(
     name="Splight Engine Component",
@@ -86,9 +84,7 @@ def upgrade(
 ):
     """Upgrade a component to a new version of its HubComponent."""
 
-    manager = ComponentUpgradeManager(
-        component_id=from_component_id
-    )
+    manager = ComponentUpgradeManager(component_id=from_component_id)
 
     try:
         new_component = manager.upgrade(version)
@@ -154,7 +150,7 @@ def download(
     instance_id: str = typer.Argument(
         ..., help="The ID of the instance to download"
     ),
-    path: str = typer.Option(".", help="Path to download file")
+    path: str = typer.Option(".", help="Path to download file"),
 ):
     manager = ResourceManager(
         model=MODEL,

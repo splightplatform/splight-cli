@@ -1,10 +1,9 @@
 import pytest
+from main import {{component_name}}
 
 # component is your component loaded as a pytest fixture
 # using local clients for database, datalake and communication
 from splight_lib.testing import mock_component
-
-from main import {{component_name}}
 
 
 def test_simple_example():

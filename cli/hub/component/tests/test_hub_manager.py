@@ -3,14 +3,13 @@ from unittest.mock import mock_open, patch
 from uuid import uuid4
 
 import pytest
-from splight_lib.models import HubComponent
-
 from cli.component import ComponentManager
 from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     HubComponentNotFound,
 )
 from cli.hub.component.hub_manager import HubComponentManager
+from splight_lib.models import HubComponent
 
 BASE_PATH = os.getcwd()
 TEST_COMPONENT_PATH = os.path.join(BASE_PATH, "cli/tests/test_component/")
@@ -70,9 +69,7 @@ def test_pull(mock_move, mock_zip, mock_open, mock_download, mock_list):
 
 
 @patch.object(HubComponent, "list_mine", return_value=[])
-def test_pull_not_found(
-    mock_list
-):
+def test_pull_not_found(mock_list):
     manager = HubComponentManager()
     with pytest.raises(HubComponentNotFound):
         manager._pull_component(name="TestComponent", version="1.1.0")

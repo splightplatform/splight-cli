@@ -3,13 +3,12 @@ from dataclasses import dataclass
 from unittest.mock import call, mock_open, patch
 
 import pytest
-from splight_lib.component.spec import Spec
-
 from cli.component.component import ComponentManager
 from cli.component.exceptions import (
     ComponentExecutionError,
     InvalidSplightCLIVersion,
 )
+from splight_lib.component.spec import Spec
 
 COMPONENT_FILES = [
     "Initialization",

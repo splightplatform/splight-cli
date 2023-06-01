@@ -1,8 +1,8 @@
 from cli.engine.manager.manager import (
-    ResourceManager,
-    ResourceManagerException,
-    DatalakeManager,
-    DatalakeManagerException,
     ComponentUpgradeManager,
     ComponentUpgradeManagerException,
+    DatalakeManager,
+    DatalakeManagerException,
+    ResourceManager,
+    ResourceManagerException,
 )
