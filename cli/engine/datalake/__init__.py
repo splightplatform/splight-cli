@@ -1,14 +1,11 @@
 from typing import List
 
 import typer
+from rich.console import Console
+from splight_lib.models import Boolean, Number, String
+
 from cli.constants import error_style
 from cli.engine.manager import DatalakeManager, DatalakeManagerException
-from rich.console import Console
-from splight_lib.models import (
-    Number,
-    String,
-    Boolean,
-)
 
 datalake_app = typer.Typer(
     name="Splight Engine Datalake",
@@ -36,7 +33,9 @@ def _parse_filter_option(values):
 @datalake_app.command()
 def dump(
     ctx: typer.Context,
-    type: str = typer.Argument(..., help="Data type to dump eg. Number, String, Boolean"),
+    type: str = typer.Argument(
+        ..., help="Data type to dump eg. Number, String, Boolean"
+    ),
     asset: str = typer.Argument(..., help="Asset id to dump"),
     attribute: str = typer.Argument(..., help="Attribute id to dump"),
     path: str = typer.Option(
@@ -50,12 +49,7 @@ def dump(
         raise typer.BadParameter(f"Type {type} not supported")
 
     filters = _parse_filter_option(filter)
-    filters.update(
-        {
-            "asset": asset,
-            "attribute": attribute
-        }
-    )
+    filters.update({"asset": asset, "attribute": attribute})
     manager = DatalakeManager(
         model=MODEL_MAP[type],
     )
@@ -68,7 +62,9 @@ def dump(
 @datalake_app.command()
 def load(
     ctx: typer.Context,
-    type: str = typer.Argument(..., help="Data type to dump eg. Number, String, Boolean"),
+    type: str = typer.Argument(
+        ..., help="Data type to dump eg. Number, String, Boolean"
+    ),
     path: str = typer.Option(..., "--path", "-p", help="Path to file to load"),
 ):
     if type not in MODEL_MAP:

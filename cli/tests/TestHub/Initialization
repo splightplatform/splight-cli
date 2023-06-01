@@ -1,1 +1,0 @@
-RUN pip install splight-lib==0.3.8
