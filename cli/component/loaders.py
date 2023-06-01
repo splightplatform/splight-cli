@@ -1,90 +1,13 @@
 import os
 import subprocess
-from typing import Dict, List, Optional, Union
+from typing import List, Union
 
-from cli.component.spec import Spec
-from cli.constants import INIT_FILE, SPEC_FILE
-from cli.utils import get_json_from_file, input_single
 from splight_lib.logging._internal import get_splight_logger
+
+from cli.constants import INIT_FILE
 
 logger = get_splight_logger()
 Primitive = Union[int, str, float, bool]
-
-
-class SpecLoader:
-    _NAME_KEY: str = "name"
-    _VERSION_KEY: str = "version"
-    _DESCRIPTION_KEY: str = "description"
-    _SPLIGHT_CLI_VERSION_KEY: str = "splight_cli_version"
-    _PRIVACY_POLICY_KEY: str = "privacy_policy"
-    _COMPONENT_KEY: str = "component_type"
-    _CT_KEY: str = "custom_types"
-    _INPUT_KEY: str = "input"
-    _OUTPUT_KEY: str = "output"
-    _BINDINGS_KEY: str = "bindings"
-    _COMMANDS_KEY: str = "commands"
-    _ENDPOINTS_KEY: str = "endpoints"
-
-    def __init__(self, path: str):
-        self.raw_spec = get_json_from_file(os.path.join(path, SPEC_FILE))
-        self._validate()
-
-    def load(
-        self,
-        input_parameters: Optional[List[Dict]] = None,
-        prompt_input: bool = True,
-    ):
-        input_parameters = (
-            input_parameters if input_parameters else self.raw_spec["input"]
-        )
-        if prompt_input:
-            input_parameters = self._load_or_prompt_input(input_parameters)
-        self.raw_spec["input"] = input_parameters
-        self._validate()
-        return Spec.parse_obj(self.raw_spec)
-
-    def _load_or_prompt_input(
-        self,
-        input_parameters: List[Dict],
-        prefix: str = "",
-    ):
-        for param in input_parameters:
-            value = param.get("value")
-            if value is None:
-                new_value = self._prompt_param(param, prefix=prefix)
-                param["value"] = new_value
-
-        return input_parameters
-
-    @staticmethod
-    def _prompt_param(param: Dict, prefix: str = "") -> Primitive:
-        """Prompt the user for a single parameter
-
-        Parameters
-        ----------
-        param: Dict
-            The parameter to prompt
-        prefix: str
-            Prefix for the parameter name
-
-        Returns
-        -------
-        Primitive
-        """
-        param_name = param["name"]
-        new_value = input_single(
-            {
-                "name": f"{prefix} {param_name}",
-                "type": param["type"],
-                "required": param.get("required", True),
-                "multiple": param.get("multiple", False),
-                "value": param.get("value"),
-            }
-        )
-        return new_value
-
-    def _validate(self):
-        Spec.verify(self.raw_spec)
 
 
 class InitLoader:

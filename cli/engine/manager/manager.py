@@ -5,17 +5,6 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
-from cli.component.exceptions import InvalidCSVColumns
-from cli.component.loaders import SpecLoader
-from cli.constants import REQUIRED_DATALAKE_COLUMNS  # error_style,
-from cli.constants import success_style, warning_style
-from cli.engine.manager.exceptions import (
-    ComponentCreateError,
-    InvalidComponentId,
-    UpdateParametersError,
-    VersionUpdateError,
-)
-from cli.hub.component.exceptions import HubComponentNotFound
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
@@ -25,6 +14,21 @@ from splight_lib.models.base import (
     SplightDatalakeBaseModel,
 )
 from splight_lib.models.component import InputParameter, Parameter
+
+from cli.component.exceptions import InvalidCSVColumns
+from cli.constants import (
+    REQUIRED_DATALAKE_COLUMNS,
+    success_style,
+    warning_style,
+)
+from cli.engine.manager.exceptions import (
+    ComponentCreateError,
+    InvalidComponentId,
+    UpdateParametersError,
+    VersionUpdateError,
+)
+from cli.hub.component.exceptions import HubComponentNotFound
+from cli.utils.input import prompt_param
 
 SplightModel = Type[SplightDatabaseBaseModel]
 
@@ -277,7 +281,7 @@ class ComponentUpgradeManager:
                 parameter = hub_parameters[param]
                 try:
                     if parameter["required"]:
-                        new_value = SpecLoader._prompt_param(
+                        new_value = prompt_param(
                             parameter, prefix="Input value for parameter"
                         )
                         parameter["value"] = new_value
@@ -309,7 +313,7 @@ class ComponentUpgradeManager:
                 parameter = hub_parameters[param]
                 try:
                     if not parameter["value"] and parameter["required"]:
-                        new_value = SpecLoader._prompt_param(
+                        new_value = prompt_param(
                             parameter, prefix="Input value for parameter"
                         )
                         parameter["value"] = new_value
