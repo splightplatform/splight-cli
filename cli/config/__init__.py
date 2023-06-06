@@ -2,7 +2,11 @@ import json
 import sys
 
 import typer
+from cli.constants import error_style, success_style
 from cli.settings import CONFIG_VARS, SplightCLISettings
+from rich.console import Console
+
+console = Console()
 
 config_app = typer.Typer(
     name="Splight CLI Configure",
@@ -65,7 +69,12 @@ def get_variable(
 
     if hasattr(settings, variable_name):
         value = getattr(settings, variable_name)
-        typer.echo(value)
+        console.print(f"{variable_name} = {value}")
+    else:
+        console.print(
+            f"Variable {variable_name} not found in current workspace",
+            style=error_style,
+        )
 
 
 @config_app.command(name="set")
@@ -91,3 +100,10 @@ def set_variable(
     if hasattr(settings, variable_name):
         setattr(settings, variable_name, value)
         ctx.obj.workspace.update_workspace(settings)
+        console.print(f"{variable_name} = {value}", style=success_style)
+    else:
+        console.print(
+            f"Variable {variable_name} not found in current workspace",
+            style=error_style,
+        )
+        sys.exit(1)
