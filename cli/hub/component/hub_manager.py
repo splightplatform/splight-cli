@@ -115,7 +115,7 @@ class HubComponentManager:
 
     def _prepare_upload(
         self, spec: Dict[str, Any], path: str
-    ) -> Tuple[Dict[str, str], Dict[str, Any]]:
+    ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         name = spec["name"]
         version = spec["version"]
         file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
