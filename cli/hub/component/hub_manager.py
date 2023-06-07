@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-from typing import Optional
+from typing import Any, Dict, Optional, Tuple
 
 import pathspec
 import py7zr
@@ -100,6 +100,47 @@ class HubComponentManager:
                 name, item.version, item.verification, item.privacy_policy
             )
         console.print(table)
+
+    def _get_readme(self, path: str) -> str:
+        readme_path = os.path.join(path, README_FILE_1)
+        if not os.path.exists(readme_path):
+            readme_path = os.path.join(path, README_FILE_2)
+        if not os.path.exists(readme_path):
+            raise FileNotFoundError(
+                "README.md file not found. Write a README.md file in the"
+                " component directory or generate it with 'splight component"
+                " readme <path>'"
+            )
+        return readme_path
+
+    def _prepare_upload(
+        self, spec: Dict[str, Any], path: str
+    ) -> Tuple[Dict[str, str], Dict[str, Any]]:
+        name = spec["name"]
+        version = spec["version"]
+        file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
+        readme_path = self._get_readme(path)
+        data = {
+            "name": spec["name"],
+            "version": spec["version"],
+            "splight_cli_version": spec["splight_cli_version"],
+            "privacy_policy": spec.get("privacy_policy", "private"),
+            "tags": spec.get("tags", []),
+            "custom_types": json.dumps(spec.get("custom_types", [])),
+            "input": json.dumps(spec.get("input", [])),
+            "output": json.dumps(spec.get("output", [])),
+            "component_type": spec.get(
+                "component_type", ComponentType.CONNECTOR.value
+            ),
+            "commands": json.dumps(spec.get("commands", [])),
+            "bindings": json.dumps(spec.get("bindings", [])),
+            "endpoints": json.dumps(spec.get("endpoints", [])),
+        }
+        files = {
+            "file": open(file_name, "rb"),
+            "readme": open(readme_path, "rb"),
+        }
+        return data, files
 
     def _get_ignore_pathspec(self, path):
         try:
