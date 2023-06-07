@@ -121,8 +121,8 @@ class HubComponentManager:
         file_name = f"{name}-{version}.{COMPRESSION_TYPE}"
         readme_path = self._get_readme(path)
         data = {
-            "name": spec["name"],
-            "version": spec["version"],
+            "name": name,
+            "version": version,
             "splight_cli_version": spec["splight_cli_version"],
             "privacy_policy": spec.get("privacy_policy", "private"),
             "tags": spec.get("tags", []),
