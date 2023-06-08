@@ -3,10 +3,12 @@ class ComponentAlreadyExists(Exception):
         if public:
             self._msg = (
                 f"Component {name}-{version} already exists in public Hub"
+                + " (use --force to overwrite)"
             )
         else:
             self._msg = (
                 f"Component {name}-{version} already exists in private Hub"
+                + " (use --force to overwrite)"
             )
 
     def __str__(self) -> str:
