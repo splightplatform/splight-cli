@@ -168,11 +168,11 @@ class HubComponentManager:
         return list(public) + list(private)
 
     def _exists_in_hub(self, name: str, version: str) -> bool:
-        components = self._get_component(name, version)
+        components = self._get_components(name, version)
         return len(components) > 0
 
     def fetch_component_version(self, name: str, version: str):
-        components = self._get_component(name, version)
+        components = self._get_components(name, version)
         if not components:
             raise HubComponentNotFound(name, version)
         return components[0]
