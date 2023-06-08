@@ -1,7 +1,7 @@
 import json
 import os
 import shutil
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional
 
 import pathspec
 import py7zr
@@ -36,8 +36,11 @@ class HubComponentManager:
         name = spec["name"]
         version = spec["version"]
 
-        if not force and self._exists_in_hub(name, version):
-            raise ComponentAlreadyExists(name, version)
+        if not force:
+            if self._get_private_components(name, version):
+                raise ComponentAlreadyExists(name, version, public=False)
+            if self._get_public_components(name, version):
+                raise ComponentAlreadyExists(name, version, public=True)
 
         if os.path.exists(os.path.join(path, PYTHON_TESTS_FILE)):
             # run test before push to hub. To run test, ctx isn't needed
@@ -101,6 +104,7 @@ class HubComponentManager:
             )
         console.print(table)
 
+    """ 
     def _get_readme(self, path: str) -> str:
         readme_path = os.path.join(path, README_FILE_1)
         if not os.path.exists(readme_path):
@@ -141,7 +145,7 @@ class HubComponentManager:
             "readme": open(readme_path, "rb"),
         }
         return data, files
-
+    """
     def _get_ignore_pathspec(self, path):
         try:
             with open(

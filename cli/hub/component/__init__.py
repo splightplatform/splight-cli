@@ -30,7 +30,7 @@ def push(
         manager = HubComponentManager()
         manager.push(path, force=force)
     except Exception as exc:
-        console.print(f"Error pushing component {exc}", style=error_style)
+        console.print(f"Error pushing component: {exc}", style=error_style)
         raise typer.Exit(1)
 
 

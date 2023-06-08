@@ -1,6 +1,13 @@
 class ComponentAlreadyExists(Exception):
-    def __init__(self, name: str, version: str):
-        self._msg = f"Component {name}-{version} already exists in HUB"
+    def __init__(self, name: str, version: str, public: bool):
+        if public:
+            self._msg = (
+                f"Component {name}-{version} already exists in public Hub"
+            )
+        else:
+            self._msg = (
+                f"Component {name}-{version} already exists in private Hub"
+            )
 
     def __str__(self) -> str:
         return self._msg
