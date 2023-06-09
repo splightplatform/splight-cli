@@ -5,7 +5,7 @@ env:
   LIBRARY_NAME: "splight-cli"
 
 jobs:
-  upload_builder_image:
+  manual_upload_builder_image:
     runs-on: ubuntu-latest
     name: Push builder image to ECR
     steps:
@@ -34,7 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.APP_GITHUB_TOKEN }}
           AWS_ECR: ${{ secrets.AWS_ECR }}
 
-  upload_runner_image:
+  manual_upload_runner_image:
     runs-on: ubuntu-latest
     name: Push runner image to ECR
     steps:
