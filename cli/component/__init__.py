@@ -3,10 +3,11 @@ from pathlib import Path
 from typing import Optional
 
 import typer
+from rich.console import Console
+
 from cli.component.component import ComponentManager
 from cli.constants import error_style, success_style
 from cli.context import check_credentials
-from rich.console import Console
 
 component_app = typer.Typer(
     name="Splight Component",
@@ -54,6 +55,9 @@ def run(
         None, "--component-id", "-id", help="Component's ID"
     ),
     local_dev: bool = typer.Option(False, "--local"),
+    input: Optional[str] = typer.Option(
+        None, "--input", "-i", help="Input Values [Deprecated]"
+    ),
 ) -> None:
     try:
         manager = ComponentManager()
