@@ -54,6 +54,9 @@ def run(
         None, "--component-id", "-id", help="Component's ID"
     ),
     local_dev: bool = typer.Option(False, "--local"),
+    input: Optional[str] = typer.Option(
+        None, "--input", "-i", help="Input Values [Deprecated]"
+    ),
 ) -> None:
     try:
         manager = ComponentManager()
