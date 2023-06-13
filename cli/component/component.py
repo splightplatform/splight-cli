@@ -6,6 +6,11 @@ from pathlib import Path
 from typing import List, Optional
 
 from caseconverter import pascalcase
+from jinja2 import Template
+from rich.console import Console
+from splight_lib.component.spec import Spec
+from strenum import LowercaseStrEnum
+
 from cli.component.exceptions import (
     ComponentExecutionError,
     ComponentTestError,
@@ -26,10 +31,6 @@ from cli.constants import (
 )
 from cli.utils import get_template
 from cli.version import __version__
-from jinja2 import Template
-from rich.console import Console
-from splight_lib.component.spec import Spec
-from strenum import LowercaseStrEnum
 
 console = Console()
 
@@ -202,10 +203,12 @@ class ComponentManager:
         environment = os.environ.copy()
         environment.update({"LOCAL_ENVIRONMENT": "True"})
         cmd = self._test_command("python", name, debug)
-        r = subprocess.run(
+        results = subprocess.run(
             cmd, shell=True, check=True, cwd=abs_path, env=environment
         )
-        stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
+        stdout = results.stdout
+        stderr = results.stderr
+        returncode = results.returncode
 
         if returncode != 0:
             if stderr:
