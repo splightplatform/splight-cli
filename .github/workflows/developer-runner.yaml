@@ -24,7 +24,7 @@ jobs:
     needs: [verify_version]
     steps:
       - name: Checkout to feature branch
-        uses: action/checkout@v3
+        uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
