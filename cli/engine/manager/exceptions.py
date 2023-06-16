@@ -41,9 +41,7 @@ class UpdateParametersError(Exception):
     """Exception when some parameter could not be updated."""
 
     def __init__(self, param: Dict):
-        self._error = (
-            f"An error occurred updating parameter {param}"
-        )
+        self._error = f"An error occurred updating parameter {param}"
 
     def __str__(self) -> str:
         return self._error

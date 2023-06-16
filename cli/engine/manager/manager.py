@@ -1,28 +1,16 @@
+import json
 import os
+import shutil
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
-import requests
-import typer
-from pydantic import BaseModel
-from rich.console import Console
-from rich.table import Table
-from splight_abstract import AbstractDatabaseClient, AbstractDatalakeClient
-from splight_models import (
-    Component,
-    ComponentObject,
-    DatalakeModel,
-    HubComponent,
-    InputParameter,
-    Parameter,
-    SplightBaseModel,
-)
-
 from cli.component.exceptions import InvalidCSVColumns
-from cli.component.loaders import SpecLoader
-from cli.constants import REQUIRED_DATALAKE_COLUMNS  # error_style,
-from cli.constants import success_style, warning_style
+from cli.constants import (
+    REQUIRED_DATALAKE_COLUMNS,
+    success_style,
+    warning_style,
+)
 from cli.engine.manager.exceptions import (
     ComponentCreateError,
     InvalidComponentId,
@@ -30,9 +18,18 @@ from cli.engine.manager.exceptions import (
     VersionUpdateError,
 )
 from cli.hub.component.exceptions import HubComponentNotFound
-from cli.hub.component.hub_manager import HubComponentManager
+from cli.utils.input import prompt_param
+from pydantic import BaseModel
+from rich.console import Console
+from rich.table import Table
+from splight_lib.models import Component, ComponentObject, File, HubComponent
+from splight_lib.models.base import (
+    SplightDatabaseBaseModel,
+    SplightDatalakeBaseModel,
+)
+from splight_lib.models.component import InputParameter, Parameter
 
-SplightModel = Type[SplightBaseModel]
+SplightModel = Type[SplightDatabaseBaseModel]
 
 
 class ResourceManagerException(Exception):
@@ -44,7 +41,7 @@ class DatalakeManagerException(Exception):
 
 
 class ComponentUpgradeManagerException(Exception):
-    def __init__(self, message=None):
+    def __init__(self, message: str):
         self.message = message
 
     def __str__(self):
@@ -58,21 +55,20 @@ class QueryParam(BaseModel):
 class ResourceManager:
     def __init__(
         self,
-        client: AbstractDatabaseClient,
-        model: SplightModel,
+        model: SplightDatabaseBaseModel,
     ):
-        self._client = client
         self._model = model
         self._resource_name = model.__name__
         self._console = Console()
 
-    def get(self, instance_id: str, exclude_fields: List[str] = None):
+    def get(
+        self, instance_id: str, exclude_fields: Optional[List[str]] = None
+    ):
         exclude_fields = exclude_fields if exclude_fields is not None else []
-        instance = self._client.get(self._model, id=instance_id, first=True)
+        instance = self._model.retrieve(resource_id=instance_id)
         if not instance:
             raise ResourceManagerException(
-                f"No {self._resources_name} found with ID = {instance_id}",
-                style=warning_style,
+                f"No {self._model.__name__} found with ID = {instance_id}"
             )
 
         name = instance.name if hasattr(instance, "name") else instance.title
@@ -87,10 +83,8 @@ class ResourceManager:
         self._console.print(table)
 
     def list(self, params: Dict[str, Any]):
-        instances = self._client.get(
-            resource_type=self._model,
-            **params,
-        )
+        instances = self._model.list(**params)
+
         table = Table("", "ID", "Name")
         _ = [
             table.add_row(
@@ -105,7 +99,9 @@ class ResourceManager:
         self._console.print(table)
 
     def create(self, data: Dict[str, Any]):
-        instance = self._client.save(instance=self._model.parse_obj(data))
+        instance = self._model.parse_obj(data)
+        instance.save()
+
         table = Table(
             title=f"{self._resource_name} = {getattr(instance,'name', '')}",
             show_header=False,
@@ -117,27 +113,23 @@ class ResourceManager:
         self._console.print(table)
 
     def delete(self, instance_id: str):
-        self._client.delete(resource_type=self._model, id=instance_id)
+        self._model.retrieve(resource_id=instance_id).delete()
         self._console.print(
             f"{self._resource_name}={instance_id} deleted", style=warning_style
         )
 
     def download(self, instance_id: str, path: str):
-        instance = self._client.get(self._model, id=instance_id, first=True)
-        download = self._client.download(instance, decrypt=False)
-        if not instance:
-            raise ResourceManagerException(
-                f"No {self._resources_name} found with ID = {instance_id}",
-                style=warning_style,
+        instance = self._model.retrieve(instance_id)
+        if isinstance(instance, File):
+            file_path = os.path.join(path, instance.name)
+            downloaded = instance.download()
+            shutil.copy(downloaded.name, file_path)
+        else:
+            file_path = os.path.join(
+                path, f"{instance.__class__.__name__}-{instance.id}.json"
             )
-        if not path:
-            path = instance.file
-        with open(path, "wb+") as file:
-            file.write(download.read())
-        self._console.print(
-            f"{self._resource_name}={instance_id} downloaded to {path}",
-            style=warning_style,
-        )
+            with open(file_path, "w") as fid:
+                json.dump(instance.dict(), fid, indent=2)
 
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
@@ -162,33 +154,12 @@ class ResourceManager:
 class DatalakeManager:
     def __init__(
         self,
-        db_client: AbstractDatabaseClient,
-        dl_client: AbstractDatalakeClient,
+        model: SplightDatalakeBaseModel,
     ):
-        self._db_client = db_client
-        self._dl_client = dl_client
+        self._model = model
         self._console = Console()
 
-    def list(self, skip, limit):
-        instances = [{"id": "default", "name": "-"}]
-        components = self._db_client.get(resource_type=Component)
-        components = [component.dict() for component in components]
-        instances.extend(components)
-        instances = instances[
-            skip: (limit + skip if limit is not None else None)  # fmt: skip
-        ]
-        table = Table("", "Name", "Component reference")
-        _ = [
-            table.add_row(
-                str(counter),
-                item.get("id"),
-                item.get("name"),
-            )
-            for counter, item in enumerate(instances)
-        ]
-        self._console.print(table)
-
-    def dump(self, collection, path, filters):
+    def dump(self, path, filters):
         if os.path.exists(path):
             raise Exception(f"File {path} already exists")
         if os.path.isdir(path):
@@ -196,13 +167,10 @@ class DatalakeManager:
         elif not path.endswith(".csv"):
             raise Exception("Only CSV files are supported")
 
-        DatalakeModel.Meta.collection_name = collection
-        dataframe = self._dl_client.get_dataframe(
-            resource_type=DatalakeModel, **self._get_filters(filters)
-        )
+        dataframe = self._model.get_dataframe(**self._get_filters(filters))
         dataframe.to_csv(path)
         self._console.print(
-            f"Succesfully dumpped {collection} in {path}",
+            f"Succesfully dumpped {self._model.__name__}'s in {path}",
             style=success_style,
         )
 
@@ -215,10 +183,9 @@ class DatalakeManager:
         dataframe = pd.read_csv(path)
         self._validate_csv(dataframe)
         dataframe = dataframe.set_index("timestamp")
-        DatalakeModel.Meta.collection_name = collection
-        self._dl_client.save_dataframe(DatalakeModel, dataframe)
+        self._model.save_dataframe(dataframe)
         self._console.print(
-            f"Succesfully loaded {path} in {collection}",
+            f"Succesfully loaded {path} in {self._model.__name__}",
             style=success_style,
         )
 
@@ -289,11 +256,7 @@ class DatalakeManager:
 
 
 class ComponentUpgradeManager:
-    def __init__(self, context: typer.Context, component_id: str):
-        self.db_client = context.obj.framework.setup.DATABASE_CLIENT()
-        self.hubmanager = HubComponentManager(
-            client=context.obj.framework.setup.HUB_CLIENT()
-        )
+    def __init__(self, component_id: str):
         self.component_id = component_id
         self._console = Console()
 
@@ -317,7 +280,7 @@ class ComponentUpgradeManager:
                 parameter = hub_parameters[param]
                 try:
                     if parameter["required"]:
-                        new_value = SpecLoader._prompt_param(
+                        new_value = prompt_param(
                             parameter, prefix="Input value for parameter"
                         )
                         parameter["value"] = new_value
@@ -349,7 +312,7 @@ class ComponentUpgradeManager:
                 parameter = hub_parameters[param]
                 try:
                     if not parameter["value"] and parameter["required"]:
-                        new_value = SpecLoader._prompt_param(
+                        new_value = prompt_param(
                             parameter, prefix="Input value for parameter"
                         )
                         parameter["value"] = new_value
@@ -395,17 +358,10 @@ class ComponentUpgradeManager:
     def _retrieve_component(self, id: str) -> Component:
         try:
             self._console.print("Getting component from engine")
-            component = self.db_client.get(Component, id=id, first=True)
-        except requests.exceptions.HTTPError as exc:
+            component = Component.retrieve(resource_id=id)
+        except Exception as exc:
             raise InvalidComponentId(id) from exc
-
-        if not component:
-            raise InvalidComponentId(id)
         return component
-
-    def _update_component(self, component: Component) -> Component:
-        updated = self.db_client.save(component)
-        return updated
 
     def _validate_hub_version(
         self,
@@ -420,17 +376,18 @@ class ComponentUpgradeManager:
         if check_version and hub_component_version == version:
             raise VersionUpdateError(from_component.name, version)
 
-        manager = self.hubmanager
         try:
             self._console.print(
                 f"Getting {hub_component_name} version {version} from hub"
             )
-            hub_component = manager.fetch_component_version(
+            hub_component = HubComponent.list_all(
                 name=hub_component_name, version=version
             )
-        except Exception as e:
-            raise HubComponentNotFound(hub_component_name, version) from e
-        return hub_component
+        except Exception as exc:
+            raise HubComponentNotFound(hub_component_name, version) from exc
+        if not hub_component:
+            raise HubComponentNotFound(hub_component_name, version)
+        return hub_component[0]
 
     def _create_component_objects(
         self, new_component: Component, hub_component: HubComponent
@@ -438,8 +395,8 @@ class ComponentUpgradeManager:
         self._console.print(
             f"Creating component objects for {new_component.name}"
         )
-        old_component_objects = self.db_client.get(
-            ComponentObject, component_id=self.component_id
+        old_component_objects = ComponentObject.list(
+            component_id=self.component_id
         )
         for obj in old_component_objects:
             try:
@@ -461,7 +418,7 @@ class ComponentUpgradeManager:
                         data=new_object_data,
                         component_id=new_component.id,
                     )
-                    self.db_client.save(new_object)
+                    new_object.save()
                     self._console.print(
                         f"Created {new_object.name} object succesfully"
                     )
@@ -493,7 +450,7 @@ class ComponentUpgradeManager:
             input=inputs,
         )
         try:
-            new_component = self.db_client.save(new_component)
+            new_component = Component.save()
         except Exception as e:
             raise ComponentCreateError(
                 new_component.name,
@@ -515,7 +472,7 @@ class ComponentUpgradeManager:
             from_component.input = new_inputs
             new_hub_version = f"{hub_component.name}-{hub_component.version}"
             from_component.version = new_hub_version
-            self._update_component(from_component)
+            from_component.save()
             self._create_component_objects(from_component, hub_component)
         except (
             InvalidComponentId,

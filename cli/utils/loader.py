@@ -2,11 +2,9 @@ from itertools import cycle
 from shutil import get_terminal_size
 from threading import Thread
 from time import sleep
+from typing import Optional
 
 from colorama import Fore, Style
-
-
-from typing import Optional
 
 
 class Loader:

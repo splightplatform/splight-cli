@@ -1,13 +1,11 @@
-import json
 import logging
 from pathlib import Path
 from typing import Optional
 
 import typer
-from cli.component.component import Component
+from cli.component.component import ComponentManager
 from cli.constants import error_style, success_style
 from cli.context import check_credentials
-from cli.context.context import local_environment_context
 from rich.console import Console
 
 component_app = typer.Typer(
@@ -36,14 +34,13 @@ def create(
     path: str = typer.Option(".", "--path", "-p", help="Component's path"),
 ) -> None:
     try:
-        component = Component(ctx.obj)
-        component.create(name, version, path)
+        manager = ComponentManager()
+        manager.create(name, version, path)
         abs_path = str(Path(path).resolve())
         console.print(
             f"Component {name} created successfully in {abs_path}",
             style=success_style,
         )
-
     except Exception as e:
         console.print(f"Error creating component: {str(e)}", style=error_style)
         typer.Exit(1)
@@ -53,22 +50,19 @@ def create(
 def run(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),
-    input: str = typer.Option(None, "--input", "-i", help="Input Values"),
     component_id: str = typer.Option(
         None, "--component-id", "-id", help="Component's ID"
     ),
-    local_dev: bool = typer.Option(
-        False, "--local", callback=local_environment_context, is_eager=True
+    local_dev: bool = typer.Option(False, "--local"),
+    input: Optional[str] = typer.Option(
+        None, "--input", "-i", help="Input Values [Deprecated]"
     ),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager()
         console.print("Running component...", style=success_style)
-        input = json.loads(input) if input else None
-        component.run(
-            path,
-            input_parameters=input,
-            component_id=component_id,
+        manager.run(
+            path, component_id=component_id, local_environment=local_dev
         )
     except Exception as e:
         logger.exception(e)
@@ -82,11 +76,11 @@ def install_requirements(
     path: str = typer.Argument(..., help="Path to component source code"),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager()
         console.print(
             "Installing component requirements...", style=success_style
         )
-        component.install_requirements(path)
+        manager.install_requirements(path)
     except Exception as e:
         console.print(
             f"Error installing component requirements: {str(e)}",
@@ -107,9 +101,9 @@ def readme(
     ),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager()
         console.print("Generating component README...", style=success_style)
-        component.readme(path, force)
+        manager.readme(path, force)
     except Exception as e:
         console.print(
             f"Error generating component README: {str(e)}", style=error_style
@@ -132,9 +126,9 @@ def test(
     ),
 ) -> None:
     try:
-        component = Component(ctx.obj)
+        manager = ComponentManager()
         console.print("Testing component...", style=success_style)
-        component.test(path=path, name=name, debug=debug)
+        manager.test(path=path, name=name, debug=debug)
     except Exception as e:
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)

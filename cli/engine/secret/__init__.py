@@ -4,7 +4,7 @@ import typer
 from cli.constants import error_style
 from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
-from splight_models import Secret
+from splight_lib.models import Secret
 
 secret_app = typer.Typer(
     name="Splight Engine Secret",
@@ -28,7 +28,6 @@ def list(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     params = manager.get_query_params(filters)
@@ -41,7 +40,6 @@ def get(
     instance_id: str = typer.Argument(..., help="The Secret's ID"),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     try:
@@ -57,7 +55,6 @@ def create(
     value: str = typer.Argument(..., help="Value of the secret"),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     manager.create({"name": name, "value": value})
@@ -71,7 +68,20 @@ def delete(
     ),
 ):
     manager = ResourceManager(
-        client=ctx.obj.framework.setup.DATABASE_CLIENT(),
         model=MODEL,
     )
     manager.delete(instance_id)
+
+
+@secret_app.command()
+def download(
+    ctx: typer.Context,
+    instance_id: str = typer.Argument(
+        ..., help="The ID of the instance to be removed"
+    ),
+    path: str = typer.Option(".", help="Path to download file"),
+):
+    manager = ResourceManager(
+        model=MODEL,
+    )
+    manager.download(instance_id, path=path)

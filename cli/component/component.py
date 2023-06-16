@@ -1,134 +1,115 @@
 import json
 import os
+import subprocess
+from enum import auto
 from pathlib import Path
-from subprocess import run
-from typing import Dict, List, Optional
+from typing import List, Optional
 
+from caseconverter import pascalcase
 from cli.component.exceptions import (
+    ComponentExecutionError,
     ComponentTestError,
     ComponentTestFileDoesNotExists,
     InvalidSplightCLIVersion,
     ReadmeExists,
 )
-from cli.component.loaders import ComponentLoader, InitLoader, SpecLoader
-from cli.component.spec import Spec
+from cli.component.loaders import InitLoader
 from cli.constants import (
-    COMPONENT_FILE,
-    README_FILE_1,
+    INIT_FILE,
+    PYTHON_CMD,
+    PYTHON_COMPONENT_FILE,
+    PYTHON_TEST_CMD,
+    PYTHON_TESTS_FILE,
+    README_FILE,
+    SPEC_FILE,
     SPLIGHT_IGNORE,
-    TEST_CMD,
-    TESTS_FILE,
 )
 from cli.utils import get_template
 from cli.version import __version__
 from jinja2 import Template
 from rich.console import Console
-from splight_lib.execution import Thread
-from splight_models import Component as ComponentModel
+from splight_lib.component.spec import Spec
+from strenum import LowercaseStrEnum
 
 console = Console()
 
 
-class Component:
-    name = None
-    version = None
+class AvailableLanguages(LowercaseStrEnum):
+    PYTHON = auto()
 
-    def __init__(self, context):
-        self.context = context
+
+BASE_COMMANDS = {
+    AvailableLanguages.PYTHON: [PYTHON_CMD, PYTHON_COMPONENT_FILE]
+}
+TEST_COMMANDS = {
+    AvailableLanguages.PYTHON: [PYTHON_TEST_CMD, PYTHON_TESTS_FILE]
+}
+
+
+class ComponentManager:
+    _COMPONENT_REQUIRED_FILES = [
+        PYTHON_COMPONENT_FILE,
+        INIT_FILE,
+        README_FILE,
+        SPEC_FILE,
+        SPLIGHT_IGNORE,
+        PYTHON_TESTS_FILE,
+    ]
 
     def create(
         self, name: str, version: str = "0.1.0", component_path: str = "."
     ):
-        Spec.verify(
-            {
-                "name": name,
-                "version": version,
-                "splight_cli_version": __version__,
-                "custom_types": [],
-                "input": [],
-                "output": [],
-                "endpoints": [],
-            }
-        )
+        """Creates the files needed for a new components.
 
+        Parameters
+        ----------
+        name: str
+            The components names
+        version: str
+            The version for the component
+        component_path: str
+            The where to create the files
+        """
+        component_name = pascalcase(name)
         absolute_path = os.path.abspath(component_path)
         if not os.path.exists(absolute_path):
             os.makedirs(absolute_path)
 
-        files_to_create = ComponentLoader.REQUIRED_FILES
-        files_to_create.append(SPLIGHT_IGNORE)
-        files_to_create.append(TESTS_FILE)
-
-        for file_name in files_to_create:
+        for file_name in self._COMPONENT_REQUIRED_FILES:
             template_name = file_name
             file_path = os.path.join(absolute_path, file_name)
-            if file_name == COMPONENT_FILE:
-                template_name = "component.py"
             template: Template = get_template(template_name)
             file = template.render(
-                component_name=name,
+                component_name=component_name,
                 version=version,
                 splight_cli_version=__version__,
             )
             with open(file_path, "w+") as f:
                 f.write(file)
 
-    def run(
-        self,
-        path: str,
-        input_parameters: Optional[List[Dict]] = None,
-        component_id: Optional[str] = None,
-    ):
-        # Load py module and validate Splight Component structure
-        loader = ComponentLoader(path=path)
-        component_class = loader.load()
-        # Load json and validate Spec structure
-        loader = SpecLoader(path=path)
-
-        if component_id and not input_parameters:
-            remote_input_parameters = []
-            db_client = self.context.framework.setup.DATABASE_CLIENT(
-                namespace="default", path=path
-            )
-            component_input = db_client.get(
-                ComponentModel, id=component_id, first=True
-            ).input
-
-            for input in component_input:
-                remote_input_parameters.append(input.__dict__)
-
-            input_parameters = remote_input_parameters
-
-        run_spec = loader.load(input_parameters=input_parameters)
-        self._validate_cli_version(run_spec.splight_cli_version)
-        component = component_class(
-            run_spec=run_spec.dict(),
-            initial_setup=self.context.workspace.settings.dict(),
-            component_id=component_id,
-            database_config={"path": path},
-            datalake_config={"path": path},
-        )
-        component.execution_client.start(Thread(target=component.start))
-
-    def install_requirements(self, path: str):
-        loader = InitLoader(path=path)
-        loader.load()
-
-    def _validate_cli_version(self, component_cli_version: str):
-        if component_cli_version != __version__:
-            raise InvalidSplightCLIVersion(component_cli_version, __version__)
-
     def readme(self, path: str, force: Optional[bool] = False):
-        loader = SpecLoader(path=path)
-        spec = loader.load(prompt_input=False)
+        """Creates a README.md following the information provided in the
+        spec.json file.
+
+        Parameters
+        ----------
+        path: str
+            The path to the component.
+        force: bool
+            Wheter to overwrite an existing readme.
+
+        Raises
+        ------
+        ReadmeExists thrown when the README.md file already exist and
+        force=False
+        """
+        spec_file_path = os.path.join(path, SPEC_FILE)
+        spec = Spec.from_file(spec_file_path)
         name = spec.name
         version = spec.version
         description = spec.description
-        if os.path.exists(os.path.join(path, README_FILE_1)):
-            if not force:
-                raise ReadmeExists(path)
-            else:
-                os.remove(os.path.join(path, README_FILE_1))
+        if os.path.exists(os.path.join(path, README_FILE)) and not force:
+            raise ReadmeExists(path)
         template = get_template("auto_readme.md")
         parsed_bindings = [
             json.loads(binding.json()) for binding in spec.bindings
@@ -145,9 +126,54 @@ class Component:
             output=spec.output,
             endpoints=spec.endpoints,
         )
-        with open(os.path.join(path, README_FILE_1), "w+") as f:
+        with open(os.path.join(path, README_FILE), "w+") as f:
             f.write(readme)
-        console.print(f"{README_FILE_1} created for {name} {version}")
+        console.print(f"{README_FILE} created for {name} {version}")
+
+    def install_requirements(self, path: str):
+        """Installs the requirements of a component
+
+        Parameters
+        -----------
+        path: str
+            The component's path
+        """
+        loader = InitLoader(path=path)
+        loader.load()
+
+    def run(
+        self,
+        path: str,
+        component_id: str,
+        local_environment: bool = False,
+    ):
+        """Executes a component
+
+        Parameters
+        ----------
+        path: str
+            The component's path
+        component_id: str
+            The id for the components.
+        local_environment: bool
+            A boolean to define if the component should use local database.
+        """
+        spec = Spec.from_file(os.path.join(path, SPEC_FILE))
+        self._validate_cli_version(spec.splight_cli_version)
+        component_cmd = self._execution_command("python", component_id)
+        component_path = Path(path).resolve()
+        environment = os.environ.copy()
+        environment.update({"LOCAL_ENVIRONMENT": f"{local_environment}"})
+        output = subprocess.run(
+            component_cmd,
+            capture_output=False,
+            check=True,
+            shell=False,
+            cwd=component_path,
+            env=environment,
+        )
+        if output.returncode != 0:
+            raise ComponentExecutionError("Error during component execution")
 
     def test(
         self,
@@ -155,26 +181,33 @@ class Component:
         name: Optional[str] = None,
         debug: bool = False,
     ):
+        """Runs component's tests.
+
+        Parameters
+        ----------
+        path: str
+            The component's path
+        name: Optional[str]
+            The name of the test to be executed
+        debug: bool
+            Wether to use debug mode for running tests
+        """
         abs_path = str(Path(path).resolve())
         if not os.path.exists(abs_path):
             console.print(
                 "Error: test file passed as argument does not exists"
             )
-            raise ComponentTestFileDoesNotExists(TESTS_FILE)
+            raise ComponentTestFileDoesNotExists(PYTHON_TESTS_FILE)
 
-        # Add path to environ, used in component fixture tests
-        os.environ["COMPONENT_PATH_FOR_TESTING"] = abs_path
-        test_path = os.path.join(abs_path, TESTS_FILE)
-        cmd = " ".join([TEST_CMD, test_path])
-
-        if name:
-            cmd = "::".join([cmd, name])
-
-        if debug:
-            cmd = " ".join([cmd, "-s"])
-
-        r = run(cmd, shell=True, check=True)
-        stdout, stderr, returncode = r.stdout, r.stderr, r.returncode
+        environment = os.environ.copy()
+        environment.update({"LOCAL_ENVIRONMENT": "True"})
+        cmd = self._test_command("python", name, debug)
+        results = subprocess.run(
+            cmd, shell=True, check=True, cwd=abs_path, env=environment
+        )
+        stdout = results.stdout
+        stderr = results.stderr
+        returncode = results.returncode
 
         if returncode != 0:
             if stderr:
@@ -182,3 +215,27 @@ class Component:
             raise ComponentTestError
         if stdout:
             console.print(stdout.decode())
+
+    def _execution_command(
+        self, language: AvailableLanguages, component_id: str
+    ) -> List[str]:
+        cmd = BASE_COMMANDS[language]
+        cmd.extend(["--component-id", f"{component_id}"])
+        return cmd
+
+    def _test_command(
+        self,
+        language: AvailableLanguages,
+        name: Optional[str] = None,
+        debug: bool = False,
+    ) -> str:
+        cmd = " ".join(TEST_COMMANDS[language])
+        if name:
+            cmd = "::".join([cmd, name])
+        if debug:
+            cmd = " ".join([cmd, "-s"])
+        return cmd
+
+    def _validate_cli_version(self, component_cli_version: str):
+        if component_cli_version != __version__:
+            raise InvalidSplightCLIVersion(component_cli_version, __version__)

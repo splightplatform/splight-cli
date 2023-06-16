@@ -32,7 +32,7 @@ The custom types defined by the component are:
 {% for item in custom_types -%}
   - {{item.name}}
      {% for p in item.fields -%}
-       {{p.name}} [{{p.type}}]: (Default: {{p.value}}) {{p.description}}
+      - {{p.name}} [{{p.type}}]: (Default: {{p.value}}) {{p.description}}
      {% endfor %}
 {% endfor -%}
 {%- else -%}
@@ -47,7 +47,7 @@ The component's output are:
 {% for out in output -%}
   - {{out.name}}:
     {% for field in out.fields -%}
-      {{field.name}} [{{field.type}}]
+      - {{field.name}} [{{field.type}}]
     {% endfor %}
 {% endfor %}
 {%- else -%}
