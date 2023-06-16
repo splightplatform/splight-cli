@@ -2,9 +2,8 @@ import os
 import subprocess
 from typing import List, Union
 
-from splight_lib.logging._internal import get_splight_logger
-
 from cli.constants import INIT_FILE
+from splight_lib.logging._internal import get_splight_logger
 
 logger = get_splight_logger()
 Primitive = Union[int, str, float, bool]

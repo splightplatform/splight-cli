@@ -59,9 +59,7 @@ def input_single(param: Dict[str, Primitive]) -> Primitive:
     required = param.get("required", False)
     param_name = param.get("name", "")
     param_type = param.get("type")
-    name = (
-        f"{'*' if required else ' '}{param_name} ({param_type})"
-    )
+    name = f"{'*' if required else ' '}{param_name} ({param_type})"
     param_type = locate(param["type"])
     if not param_type:
         param_type = str
