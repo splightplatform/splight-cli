@@ -22,6 +22,29 @@
             ]
         }
     ],
+    "routines": [
+        {
+            "name": "MyRoutine",
+            "max_instances": 1,
+            "create_handler": "handle_MyRoutine_create",
+            "update_handler": "handle_MyRoutine_update",
+            "delete_handler": "handle_MyRoutine_delete",
+            "config": [
+                {
+                    "name": "period",
+                    "type": "int",
+                    "required": true
+                }
+            ],
+            "input": [
+                {
+                    "name": "read",
+                    "value_type": "Number"
+                }
+            ],
+            "output": []
+        }
+    ],
     "input": [
         {
             "name": "period",

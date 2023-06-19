@@ -9,6 +9,7 @@ from splight_lib.models import Number
 
 app = typer.Typer(pretty_exceptions_enable=False)
 MyAsset = Type["MyAsset"]
+MyRoutine = Type["MyRoutine"]
 
 
 class {{component_name}}(SplightBaseComponent):
@@ -46,6 +47,15 @@ class {{component_name}}(SplightBaseComponent):
 
     def handle_myasset_delete(self, my_asset: MyAsset):
         print("MyAsset delete")
+
+    def handle_MyRoutine_create(self, routine: MyRoutine):
+        print("MyRoutine create")
+
+    def handle_MyRoutine_update(self, routine: MyRoutine):
+        print("MyRoutine update")
+
+    def handle_MyRoutine_delete(self, routine: MyRoutine):
+        print("MyRoutine delete")
 
 
 @app.command()
