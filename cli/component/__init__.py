@@ -133,3 +133,20 @@ def test(
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)
         typer.Exit(1)
+
+
+@component_app.command()
+def create_local_db(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component source code"),
+) -> None:
+    try:
+        manager = ComponentManager()
+        console.print("Creating local component db...", style=success_style)
+        manager.create_local_db(path=path)
+    except Exception as e:
+        logger.exception(e)
+        console.print(
+            f"Error creating local component db: {str(e)}", style=error_style
+        )
+        typer.Exit(1)

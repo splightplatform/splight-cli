@@ -4,6 +4,7 @@ import subprocess
 from enum import auto
 from pathlib import Path
 from typing import List, Optional
+from uuid import uuid4
 
 from caseconverter import pascalcase
 from cli.component.exceptions import (
@@ -239,3 +240,88 @@ class ComponentManager:
     def _validate_cli_version(self, component_cli_version: str):
         if component_cli_version != __version__:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
+
+    def create_local_db(self, path: str):
+        def generate_component(json_spec, component_id):
+            return {
+                component_id: {
+                    "id": component_id,
+                    "name": json_spec.get("name"),
+                    "version": f"{json_spec['name']}-{json_spec['version']}",
+                    "custom_types": json_spec.get("custom_types", []),
+                    "component_type": json_spec.get(
+                        "component_type", "connector"
+                    ),
+                    "input": json_spec.get("input", []),
+                    "output": json_spec.get("output", []),
+                    "commands": json_spec.get("commands", []),
+                    "endpoints": json_spec.get("endpoints", []),
+                    "bindings": json_spec.get("bindings", []),
+                }
+            }
+
+        def generate_component_object(custom_type, component_id):
+            component_object_id = str(uuid4())
+            # TODO: review description and type
+            return {
+                component_object_id: {
+                    "id": component_object_id,
+                    "name": custom_type["name"],
+                    "component_id": component_id,
+                    "description": "",
+                    "type": custom_type["name"],
+                    "data": custom_type.get("fields", []),
+                }
+            }
+
+        def generate_asset(field):
+            asset_id = str(uuid4())
+            # TODO: review attributes
+            return {
+                asset_id: {
+                    "id": asset_id,
+                    "name": field["name"],
+                    "description": field.get("description"),
+                    "tags": [],
+                    "attributes": [],
+                    "verified": False,
+                    "geometry": None,
+                    "centroid": None,
+                    "external_id": None,
+                    "is_public": False,
+                }
+            }
+
+        def generate_attribute(field):
+            attribute_id = str(uuid4())
+            return {
+                attribute_id: {
+                    "id": attribute_id,
+                    "name": field["name"],
+                }
+            }
+
+        splight_db = {
+            "asset": {},
+            "attribute": {},
+            "component": {},
+            "componentobject": {},
+        }
+        spec = Spec.from_file(os.path.join(path, SPEC_FILE))
+        json_spec = json.loads(spec.json())
+
+        component_id = str(uuid4())
+        splight_db["component"] = generate_component(json_spec, component_id)
+
+        for custom_type in json_spec.get("custom_types"):
+            splight_db["componentobject"].update(
+                generate_component_object(custom_type, component_id)
+            )
+            for field in custom_type.get("fields"):
+                if field["type"] == "Asset":
+                    splight_db["asset"].update(generate_asset(field))
+                elif field["type"] == "Attribute":
+                    splight_db["attribute"].update(generate_attribute(field))
+
+        with open("splight-db.json", "w") as db_file:
+            json.dump(splight_db, db_file, indent=4)
