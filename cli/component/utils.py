@@ -1,7 +1,10 @@
+from typing import Any, Dict
 from uuid import uuid4
 
 
-def generate_component(json_spec, component_id):
+def generate_component(
+    json_spec: Dict[str, Any], component_id: str
+) -> Dict[str, Any]:
     return {
         component_id: {
             "id": component_id,
@@ -18,7 +21,9 @@ def generate_component(json_spec, component_id):
     }
 
 
-def generate_component_object(custom_type, component_id):
+def generate_component_object(
+    custom_type: Dict[str, Any], component_id: str
+) -> Dict[str, Any]:
     component_object_id = str(uuid4())
     # TODO: review description and type
     return {
@@ -33,7 +38,7 @@ def generate_component_object(custom_type, component_id):
     }
 
 
-def generate_asset(field):
+def generate_asset(field: Dict[str, Any]) -> Dict[str, Any]:
     asset_id = str(uuid4())
     # TODO: review attributes
     return {
@@ -52,7 +57,7 @@ def generate_asset(field):
     }
 
 
-def generate_attribute(field):
+def generate_attribute(field: Dict[str, Any]) -> Dict[str, Any]:
     attribute_id = str(uuid4())
     return {
         attribute_id: {

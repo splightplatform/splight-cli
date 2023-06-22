@@ -35,7 +35,9 @@ from cli.utils import get_template
 from cli.version import __version__
 from jinja2 import Template
 from rich.console import Console
+from splight_lib.client.database import LOCAL_DB_FILE
 from splight_lib.component.spec import Spec
+from splight_lib.models import Asset, Attribute, Component, ComponentObject
 from strenum import LowercaseStrEnum
 
 console = Console()
@@ -249,13 +251,11 @@ class ComponentManager:
 
     def create_local_db(self, path: str):
         splight_db = {
-            "asset": {},
-            "attribute": {},
-            "component": {},
-            "componentobject": {},
+            model.__name__.lower(): {}
+            for model in [Asset, Attribute, Component, ComponentObject]
         }
         spec = Spec.from_file(os.path.join(path, SPEC_FILE))
-        json_spec = json.loads(spec.json())
+        json_spec = spec.dict()
 
         component_id = str(uuid4())
         splight_db["component"] = generate_component(json_spec, component_id)
@@ -270,5 +270,5 @@ class ComponentManager:
                 elif field["type"] == "Attribute":
                     splight_db["attribute"].update(generate_attribute(field))
 
-        with open("splight-db.json", "w") as db_file:
+        with open(LOCAL_DB_FILE, "w") as db_file:
             json.dump(splight_db, db_file, indent=4)
