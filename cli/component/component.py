@@ -4,7 +4,6 @@ import subprocess
 from enum import auto
 from pathlib import Path
 from typing import List, Optional
-from uuid import uuid4
 
 from caseconverter import pascalcase
 from cli.component.exceptions import (
@@ -257,18 +256,21 @@ class ComponentManager:
         spec = Spec.from_file(os.path.join(path, SPEC_FILE))
         json_spec = spec.dict()
 
-        component_id = str(uuid4())
-        splight_db["component"] = generate_component(json_spec, component_id)
-
+        component_id, splight_db["component"] = generate_component(json_spec)
         for custom_type in json_spec.get("custom_types"):
-            splight_db["componentobject"].update(
-                generate_component_object(custom_type, component_id)
-            )
             for field in custom_type.get("fields"):
                 if field["type"] == "Asset":
-                    splight_db["asset"].update(generate_asset(field))
+                    asset_id, asset = generate_asset(field)
+                    splight_db["asset"].update(asset)
+                    field.update({"value": asset_id})
                 elif field["type"] == "Attribute":
-                    splight_db["attribute"].update(generate_attribute(field))
+                    attribute_id, attribute = generate_attribute(field)
+                    splight_db["attribute"].update(attribute)
+                    field.update({"value": attribute_id})
+            _, component_object = generate_component_object(
+                custom_type, component_id
+            )
+            splight_db["componentobject"].update(component_object)
 
         with open(LOCAL_DB_FILE, "w") as db_file:
             json.dump(splight_db, db_file, indent=4)

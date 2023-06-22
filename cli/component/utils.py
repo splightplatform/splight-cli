@@ -1,11 +1,12 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Tuple
 from uuid import uuid4
 
 
 def generate_component(
-    json_spec: Dict[str, Any], component_id: str
-) -> Dict[str, Any]:
-    return {
+    json_spec: Dict[str, Any]
+) -> Tuple[str, Dict[str, Any]]:
+    component_id = str(uuid4())
+    component = {
         component_id: {
             "id": component_id,
             "name": json_spec.get("name"),
@@ -19,14 +20,18 @@ def generate_component(
             "bindings": json_spec.get("bindings", []),
         }
     }
+    return component_id, component
 
 
 def generate_component_object(
-    custom_type: Dict[str, Any], component_id: str
-) -> Dict[str, Any]:
+    custom_type: Dict[str, Any],
+    component_id: str,
+    asset_id: Optional[str] = None,
+    attribute_id: Optional[str] = None,
+) -> Tuple[str, Dict[str, Any]]:
     component_object_id = str(uuid4())
     # TODO: review description and type
-    return {
+    component_object = {
         component_object_id: {
             "id": component_object_id,
             "name": custom_type["name"],
@@ -36,12 +41,13 @@ def generate_component_object(
             "data": custom_type.get("fields", []),
         }
     }
+    return component_object_id, component_object
 
 
-def generate_asset(field: Dict[str, Any]) -> Dict[str, Any]:
+def generate_asset(field: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
     asset_id = str(uuid4())
     # TODO: review attributes
-    return {
+    asset = {
         asset_id: {
             "id": asset_id,
             "name": field["name"],
@@ -55,13 +61,15 @@ def generate_asset(field: Dict[str, Any]) -> Dict[str, Any]:
             "is_public": False,
         }
     }
+    return asset_id, asset
 
 
-def generate_attribute(field: Dict[str, Any]) -> Dict[str, Any]:
+def generate_attribute(field: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
     attribute_id = str(uuid4())
-    return {
+    attribute = {
         attribute_id: {
             "id": attribute_id,
             "name": field["name"],
         }
     }
+    return attribute_id, attribute
