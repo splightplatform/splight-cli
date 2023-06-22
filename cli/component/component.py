@@ -14,11 +14,7 @@ from cli.component.exceptions import (
     ReadmeExists,
 )
 from cli.component.loaders import InitLoader
-from cli.component.utils import (
-    db_from_spec,
-    generate_fake_asset,
-    generate_fake_attribute,
-)
+from cli.component.utils import db_from_spec, fake_asset, fake_attribute
 from cli.constants import (
     INIT_FILE,
     PYTHON_CMD,
@@ -253,11 +249,11 @@ class ComponentManager:
         splight_db = db_from_spec(json_spec)
 
         # agnostic from component
-        fake_asset = generate_fake_asset()
-        splight_db["asset"].update(fake_asset)
+        asset = fake_asset()
+        splight_db["asset"].update(asset)
 
-        fake_attribute = generate_fake_attribute()
-        splight_db["attribute"].update(fake_attribute)
+        attribute = fake_attribute()
+        splight_db["attribute"].update(attribute)
 
         with open(LOCAL_DB_FILE, "w") as db_file:
             json.dump(splight_db, db_file, indent=4)

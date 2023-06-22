@@ -98,7 +98,7 @@ def db_from_spec(json_spec):
     return component_db
 
 
-def generate_fake_asset():
+def fake_asset():
     asset_id = str(uuid4())
     return {
         asset_id: {
@@ -116,7 +116,7 @@ def generate_fake_asset():
     }
 
 
-def generate_fake_attribute():
+def fake_attribute():
     attribute_id = str(uuid4())
     return {
         attribute_id: {
