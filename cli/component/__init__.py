@@ -57,6 +57,9 @@ def run(
     input: Optional[str] = typer.Option(
         None, "--input", "-i", help="Input Values [Deprecated]"
     ),
+    stream_logs: bool = typer.Option(
+        False, "--stream-logs", "-s", help="Stream component logs"
+    ),
 ) -> None:
     try:
         manager = ComponentManager()

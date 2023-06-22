@@ -5,6 +5,9 @@ from enum import auto
 from pathlib import Path
 from typing import List, Optional
 
+from cli.settings import SplightCLISettings
+from .component_logs_handler import ComponentLogsHandler
+
 from caseconverter import pascalcase
 from cli.component.exceptions import (
     ComponentExecutionError,
@@ -164,15 +167,20 @@ class ComponentManager:
         component_path = Path(path).resolve()
         environment = os.environ.copy()
         environment.update({"LOCAL_ENVIRONMENT": f"{local_environment}"})
-        output = subprocess.run(
+
+        process = subprocess.Popen(
             component_cmd,
-            capture_output=False,
-            check=True,
             shell=False,
             cwd=component_path,
             env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            bufsize=1
         )
-        if output.returncode != 0:
+        log_handler = ComponentLogsHandler(process)
+        log_handler.start()
+        process.wait()
+        if process.returncode != 0:
             raise ComponentExecutionError("Error during component execution")
 
     def test(

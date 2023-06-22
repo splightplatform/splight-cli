@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service LogsService {
+  rpc StashLogEntry (stream LogEntry) returns (google.protobuf.Empty) {}
+}
+
+
+
+message LogEntry {
+  google.protobuf.Timestamp timestamp = 1;  
+  string message = 2;
+}
