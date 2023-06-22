@@ -15,10 +15,9 @@ from cli.component.exceptions import (
 )
 from cli.component.loaders import InitLoader
 from cli.component.utils import (
-    generate_asset,
-    generate_attribute,
-    generate_component,
-    generate_component_object,
+    generate_component_db,
+    generate_fake_asset,
+    generate_fake_attribute,
 )
 from cli.constants import (
     INIT_FILE,
@@ -36,7 +35,6 @@ from jinja2 import Template
 from rich.console import Console
 from splight_lib.client.database import LOCAL_DB_FILE
 from splight_lib.component.spec import Spec
-from splight_lib.models import Asset, Attribute, Component, ComponentObject
 from strenum import LowercaseStrEnum
 
 console = Console()
@@ -249,28 +247,18 @@ class ComponentManager:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
 
     def create_local_db(self, path: str):
-        splight_db = {
-            model.__name__.lower(): {}
-            for model in [Asset, Attribute, Component, ComponentObject]
-        }
+        splight_db = {}
         spec = Spec.from_file(os.path.join(path, SPEC_FILE))
         json_spec = spec.dict()
 
-        component_id, splight_db["component"] = generate_component(json_spec)
-        for custom_type in json_spec.get("custom_types"):
-            for field in custom_type.get("fields"):
-                if field["type"] == "Asset":
-                    asset_id, asset = generate_asset(field)
-                    splight_db["asset"].update(asset)
-                    field.update({"value": asset_id})
-                elif field["type"] == "Attribute":
-                    attribute_id, attribute = generate_attribute(field)
-                    splight_db["attribute"].update(attribute)
-                    field.update({"value": attribute_id})
-            _, component_object = generate_component_object(
-                custom_type, component_id
-            )
-            splight_db["componentobject"].update(component_object)
+        splight_db = generate_component_db(json_spec)
+
+        # agnostic from component
+        fake_asset = generate_fake_asset()
+        splight_db["asset"].update(fake_asset)
+
+        fake_attribute = generate_fake_attribute()
+        splight_db["attribute"].update(fake_attribute)
 
         with open(LOCAL_DB_FILE, "w") as db_file:
             json.dump(splight_db, db_file, indent=4)

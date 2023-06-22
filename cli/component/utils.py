@@ -1,6 +1,8 @@
 from typing import Any, Dict, Tuple
 from uuid import uuid4
 
+from splight_lib.models import Asset, Attribute, Component, ComponentObject
+
 
 def generate_component(
     json_spec: Dict[str, Any]
@@ -71,3 +73,54 @@ def generate_attribute(field: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         }
     }
     return attribute_id, attribute
+
+
+def generate_component_db(json_spec):
+    component_db = {
+        model.__name__.lower(): {}
+        for model in [Asset, Attribute, Component, ComponentObject]
+    }
+    component_id, component_db["component"] = generate_component(json_spec)
+    for custom_type in json_spec.get("custom_types"):
+        for field in custom_type.get("fields"):
+            if field["type"] == "Asset":
+                asset_id, asset = generate_asset(field)
+                component_db["asset"].update(asset)
+                field.update({"value": asset_id})
+            elif field["type"] == "Attribute":
+                attribute_id, attribute = generate_attribute(field)
+                component_db["attribute"].update(attribute)
+                field.update({"value": attribute_id})
+        _, component_object = generate_component_object(
+            custom_type, component_id
+        )
+        component_db["componentobject"].update(component_object)
+    return component_db
+
+
+def generate_fake_asset():
+    asset_id = str(uuid4())
+    return {
+        asset_id: {
+            "id": asset_id,
+            "name": "fake_asset_name",
+            "description": "fake description",
+            "tags": [],
+            "attributes": [],
+            "verified": False,
+            "geometry": None,
+            "centroid": None,
+            "external_id": None,
+            "is_public": False,
+        }
+    }
+
+
+def generate_fake_attribute():
+    attribute_id = str(uuid4())
+    return {
+        attribute_id: {
+            "id": attribute_id,
+            "name": "fake_attr_name",
+        }
+    }
