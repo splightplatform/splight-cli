@@ -15,7 +15,7 @@ from cli.component.exceptions import (
 )
 from cli.component.loaders import InitLoader
 from cli.component.utils import (
-    generate_component_db,
+    db_from_spec,
     generate_fake_asset,
     generate_fake_attribute,
 )
@@ -247,11 +247,10 @@ class ComponentManager:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
 
     def create_local_db(self, path: str):
-        splight_db = {}
         spec = Spec.from_file(os.path.join(path, SPEC_FILE))
         json_spec = spec.dict()
 
-        splight_db = generate_component_db(json_spec)
+        splight_db = db_from_spec(json_spec)
 
         # agnostic from component
         fake_asset = generate_fake_asset()

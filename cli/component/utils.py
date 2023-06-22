@@ -75,7 +75,7 @@ def generate_attribute(field: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
     return attribute_id, attribute
 
 
-def generate_component_db(json_spec):
+def db_from_spec(json_spec):
     component_db = {
         model.__name__.lower(): {}
         for model in [Asset, Attribute, Component, ComponentObject]
