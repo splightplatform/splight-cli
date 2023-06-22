@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Tuple
 from uuid import uuid4
 
 
@@ -26,8 +26,6 @@ def generate_component(
 def generate_component_object(
     custom_type: Dict[str, Any],
     component_id: str,
-    asset_id: Optional[str] = None,
-    attribute_id: Optional[str] = None,
 ) -> Tuple[str, Dict[str, Any]]:
     component_object_id = str(uuid4())
     # TODO: review description and type
