@@ -7,13 +7,6 @@ from pathlib import Path
 from typing import List, Optional
 
 from caseconverter import pascalcase
-from jinja2 import Template
-from rich.console import Console
-from splight_lib.client.database import LOCAL_DB_FILE
-from splight_lib.component.log_streamer import ComponentLogsStreamer
-from splight_lib.component.spec import Spec
-from strenum import LowercaseStrEnum
-
 from cli.component.exceptions import (
     ComponentExecutionError,
     ComponentTestError,
@@ -35,6 +28,12 @@ from cli.constants import (
 )
 from cli.utils import get_template
 from cli.version import __version__
+from jinja2 import Template
+from rich.console import Console
+from splight_lib.client.database import LOCAL_DB_FILE
+from splight_lib.component.log_streamer import ComponentLogsStreamer
+from splight_lib.component.spec import Spec
+from strenum import LowercaseStrEnum
 
 console = Console()
 
