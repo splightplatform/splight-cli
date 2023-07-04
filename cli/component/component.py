@@ -177,17 +177,17 @@ class ComponentManager:
             stdout=stdout,
             stderr=subprocess.PIPE,
             bufsize=True,
-            univeral_newlines=False,
+            universal_newlines=False,
         )
 
-        if local_environment:
-            streamer = ComponentLogsStreamer(
-                component_process, component_id=component_id
-            )
-            streamer.start()
-
         try:
-            component_process.communicate()
+            if not local_environment:
+                streamer = ComponentLogsStreamer(
+                    component_process, component_id=component_id
+                )
+                streamer.start()
+            else:
+                component_process.communicate()
         except Exception as exc:
             component_process.kill()
             raise ComponentExecutionError(
