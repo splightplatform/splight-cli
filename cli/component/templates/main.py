@@ -1,5 +1,5 @@
 import random
-from typing import Type
+from typing import Optional, Type
 
 import typer
 from splight_lib.component import SplightBaseComponent
@@ -49,7 +49,10 @@ class {{component_name}}(SplightBaseComponent):
 
 
 @app.command()
-def main(component_id: str = typer.Option(...)):
+def main(
+    component_id: str = typer.Option(...),
+    input: Optional[str] = typer.Option(None),
+):
     logger = getLogger("MyComponent")
     component = {{component_name}}(component_id=component_id)
     try:
