@@ -450,7 +450,7 @@ class ComponentUpgradeManager:
             input=inputs,
         )
         try:
-            new_component = Component.save()
+            new_component.save()
         except Exception as e:
             raise ComponentCreateError(
                 new_component.name,
