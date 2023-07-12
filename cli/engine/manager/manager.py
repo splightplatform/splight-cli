@@ -412,19 +412,14 @@ class ComponentUpgradeManager:
                     new_object_data = self._create_objects(
                         obj.data, matching_hct.fields
                     )
-                    new_object = ComponentObject(
-                        name=obj.name,
-                        type=obj.type,
-                        data=new_object_data,
-                        component_id=new_component.id,
-                    )
-                    new_object.save()
+                    obj.data = new_object_data
+                    obj.save()
                     self._console.print(
-                        f"Created {new_object.name} object succesfully"
+                        f"Component Object {obj.name} saved succesfully"
                     )
             except Exception as e:
                 raise ComponentUpgradeManagerException(
-                    f"Could not create object {new_object.name}"
+                    f"Could not update component object {obj.name}"
                 ) from e
 
     def _create_new_component(
@@ -450,7 +445,7 @@ class ComponentUpgradeManager:
             input=inputs,
         )
         try:
-            new_component = Component.save()
+            new_component.save()
         except Exception as e:
             raise ComponentCreateError(
                 new_component.name,

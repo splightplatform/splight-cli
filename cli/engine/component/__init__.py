@@ -115,9 +115,7 @@ def clone(
     version parameter is used it also updates the version of the Hub Component
     used.
     """
-    manager = ComponentUpgradeManager(
-        context=context, component_id=from_component_id
-    )
+    manager = ComponentUpgradeManager(component_id=from_component_id)
 
     try:
         new_component = manager.clone_component(version)
