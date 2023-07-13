@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 from enum import auto
 from pathlib import Path
 from typing import List, Optional
@@ -30,6 +31,7 @@ from cli.version import __version__
 from jinja2 import Template
 from rich.console import Console
 from splight_lib.client.database import LOCAL_DB_FILE
+from splight_lib.component.log_streamer import ComponentLogsStreamer
 from splight_lib.component.spec import Spec
 from strenum import LowercaseStrEnum
 
@@ -166,16 +168,31 @@ class ComponentManager:
         component_path = Path(path).resolve()
         environment = os.environ.copy()
         environment.update({"LOCAL_ENVIRONMENT": f"{local_environment}"})
-        output = subprocess.run(
+        stdout = sys.stdout if local_environment else subprocess.PIPE
+        component_process = subprocess.Popen(
             component_cmd,
-            capture_output=False,
-            check=True,
             shell=False,
             cwd=component_path,
             env=environment,
+            stdout=stdout,
+            stderr=subprocess.PIPE,
+            bufsize=True,
+            universal_newlines=False,
         )
-        if output.returncode != 0:
-            raise ComponentExecutionError("Error during component execution")
+
+        try:
+            if not local_environment:
+                streamer = ComponentLogsStreamer(
+                    component_process, component_id=component_id
+                )
+                streamer.start()
+            else:
+                component_process.communicate()
+        except Exception as exc:
+            component_process.kill()
+            raise ComponentExecutionError(
+                "Error during component execution"
+            ) from exc
 
     def test(
         self,
