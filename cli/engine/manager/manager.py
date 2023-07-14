@@ -174,7 +174,7 @@ class DatalakeManager:
             style=success_style,
         )
 
-    def load(self, collection: str, path: str):
+    def load(self, path: str):
         if not os.path.isfile(path):
             raise Exception("File not found")
         if not path.endswith(".csv"):
