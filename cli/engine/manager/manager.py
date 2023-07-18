@@ -390,7 +390,10 @@ class ComponentUpgradeManager:
         return hub_component[0]
 
     def _create_component_objects(
-        self, new_component: Component, hub_component: HubComponent
+        self,
+        new_component: Component,
+        hub_component: HubComponent,
+        create_new: bool = False,
     ):
         self._console.print(
             f"Creating component objects for {new_component.name}"
@@ -412,8 +415,17 @@ class ComponentUpgradeManager:
                     new_object_data = self._create_objects(
                         obj.data, matching_hct.fields
                     )
-                    obj.data = new_object_data
-                    obj.save()
+                    if create_new:
+                        new_object = ComponentObject(
+                            name=obj.name,
+                            type=obj.type,
+                            data=new_object_data,
+                            component_id=new_component.id,
+                        )
+                        new_object.save()
+                    else:
+                        obj.data = new_object_data
+                        obj.save()
                     self._console.print(
                         f"Component Object {obj.name} saved succesfully"
                     )
@@ -468,7 +480,9 @@ class ComponentUpgradeManager:
             new_hub_version = f"{hub_component.name}-{hub_component.version}"
             from_component.version = new_hub_version
             from_component.save()
-            self._create_component_objects(from_component, hub_component)
+            self._create_component_objects(
+                from_component, hub_component, create_new=False
+            )
         except (
             InvalidComponentId,
             VersionUpdateError,
@@ -494,7 +508,9 @@ class ComponentUpgradeManager:
             new_component = self._create_new_component(
                 from_component, hub_component, new_inputs
             )
-            self._create_component_objects(new_component, hub_component)
+            self._create_component_objects(
+                new_component, hub_component, create_new=True
+            )
         except (
             InvalidComponentId,
             VersionUpdateError,
