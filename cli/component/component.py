@@ -32,6 +32,7 @@ from jinja2 import Template
 from rich.console import Console
 from splight_lib.client.database import LOCAL_DB_FILE
 from splight_lib.component.log_streamer import ComponentLogsStreamer
+from splight_lib.component.exceptions import LogsStreamerError
 from splight_lib.component.spec import Spec
 from strenum import LowercaseStrEnum
 
@@ -188,6 +189,8 @@ class ComponentManager:
                 streamer.start()
             else:
                 component_process.communicate()
+        except LogsStreamerError:
+            component_process.communicate()
         except Exception as exc:
             component_process.kill()
             raise ComponentExecutionError(
