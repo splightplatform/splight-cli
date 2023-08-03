@@ -1,27 +1,27 @@
 import base64
+import logging
 from functools import cached_property
 
 import boto3
 import docker
 import requests
 import typer
+from constants import BuildStatus
 from docker.errors import APIError, BuildError
-from private_splight_models import BuildSpec
+from models import BuildSpec, HubComponent
 from pydantic import BaseSettings
-from splight_lib import logging
-from splight_lib.webhook import WebhookClient, WebhookEvent
-from splight_models import HubComponent
-from splight_models.constants import BuildStatus
+from webhook import WebhookClient, WebhookEvent
 
 app = typer.Typer(name="Splight Component Builder")
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
 
 
 class Context(BaseSettings):
     SPLIGHT_API_HOST: str
     WORKSPACE: str
     REGISTRY: str
-    REPOSITORY_NAME: str = "splight-components"
+    REPOSITORY_NAME: str
 
 
 class ComponentManager:
@@ -81,7 +81,7 @@ class Builder:
             self._update_min_component_capacity()
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
-            logger.info("Build failed: ", e)
+            logger.error("Build failed: ", e)
             self._update_component_build_status(BuildStatus.FAILED)
 
     @property
@@ -145,6 +145,7 @@ class Builder:
     def _build_component(self):
         logger.info("Building component")
         try:
+            # TODO: add dockerfile to use
             self.docker_client.images.build(
                 path=".",
                 tag=self.tag,
@@ -154,7 +155,6 @@ class Builder:
                 },
                 network_mode="host",
                 pull=True,
-                vervose=True,
             )
         except BuildError as e:
             logger.error(f"Error building component: {e}")
@@ -169,7 +169,7 @@ class Builder:
             logger.error(f"Error pushing component: {e}")
             raise e
 
-    def _update_component_build_status(self, build_status: BuildStatus):
+    def _update_component_build_status(self, build_status):
         logger.info(f"Updating component build status to {build_status}")
         self.hub_component.build_status = build_status
         self._save_component()

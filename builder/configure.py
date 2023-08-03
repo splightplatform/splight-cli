@@ -25,11 +25,13 @@ if __name__ == "__main__":
     access_id = configure_spec.get("access_id", None)
     secret_key = configure_spec.get("secret_key", None)
     api_host = configure_spec.get("api_host", None)
+    grpc_host = configure_spec.get("grpc_host", None)
 
     json_configuration = {
         "SPLIGHT_ACCESS_ID": access_id,
         "SPLIGHT_SECRET_KEY": secret_key,
         "SPLIGHT_PLATFORM_API_HOST": api_host,
+        "SPLIGHT_GRPC_HOST": grpc_host,
     }
 
     logger.info(
