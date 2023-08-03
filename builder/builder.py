@@ -13,7 +13,7 @@ from pydantic import BaseSettings
 from webhook import WebhookClient, WebhookEvent
 
 app = typer.Typer(name="Splight Component Builder")
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
 
@@ -199,14 +199,16 @@ class Builder:
 
 @app.command()
 def main(
-    build_spec_str: str = typer.Option(
+    build_spec_json: str = typer.Option(
         ...,
         "-b",
         "--build-spec",
-        help="build spec as defined in the private lib",
+        help="build spec as base64",
     )
 ):
+    build_spec_str = base64.b64decode(build_spec_json).decode("utf-8")
     build_spec = BuildSpec.parse_raw(build_spec_str)
+    logger.debug(f"Build spec: {build_spec.json()}")
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
