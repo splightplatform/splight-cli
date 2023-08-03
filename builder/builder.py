@@ -21,7 +21,7 @@ class Context(BaseSettings):
     SPLIGHT_API_HOST: str
     WORKSPACE: str
     REGISTRY: str
-    REPOSITORY_NAME: str
+    REPOSITORY_NAME: str = "splight-components"
 
 
 class ComponentManager:
@@ -169,7 +169,7 @@ class Builder:
             logger.error(f"Error pushing component: {e}")
             raise e
 
-    def _update_component_build_status(self, build_status):
+    def _update_component_build_status(self, build_status: BuildStatus):
         logger.info(f"Updating component build status to {build_status}")
         self.hub_component.build_status = build_status
         self._save_component()
