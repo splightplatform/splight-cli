@@ -199,14 +199,14 @@ class Builder:
 
 @app.command()
 def main(
-    build_spec_json: str = typer.Option(
+    build_spec_base64: str = typer.Option(
         ...,
         "-b",
         "--build-spec",
         help="build spec as base64",
     )
 ):
-    build_spec_str = base64.b64decode(build_spec_json).decode("utf-8")
+    build_spec_str = base64.b64decode(build_spec_base64).decode("utf-8")
     build_spec = BuildSpec.parse_raw(build_spec_str)
     logger.debug(f"Build spec: {build_spec.json()}")
 
