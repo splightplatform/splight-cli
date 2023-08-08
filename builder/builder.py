@@ -1,20 +1,20 @@
 import base64
+import logging
 from functools import cached_property
 
 import boto3
 import docker
 import requests
 import typer
+from constants import BuildStatus
 from docker.errors import APIError, BuildError
-from private_splight_models import BuildSpec
+from models import BuildSpec, HubComponent
 from pydantic import BaseSettings
-from splight_lib import logging
-from splight_lib.webhook import WebhookClient, WebhookEvent
-from splight_models import HubComponent
-from splight_models.constants import BuildStatus
+from webhook import WebhookClient, WebhookEvent
 
 app = typer.Typer(name="Splight Component Builder")
-logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
 
 
 class Context(BaseSettings):
@@ -81,7 +81,7 @@ class Builder:
             self._update_min_component_capacity()
             self._update_component_build_status(BuildStatus.SUCCESS)
         except Exception as e:
-            logger.info("Build failed: ", e)
+            logger.error("Build failed: ", e)
             self._update_component_build_status(BuildStatus.FAILED)
 
     @property
@@ -145,6 +145,7 @@ class Builder:
     def _build_component(self):
         logger.info("Building component")
         try:
+            # TODO: add dockerfile to use
             self.docker_client.images.build(
                 path=".",
                 tag=self.tag,
@@ -154,7 +155,6 @@ class Builder:
                 },
                 network_mode="host",
                 pull=True,
-                vervose=True,
             )
         except BuildError as e:
             logger.error(f"Error building component: {e}")
@@ -199,14 +199,16 @@ class Builder:
 
 @app.command()
 def main(
-    build_spec_str: str = typer.Option(
+    build_spec_base64: str = typer.Option(
         ...,
         "-b",
         "--build-spec",
-        help="build spec as defined in the private lib",
+        help="build spec as base64",
     )
 ):
+    build_spec_str = base64.b64decode(build_spec_base64).decode("utf-8")
     build_spec = BuildSpec.parse_raw(build_spec_str)
+    logger.debug(f"Build spec: {build_spec.json()}")
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
