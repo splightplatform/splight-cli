@@ -2,6 +2,7 @@ import json
 import sys
 
 import typer
+
 from cli.settings import CONFIG_VARS, SplightCLISettings
 
 config_app = typer.Typer(

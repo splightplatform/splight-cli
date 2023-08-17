@@ -1,0 +1,7 @@
+[tool.black]
+line-length = 79
+force-exclude = ".*/component/templates/.*py"
+
+[tool.isort]
+profile = "black"
+line_length = 79

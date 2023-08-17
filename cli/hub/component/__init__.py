@@ -1,8 +1,9 @@
 import typer
-from cli.constants import error_style
-from cli.hub.component.hub_manager import HubComponentManager
 from rich.console import Console
 from splight_lib.models import Component
+
+from cli.constants import error_style
+from cli.hub.component.hub_manager import HubComponentManager
 
 component_app = typer.Typer(
     name="Splight Engine Component",

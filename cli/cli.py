@@ -1,6 +1,7 @@
 from typing import Optional
 
 import typer
+
 from cli.component import component_app
 from cli.config import config_app
 from cli.context import Context
@@ -14,6 +15,7 @@ app = typer.Typer(
     add_completion=True,
     rich_markup_mode="rich",
     no_args_is_help=True,
+    pretty_exceptions_enable=False,
 )
 
 app.add_typer(config_app, name="configure")

@@ -2,10 +2,11 @@ import json
 from typing import List, Optional
 
 import typer
-from cli.constants import error_style
-from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
 from splight_lib.models import Asset
+
+from cli.constants import error_style
+from cli.engine.manager import ResourceManager, ResourceManagerException
 
 asset_app = typer.Typer(
     name="Splight Engine Asset",

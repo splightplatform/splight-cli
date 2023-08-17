@@ -1,4 +1,5 @@
 import typer
+
 from cli.context import check_credentials
 from cli.engine.alert import alert_app
 from cli.engine.asset import asset_app

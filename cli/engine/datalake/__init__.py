@@ -1,10 +1,11 @@
 from typing import List
 
 import typer
-from cli.constants import error_style
-from cli.engine.manager import DatalakeManager, DatalakeManagerException
 from rich.console import Console
 from splight_lib.models import Boolean, Number, String
+
+from cli.constants import error_style
+from cli.engine.manager import DatalakeManager, DatalakeManagerException
 
 datalake_app = typer.Typer(
     name="Splight Engine Datalake",
