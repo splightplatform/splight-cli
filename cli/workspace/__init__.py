@@ -1,7 +1,8 @@
 import typer
-from cli.constants import error_style, success_style
 from rich.console import Console
 from rich.table import Table
+
+from cli.constants import error_style, success_style
 
 workspace_app = typer.Typer(
     name="Splight CLI Workspace",

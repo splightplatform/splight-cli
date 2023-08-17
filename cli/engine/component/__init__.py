@@ -2,6 +2,9 @@ import json
 from typing import List, Optional
 
 import typer
+from rich.console import Console
+from splight_lib.models import Component
+
 from cli.constants import error_style, success_style
 from cli.engine.manager import (
     ComponentUpgradeManager,
@@ -9,8 +12,6 @@ from cli.engine.manager import (
     ResourceManager,
     ResourceManagerException,
 )
-from rich.console import Console
-from splight_lib.models import Component
 
 component_app = typer.Typer(
     name="Splight Engine Component",

@@ -1,9 +1,10 @@
 import os
 from pathlib import Path
 
-from cli.settings import SplightCLISettings
 from pydantic import AnyUrl
 from rich.style import Style
+
+from cli.settings import SplightCLISettings
 
 error_style = Style(color="red", bold=True)
 success_style = Style(color="green")

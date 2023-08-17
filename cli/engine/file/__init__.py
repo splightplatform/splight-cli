@@ -1,10 +1,11 @@
 from typing import List, Optional
 
 import typer
-from cli.constants import error_style
-from cli.engine.manager import ResourceManager, ResourceManagerException
 from rich.console import Console
 from splight_lib.models import File
+
+from cli.constants import error_style
+from cli.engine.manager import ResourceManager, ResourceManagerException
 
 file_app = typer.Typer(
     name="Splight Engine File",

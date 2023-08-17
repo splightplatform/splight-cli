@@ -5,6 +5,16 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Type, Union
 
 import pandas as pd
+from pydantic import BaseModel
+from rich.console import Console
+from rich.table import Table
+from splight_lib.models import Component, ComponentObject, File, HubComponent
+from splight_lib.models.base import (
+    SplightDatabaseBaseModel,
+    SplightDatalakeBaseModel,
+)
+from splight_lib.models.component import InputParameter, Parameter
+
 from cli.component.exceptions import InvalidCSVColumns
 from cli.constants import (
     REQUIRED_DATALAKE_COLUMNS,
@@ -19,15 +29,6 @@ from cli.engine.manager.exceptions import (
 )
 from cli.hub.component.exceptions import HubComponentNotFound
 from cli.utils.input import prompt_param
-from pydantic import BaseModel
-from rich.console import Console
-from rich.table import Table
-from splight_lib.models import Component, ComponentObject, File, HubComponent
-from splight_lib.models.base import (
-    SplightDatabaseBaseModel,
-    SplightDatalakeBaseModel,
-)
-from splight_lib.models.component import InputParameter, Parameter
 
 SplightModel = Type[SplightDatabaseBaseModel]
 
