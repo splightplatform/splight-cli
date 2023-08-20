@@ -41,7 +41,7 @@ install: clean ## install the package to the active Python's site-packages
 	pre-commit install
 
 black: ## run black formatter
-	black --config .hooks/black.toml .
+	black *.py
 
 isort: ## run isort formatter
-	isort --settings-file=.hooks/isort.toml .
+	isort *.py
