@@ -78,7 +78,7 @@ class SplightComponentRunner:
                 ],
                 check=True,
                 stdout=sys.stdout,
-                stderr=sys.stdout,
+                stderr=sys.stderr,
             )
         except subprocess.CalledProcessError as exc:
             self._logger.error(f"Error running component: {exc}")
