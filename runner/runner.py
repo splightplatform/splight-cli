@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 from asyncio.log import logging
 from typing import Dict, List
 
@@ -76,6 +77,8 @@ class SplightComponentRunner:
                     self._component_id,
                 ],
                 check=True,
+                stdout=sys.stdout,
+                stderr=sys.stderr,
             )
         except subprocess.CalledProcessError as exc:
             self._logger.error(f"Error running component: {exc}")
