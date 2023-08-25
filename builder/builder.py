@@ -80,8 +80,9 @@ class Builder:
             self._push_component()
             self._update_min_component_capacity()
             self._update_component_build_status(BuildStatus.SUCCESS)
-        except Exception as e:
-            logger.error("Build failed: ", e)
+        except Exception as exc:
+            logger.exception(exc)
+            logger.error("Build failed: ", exc)
             self._update_component_build_status(BuildStatus.FAILED)
 
     @property
@@ -146,7 +147,7 @@ class Builder:
         logger.info("Building component")
         try:
             # TODO: add dockerfile to use
-            self.docker_client.images.build(
+            _, build_logs = self.docker_client.images.build(
                 path=".",
                 tag=self.tag,
                 buildargs={
@@ -156,9 +157,17 @@ class Builder:
                 network_mode="host",
                 pull=True,
             )
-        except BuildError as e:
-            logger.error(f"Error building component: {e}")
-            raise e
+        except BuildError as exc:
+            self._show_build_logs(build_logs)
+            logger.exception(exc)
+            logger.error(f"Error building component: {exc}")
+            raise exc
+        else:
+            self._show_build_logs(build_logs)
+
+    def _show_build_logs(self, build_logs):
+        for log in build_logs:
+            logger.debug(log)
 
     def _push_component(self):
         logger.info("Pushing component image")
