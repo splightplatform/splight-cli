@@ -61,5 +61,5 @@ class Loader:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
             self.stop()
-            raise exc_type(exc_val)
+            raise exc_type(*exc_val.args)
         self.stop()
