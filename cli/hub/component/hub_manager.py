@@ -7,7 +7,7 @@ import pathspec
 import py7zr
 from rich.console import Console
 from rich.table import Table
-from splight_lib.models import HubComponent, HubComponentVersion # TODO: borrar el hubcomponent verssion
+from splight_lib.models import HubComponent
 
 from cli.component.component import ComponentManager
 from cli.constants import (
@@ -87,15 +87,14 @@ class HubComponentManager:
                 os.remove(file_name)
 
     def list_components(self):
-        components = HubComponent.list_mine()
+        components = HubComponent.list_mine(limit_=10000)
+        names = set([component.name for component in components])
         table = Table("Name")
-        for item in components:
-            table.add_row(item.name)
+        [table.add_row(name) for name in names]
         console.print(table)
 
-    def versions(self, name: str): # TODO: esto se puede hacer con la API normal, no hace falta esta clase.
-        # TODO: usar el metodo de clase de HubComponent
-        components = HubComponentVersion.list_mine(name=name)
+    def versions(self, name: str):
+        components = HubComponent.list_mine(name=name)
         table = Table("Name", "Version", "Verification", "Privacy Policy")
         for item in components:
             table.add_row(
@@ -124,9 +123,8 @@ class HubComponentManager:
         return component
 
     def _get_component(self, name: str, version: str):
-        public = HubComponent.list_public(name=name, version=version)
-        private = HubComponent.list_private(name=name, version=version)
-        return list(public) + list(private)
+        components = HubComponent.list_all(name=name, version=version)
+        return components
 
     def _exists_in_hub(self, name: str, version: str) -> bool:
         components = self._get_component(name, version)
