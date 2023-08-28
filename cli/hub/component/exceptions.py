@@ -1,3 +1,11 @@
+class SpecFormatError(Exception):
+    def __init__(self, error):
+        self._msg = f"Error while parsing spec.json: {error}"
+
+    def __str__(self) -> str:
+        return self._msg
+
+
 class ComponentAlreadyExists(Exception):
     def __init__(self, name: str, version: str):
         self._msg = f"Component {name}-{version} already exists in HUB"
@@ -16,7 +24,7 @@ class ComponentPullError(Exception):
 
 class ComponentPushError(Exception):
     def __init__(self, name: str, version: str):
-        self._msg = f"An error occurred pushing component {name}-{version}"
+        self._msg = f"An error occurred pushing component {name}-{version}:"
 
     def __str__(self) -> str:
         return self._msg
