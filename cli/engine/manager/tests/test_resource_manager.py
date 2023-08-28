@@ -24,7 +24,7 @@ def test_list(model, params):
     "model,id,result",
     [
         (Asset, "1234", Asset(name="my-asset")),
-        (Attribute, "1234", Attribute(name="my-attr")),
+        (Attribute, "1234", Attribute(name="my-attr", asset="1234")),
     ],
 )
 def test_get(model, id, result):
@@ -52,7 +52,7 @@ def test_get_not_found(model, id, result):
     "model,data",
     [
         (Asset, Asset(name="my-asset").dict()),
-        (Attribute, Attribute(name="my-attr").dict()),
+        (Attribute, Attribute(name="my-attr", asset="some_id").dict()),
     ],
 )
 def test_create(model, data):
