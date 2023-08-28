@@ -8,7 +8,7 @@ import py7zr
 from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubComponent
-
+from pydantic import ValidationError
 from cli.component.component import ComponentManager
 from cli.constants import (
     COMPRESSION_TYPE,
@@ -23,6 +23,8 @@ from cli.hub.component.exceptions import (
     ComponentPullError,
     ComponentPushError,
     HubComponentNotFound,
+    MissingSpecFieldsError,
+    SpecFormatError,
 )
 from cli.utils.loader import Loader
 
@@ -31,8 +33,12 @@ console = Console()
 
 class HubComponentManager:
     def push(self, path: str, force: Optional[bool] = False):
-        with open(os.path.join(path, SPEC_FILE)) as fid:
-            spec = json.load(fid)
+
+        try: 
+            with open(os.path.join(path, SPEC_FILE)) as fid:
+                spec = json.load(fid)
+        except Exception as exc:
+            raise SpecFormatError(exc)
 
         name = spec["name"]
         version = spec["version"]
@@ -118,8 +124,10 @@ class HubComponentManager:
     ) -> HubComponent:
         try:
             component = HubComponent.upload(path)
+        except ValidationError as exc:
+            raise MissingSpecFieldsError(exc)
         except Exception as exc:
-            raise ComponentPushError(name, version) from exc
+            raise ComponentPushError(name, version, exc)
         return component
 
     def _get_component(self, name: str, version: str):
