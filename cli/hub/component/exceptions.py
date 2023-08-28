@@ -7,7 +7,6 @@ class SpecFormatError(Exception):
 
 class MissingSpecFieldsError(Exception):
     def __init__(self, error):
-        __import__('ipdb').set_trace()
         self._msg = f"Missing fields in 'spec.json': {error}"
 
     def __str__(self) -> str:
