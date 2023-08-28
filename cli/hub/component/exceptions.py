@@ -1,10 +1,17 @@
 class SpecFormatError(Exception):
     def __init__(self, error):
-        self._msg = f"Error while parsing spec.json: {error}"
+        self._msg = f"Error while parsing 'spec.json': {error}"
 
     def __str__(self) -> str:
         return self._msg
 
+class MissingSpecFieldsError(Exception):
+    def __init__(self, error):
+        __import__('ipdb').set_trace()
+        self._msg = f"Missing fields in 'spec.json': {error}"
+
+    def __str__(self) -> str:
+        return self._msg
 
 class ComponentAlreadyExists(Exception):
     def __init__(self, name: str, version: str):
@@ -16,15 +23,15 @@ class ComponentAlreadyExists(Exception):
 
 class ComponentPullError(Exception):
     def __init__(self, name: str, version: str):
-        self._msg = f"An error occurred pulling component {name}-{version}"
+        self._msg = f"An error occurred pulling component: {name}-{version}"
 
     def __str__(self) -> str:
         return self._msg
 
 
 class ComponentPushError(Exception):
-    def __init__(self, name: str, version: str):
-        self._msg = f"An error occurred pushing component {name}-{version}:"
+    def __init__(self, name: str, version: str, error):
+        self._msg = f"An error occurred pushing component: {name}-{version}: {error}"
 
     def __str__(self) -> str:
         return self._msg
