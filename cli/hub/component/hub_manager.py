@@ -5,10 +5,6 @@ from typing import Optional
 
 import pathspec
 import py7zr
-from rich.console import Console
-from rich.table import Table
-from splight_lib.models import HubComponent
-from pydantic import ValidationError
 from cli.component.component import ComponentManager
 from cli.constants import (
     COMPRESSION_TYPE,
@@ -27,14 +23,17 @@ from cli.hub.component.exceptions import (
     SpecFormatError,
 )
 from cli.utils.loader import Loader
+from pydantic import ValidationError
+from rich.console import Console
+from rich.table import Table
+from splight_lib.models import HubComponent
 
 console = Console()
 
 
 class HubComponentManager:
     def push(self, path: str, force: Optional[bool] = False):
-
-        try: 
+        try:
             with open(os.path.join(path, SPEC_FILE)) as fid:
                 spec = json.load(fid)
         except Exception as exc:
