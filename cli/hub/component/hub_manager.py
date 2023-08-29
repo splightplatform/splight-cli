@@ -19,7 +19,7 @@ from cli.hub.component.exceptions import (
     ComponentPullError,
     ComponentPushError,
     HubComponentNotFound,
-    MissingSpecFieldsError,
+    MissingSpecFieldError,
     SpecFormatError,
 )
 from cli.utils.loader import Loader
@@ -38,6 +38,12 @@ class HubComponentManager:
                 spec = json.load(fid)
         except Exception as exc:
             raise SpecFormatError(exc)
+
+        # Validate spec fields before pushing the model
+        try:
+            HubComponent(**spec)
+        except ValidationError as exc:
+            raise MissingSpecFieldError(exc)
 
         name = spec["name"]
         version = spec["version"]
@@ -62,6 +68,9 @@ class HubComponentManager:
     def pull(self, name: str, version: str):
         with Loader("Pulling component from Splight Hub"):
             self._pull_component(name, version)
+        console.print(
+            f"Component {name} pulled succesfully", style=success_style
+        )
 
     def _pull_component(self, name: str, version: str):
         components = HubComponent.list_mine(name=name, version=version)
@@ -85,6 +94,7 @@ class HubComponentManager:
             with py7zr.SevenZipFile(file_name, "r") as z:
                 z.extractall(path=".")
             shutil.move(f"{versioned_name}", component_path)
+
         except Exception as exc:
             raise ComponentPullError(name, version) from exc
         finally:
@@ -123,8 +133,6 @@ class HubComponentManager:
     ) -> HubComponent:
         try:
             component = HubComponent.upload(path)
-        except ValidationError as exc:
-            raise MissingSpecFieldsError(exc)
         except Exception as exc:
             raise ComponentPushError(name, version, exc)
         return component
