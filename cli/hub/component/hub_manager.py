@@ -5,6 +5,11 @@ from typing import Optional
 
 import pathspec
 import py7zr
+from pydantic import ValidationError
+from rich.console import Console
+from rich.table import Table
+from splight_lib.models import HubComponent
+
 from cli.component.component import ComponentManager
 from cli.constants import (
     COMPRESSION_TYPE,
@@ -23,10 +28,6 @@ from cli.hub.component.exceptions import (
     SpecValidationError,
 )
 from cli.utils.loader import Loader
-from pydantic import ValidationError
-from rich.console import Console
-from rich.table import Table
-from splight_lib.models import HubComponent
 
 console = Console()
 
