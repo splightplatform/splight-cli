@@ -1,3 +1,6 @@
+from json import loads
+
+
 class SpecFormatError(Exception):
     def __init__(self, error):
         self._msg = f"Error while parsing 'spec.json': {error}"
@@ -5,12 +8,15 @@ class SpecFormatError(Exception):
     def __str__(self) -> str:
         return self._msg
 
-class MissingSpecFieldsError(Exception):
+
+class MissingSpecFieldError(Exception):
     def __init__(self, error):
-        self._msg = f"Missing fields in 'spec.json': {error}"
+        field = loads(error.json())[0]["loc"][0]
+        self._msg = f"Missing fields in 'spec.json': {field}"
 
     def __str__(self) -> str:
         return self._msg
+
 
 class ComponentAlreadyExists(Exception):
     def __init__(self, name: str, version: str):
@@ -30,7 +36,9 @@ class ComponentPullError(Exception):
 
 class ComponentPushError(Exception):
     def __init__(self, name: str, version: str, error):
-        self._msg = f"An error occurred pushing component: {name}-{version}: {error}"
+        self._msg = (
+            f"An error occurred pushing component {name}-{version}: {error}"
+        )
 
     def __str__(self) -> str:
         return self._msg
