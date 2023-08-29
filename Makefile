@@ -31,7 +31,7 @@ test: ## run tests with pytest
 	pytest cli
 
 lint:  ## run linter
-	flake8 --config=.hooks/flake8.toml .
+	flake8 .
 
 coverage: ## run coverage
 	coverage run --source=. -m pytest; coverage report -m
@@ -41,7 +41,7 @@ install: clean ## install the package to the active Python's site-packages
 	pre-commit install
 
 black: ## run black formatter
-	black *.py
+	black .
 
 isort: ## run isort formatter
-	isort *.py
+	isort .
