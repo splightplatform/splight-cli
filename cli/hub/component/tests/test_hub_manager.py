@@ -71,7 +71,7 @@ def test_push_spec_missing_keys(mock_exists, mock_json_load):
         "input": "wrong_input_type",
     },
 )
-def test_push_spec_wrong_type(mock_exists, mock_json_load):
+def test_push_spec_wrong_attr_type(mock_exists, mock_json_load):
     manager = HubComponentManager()
     test_component_path = os.path.join(
         os.getcwd(), "cli/tests/test_component/"
