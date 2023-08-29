@@ -9,10 +9,13 @@ class SpecFormatError(Exception):
         return self._msg
 
 
-class MissingSpecFieldError(Exception):
+class SpecValidationError(Exception):
     def __init__(self, error):
         field = loads(error.json())[0]["loc"][0]
-        self._msg = f"Missing fields in 'spec.json': {field}"
+        message = loads(error.json())[0]["msg"]
+        self._msg = (
+            f"Validation error for field in 'spec.json': '{field}' {message}"
+        )
 
     def __str__(self) -> str:
         return self._msg

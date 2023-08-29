@@ -19,8 +19,8 @@ from cli.hub.component.exceptions import (
     ComponentPullError,
     ComponentPushError,
     HubComponentNotFound,
-    MissingSpecFieldError,
     SpecFormatError,
+    SpecValidationError,
 )
 from cli.utils.loader import Loader
 from pydantic import ValidationError
@@ -43,7 +43,7 @@ class HubComponentManager:
         try:
             HubComponent(**spec)
         except ValidationError as exc:
-            raise MissingSpecFieldError(exc)
+            raise SpecValidationError(exc)
 
         name = spec["name"]
         version = spec["version"]
