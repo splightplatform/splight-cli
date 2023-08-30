@@ -5,6 +5,7 @@ from typing import Optional
 
 import pathspec
 import py7zr
+from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubComponent
@@ -20,9 +21,9 @@ from cli.constants import (
 from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     ComponentDirectoryAlreadyExists,
-    ComponentPullError,
-    ComponentPushError,
     HubComponentNotFound,
+    SpecFormatError,
+    SpecValidationError,
 )
 from cli.utils.loader import Loader
 
@@ -31,8 +32,17 @@ console = Console()
 
 class HubComponentManager:
     def push(self, path: str, force: Optional[bool] = False):
-        with open(os.path.join(path, SPEC_FILE)) as fid:
-            spec = json.load(fid)
+        try:
+            with open(os.path.join(path, SPEC_FILE)) as fid:
+                spec = json.load(fid)
+        except Exception as exc:
+            raise SpecFormatError(exc)
+
+        # Validate spec fields before pushing the model
+        try:
+            HubComponent(**spec)
+        except ValidationError as exc:
+            raise SpecValidationError(exc)
 
         name = spec["name"]
         version = spec["version"]
@@ -48,7 +58,7 @@ class HubComponentManager:
             ComponentManager().test(path)
 
         with Loader("Pushing Component to Splight Hub"):
-            component = self._upload_component(path, name, version)
+            component = HubComponent.upload(path)
 
         console.print(
             f"Component {component.id} pushed succesfully", style=success_style
@@ -57,6 +67,9 @@ class HubComponentManager:
     def pull(self, name: str, version: str):
         with Loader("Pulling component from Splight Hub"):
             self._pull_component(name, version)
+        console.print(
+            f"Component {name} pulled succesfully", style=success_style
+        )
 
     def _pull_component(self, name: str, version: str):
         components = HubComponent.list_mine(name=name, version=version)
@@ -80,8 +93,9 @@ class HubComponentManager:
             with py7zr.SevenZipFile(file_name, "r") as z:
                 z.extractall(path=".")
             shutil.move(f"{versioned_name}", component_path)
+
         except Exception as exc:
-            raise ComponentPullError(name, version) from exc
+            raise exc
         finally:
             if os.path.exists(file_name):
                 os.remove(file_name)
@@ -112,15 +126,6 @@ class HubComponentManager:
                 )
         except FileNotFoundError:
             return None
-
-    def _upload_component(
-        self, path: str, name: str, version: str
-    ) -> HubComponent:
-        try:
-            component = HubComponent.upload(path)
-        except Exception as exc:
-            raise ComponentPushError(name, version) from exc
-        return component
 
     def _get_component(self, name: str, version: str):
         components = HubComponent.list_all(name=name, version=version)

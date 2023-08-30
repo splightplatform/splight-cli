@@ -9,6 +9,8 @@ from cli.component import ComponentManager
 from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     HubComponentNotFound,
+    SpecFormatError,
+    SpecValidationError,
 )
 from cli.hub.component.hub_manager import HubComponentManager
 
@@ -32,6 +34,50 @@ def test_push(mock_exists, mock_component_manager):
     ) as mock_hub:
         manager.push(test_component_path)
         mock_hub.assert_called_with(test_component_path)
+
+
+@patch.object(ComponentManager, "test", return_value=None)
+@patch("cli.hub.component.hub_manager.json.load", side_effect=Exception)
+def test_push_spec_format_error(mock_exists, mock_json_load):
+    manager = HubComponentManager()
+    test_component_path = os.path.join(
+        os.getcwd(), "cli/tests/test_component/"
+    )
+    with pytest.raises(SpecFormatError):
+        manager.push(test_component_path, force=False)
+
+
+@patch.object(ComponentManager, "test", return_value=None)
+@patch(
+    "cli.hub.component.hub_manager.json.load",
+    return_value={"name": "mycomponent"},
+)
+def test_push_spec_missing_keys(mock_exists, mock_json_load):
+    manager = HubComponentManager()
+    test_component_path = os.path.join(
+        os.getcwd(), "cli/tests/test_component/"
+    )
+    with pytest.raises(SpecValidationError):
+        manager.push(test_component_path, force=False)
+
+
+@patch.object(ComponentManager, "test", return_value=None)
+@patch(
+    "cli.hub.component.hub_manager.json.load",
+    return_value={
+        "name": "mycomponent",
+        "version": "0.1.0",
+        "splight_cli_version": "3.0.0",
+        "input": "wrong_input_type",
+    },
+)
+def test_push_spec_wrong_attr_type(mock_exists, mock_json_load):
+    manager = HubComponentManager()
+    test_component_path = os.path.join(
+        os.getcwd(), "cli/tests/test_component/"
+    )
+    with pytest.raises(SpecValidationError):
+        manager.push(test_component_path, force=False)
 
 
 @patch.object(ComponentManager, "test", return_value=None)
