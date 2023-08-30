@@ -21,8 +21,6 @@ from cli.constants import (
 from cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     ComponentDirectoryAlreadyExists,
-    ComponentPullError,
-    ComponentPushError,
     HubComponentNotFound,
     SpecFormatError,
     SpecValidationError,
@@ -60,7 +58,7 @@ class HubComponentManager:
             ComponentManager().test(path)
 
         with Loader("Pushing Component to Splight Hub"):
-            component = self._upload_component(path, name, version)
+            component = HubComponent.upload(path)
 
         console.print(
             f"Component {component.id} pushed succesfully", style=success_style
@@ -97,7 +95,7 @@ class HubComponentManager:
             shutil.move(f"{versioned_name}", component_path)
 
         except Exception as exc:
-            raise ComponentPullError(name, version) from exc
+            raise exc
         finally:
             if os.path.exists(file_name):
                 os.remove(file_name)
@@ -128,15 +126,6 @@ class HubComponentManager:
                 )
         except FileNotFoundError:
             return None
-
-    def _upload_component(
-        self, path: str, name: str, version: str
-    ) -> HubComponent:
-        try:
-            component = HubComponent.upload(path)
-        except Exception as exc:
-            raise ComponentPushError(name, version, exc)
-        return component
 
     def _get_component(self, name: str, version: str):
         components = HubComponent.list_all(name=name, version=version)
