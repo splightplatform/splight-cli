@@ -30,9 +30,6 @@ clean-test: ## remove test and coverage artifacts
 test: ## run tests with pytest
 	pytest cli
 
-lint:  ## run linter
-	flake8 .
-
 coverage: ## run coverage
 	coverage run --source=. -m pytest; coverage report -m
 
