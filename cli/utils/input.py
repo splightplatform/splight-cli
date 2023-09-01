@@ -7,6 +7,20 @@ import click
 Primitive = Union[int, str, float, bool]
 
 
+def prompt_data_address_value():
+    asset_id = click.prompt(
+        text="Insert asset_id:",
+        type="str",
+        default=None,
+    )
+    attribute_id = click.prompt(
+        text="Insert attribute_id:",
+        type="str",
+        default=None,
+    )
+    return {"asset": asset_id, "attribute": attribute_id}
+
+
 def prompt_param(param: Dict[str, Primitive], prefix: str = "") -> Primitive:
     """Prompt the user for a single parameter
 
