@@ -584,13 +584,11 @@ class ComponentUpgradeManager:
                             output=new_outputs,
                             config=new_configs,
                         )
-                        __import__("ipdb").set_trace()
                         new_routine.save()
                     else:
                         routine.input = new_inputs
                         routine.output = new_outputs
                         routine.config = new_configs
-                        __import__("ipdb").set_trace()
                         routine.save()
                     self._console.print(
                         f"Component Object {routine.name} saved succesfully"
