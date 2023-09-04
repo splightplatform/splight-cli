@@ -521,7 +521,6 @@ class ComponentUpgradeManager:
                     None,
                 )
                 if matching_routine:
-                    __import__("ipdb").set_trace()
                     new_inputs = self._update_routine_io(
                         routine.input, matching_routine.input
                     )
