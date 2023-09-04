@@ -584,11 +584,13 @@ class ComponentUpgradeManager:
                             output=new_outputs,
                             config=new_configs,
                         )
+                        __import__("ipdb").set_trace()
                         new_routine.save()
                     else:
                         routine.input = new_inputs
                         routine.output = new_outputs
                         routine.config = new_configs
+                        __import__("ipdb").set_trace()
                         routine.save()
                     self._console.print(
                         f"Component Object {routine.name} saved succesfully"
@@ -639,9 +641,6 @@ class ComponentUpgradeManager:
             hub_component = self._validate_hub_version(
                 from_component, version, check_version=True
             )
-
-            self._create_component_routines(from_component, hub_component)
-            return
             new_inputs = self._update_input(
                 from_component.input, hub_component.input, True
             )
@@ -650,6 +649,9 @@ class ComponentUpgradeManager:
             from_component.version = new_hub_version
             from_component.save()
             self._create_component_objects(
+                from_component, hub_component, create_new=False
+            )
+            self._create_component_routines(
                 from_component, hub_component, create_new=False
             )
 
