@@ -595,7 +595,7 @@ class ComponentUpgradeManager:
         try:
             from_component = self._retrieve_component(self.component_id)
             hub_component = self._validate_hub_version(
-                from_component, version, check_version=False
+                from_component, version, check_version=True
             )
             new_inputs = self._update_input(
                 from_component.input, hub_component.input, True
