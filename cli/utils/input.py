@@ -21,7 +21,7 @@ def prompt_data_address_value():
 
     while True:
         attribute_id = click.prompt(
-            text="Attribute ID:",
+            text="Attribute ID",
             type=str,
             default=None,
         )

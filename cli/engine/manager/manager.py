@@ -310,6 +310,10 @@ class ComponentUpgradeManager:
         hub_io: List[InputDataAdress],
         debug: bool = False,
     ):
+        # Basically create new InputDataAdress from the definitions
+        # of each input, in the new hub version, while assigning the
+        # previous value to matching inputs or outputs.
+        # i.e: update the 'required' key of an input.
         (
             engine_data_addresses,
             hub_data_addresses,
@@ -321,11 +325,16 @@ class ComponentUpgradeManager:
                 "Updating parameters, we will ask for missing required"
                 " parameters if needed."
             )
+
+        # Ask for a missing InputDataAdress if .
         for name in hub_data_addresses.keys():
             if name not in engine_data_addresses.keys():
                 hub_data_address = hub_data_addresses[name]
                 try:
-                    if not hub_data_address["value"]:
+                    if "value" not in hub_data_address.keys():
+                        self._console.print(
+                            f"Insert values for I/O (DataAddress) of routine: {name[0]}"
+                        )
                         new_value = prompt_data_address_value()
                         hub_data_address["value"] = new_value
                     result.append(InputDataAdress(**hub_data_address))
@@ -357,6 +366,40 @@ class ComponentUpgradeManager:
                     if not parameter["value"] and parameter["required"]:
                         new_value = prompt_param(
                             parameter, prefix="Input value for parameter"
+                        )
+                        parameter["value"] = new_value
+                    result.append(InputParameter(**parameter))
+                except Exception as e:
+                    raise UpdateParametersError(
+                        parameter, step, "Failed Updating Input"
+                    ) from e
+        return result
+
+    def _update_routine_config(
+        self,
+        previous: List[InputParameter],
+        hub: List[InputParameter],
+        debug: bool = False,
+    ):
+        prev_parameters, hub_parameters, result = self._update_parameters(
+            previous, hub
+        )
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required"
+                " parameters if needed."
+            )
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
+                    if (
+                        "value" not in parameter.keys()
+                        and parameter["required"]
+                    ):
+                        new_value = prompt_param(
+                            parameter, prefix="Input value for routine config"
                         )
                         parameter["value"] = new_value
                     result.append(InputParameter(**parameter))
@@ -527,8 +570,7 @@ class ComponentUpgradeManager:
                     new_outputs = self._update_routine_io(
                         routine.output, matching_routine.output
                     )
-                    # TODO: see if we can use update input or update object
-                    new_configs = self._update_input(
+                    new_configs = self._update_routine_config(
                         routine.config, matching_routine.config
                     )
                     if create_new:
@@ -540,7 +582,7 @@ class ComponentUpgradeManager:
                             description=routine.description,
                             input=new_inputs,
                             output=new_outputs,
-                            config={},  # TODO: change
+                            config=new_configs,
                         )
                         new_routine.save()
                     else:
@@ -597,6 +639,9 @@ class ComponentUpgradeManager:
             hub_component = self._validate_hub_version(
                 from_component, version, check_version=True
             )
+
+            self._create_component_routines(from_component, hub_component)
+            return
             new_inputs = self._update_input(
                 from_component.input, hub_component.input, True
             )
@@ -607,7 +652,6 @@ class ComponentUpgradeManager:
             self._create_component_objects(
                 from_component, hub_component, create_new=False
             )
-            self._create_component_routines(from_component, hub_component)
 
         except (
             InvalidComponentId,
