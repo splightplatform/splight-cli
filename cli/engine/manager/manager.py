@@ -576,7 +576,7 @@ class ComponentUpgradeManager:
                     if create_new:
                         new_routine = RoutineObject(
                             name=routine.name,
-                            component_id=routine.component_id,
+                            component_id=new_component.id,
                             status=routine.status,
                             type=routine.type,
                             description=routine.description,
@@ -596,7 +596,7 @@ class ComponentUpgradeManager:
 
             except Exception as e:
                 raise ComponentUpgradeManagerException(
-                    f"Could not update component routine {routine.name}"
+                    f"Could not update component routine {routine.name}: {e}"
                 ) from e
         return
 
