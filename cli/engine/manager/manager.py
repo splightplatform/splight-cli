@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 import pandas as pd
 from pydantic import BaseModel
@@ -308,6 +308,9 @@ class ComponentUpgradeManager:
         self,
         engine_io: List[InputDataAdress],
         hub_io: List[InputDataAdress],
+        routine_name: str,
+        routine_type: str,
+        source: Union[Literal["input"], Literal["output"]],
         debug: bool = False,
     ):
         # Basically create new InputDataAdress from the definitions
@@ -333,7 +336,7 @@ class ComponentUpgradeManager:
                 try:
                     if "value" not in hub_data_address.keys():
                         self._console.print(
-                            f"Insert values for I/O (DataAddress) of routine: {name[0]}"
+                            f"Insert values for {source} '{name[0]}' of routine '{routine_name}' ({routine_type}):"
                         )
                         new_value = prompt_data_address_value()
                         hub_data_address["value"] = new_value
@@ -506,7 +509,7 @@ class ComponentUpgradeManager:
         create_new: bool = False,
     ):
         self._console.print(
-            f"Creating component objects for {new_component.name}"
+            f"Creating component objects for component '{new_component.name}'"
         )
         old_component_objects = ComponentObject.list(
             component_id=self.component_id
@@ -550,7 +553,9 @@ class ComponentUpgradeManager:
         hub_component: HubComponent,
         create_new: bool = False,
     ):
-        self._console.print(f"Creating routines for {new_component.name}")
+        self._console.print(
+            f"Creating routines for component '{new_component.name}'"
+        )
         routines = RoutineObject.list(component_id=self.component_id)
 
         for routine in routines:
@@ -565,10 +570,18 @@ class ComponentUpgradeManager:
                 )
                 if matching_routine:
                     new_inputs = self._update_routine_io(
-                        routine.input, matching_routine.input
+                        routine.input,
+                        matching_routine.input,
+                        routine.name,
+                        routine.type,
+                        source="input",
                     )
                     new_outputs = self._update_routine_io(
-                        routine.output, matching_routine.output
+                        routine.output,
+                        matching_routine.output,
+                        routine.name,
+                        routine.type,
+                        source="output",
                     )
                     new_configs = self._update_routine_config(
                         routine.config, matching_routine.config
@@ -591,7 +604,7 @@ class ComponentUpgradeManager:
                         routine.config = new_configs
                         routine.save()
                     self._console.print(
-                        f"Component Object {routine.name} saved succesfully"
+                        f"Routine '{routine.name}' saved succesfully"
                     )
 
             except Exception as e:
