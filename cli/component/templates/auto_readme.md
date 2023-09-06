@@ -27,7 +27,7 @@ This component does not have any input parameter.
 ### Routines
 
 {% if routines is not none -%}
-The custom types defined by the component are:
+The routines defined by the component are:
 
 {% for routine in routines -%}
   - {{routine.name}}
