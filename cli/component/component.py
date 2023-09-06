@@ -131,6 +131,7 @@ class ComponentManager:
             commands=spec.commands,
             output=spec.output,
             endpoints=spec.endpoints,
+            routines=spec.routines,
         )
         with open(os.path.join(path, README_FILE), "w+") as f:
             f.write(readme)
