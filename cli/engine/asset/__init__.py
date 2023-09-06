@@ -46,7 +46,7 @@ def get(
     )
     try:
         manager.get(instance_id)
-    except ResourceManagerException as exc:
+    except Exception as exc:
         console.print(exc, style=error_style)
 
 

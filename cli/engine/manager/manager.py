@@ -2,18 +2,29 @@ import json
 import os
 import shutil
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Literal, Optional, Type, Union
 
 import pandas as pd
 from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
-from splight_lib.models import Component, ComponentObject, File, HubComponent
+from splight_lib.models import (
+    Component,
+    ComponentObject,
+    File,
+    HubComponent,
+    RoutineObject,
+)
 from splight_lib.models.base import (
     SplightDatabaseBaseModel,
     SplightDatalakeBaseModel,
 )
-from splight_lib.models.component import InputParameter, Parameter
+from splight_lib.models.component import (
+    DataAdress,
+    InputDataAdress,
+    InputParameter,
+    Parameter,
+)
 
 from cli.component.exceptions import InvalidCSVColumns
 from cli.constants import (
@@ -28,7 +39,7 @@ from cli.engine.manager.exceptions import (
     VersionUpdateError,
 )
 from cli.hub.component.exceptions import HubComponentNotFound
-from cli.utils.input import prompt_param
+from cli.utils.input import prompt_data_address_value, prompt_param
 
 SplightModel = Type[SplightDatabaseBaseModel]
 
@@ -293,6 +304,49 @@ class ComponentUpgradeManager:
 
         return result
 
+    def _update_routine_io(
+        self,
+        engine_io: List[InputDataAdress],
+        hub_io: List[InputDataAdress],
+        routine_name: str,
+        routine_type: str,
+        source: Union[Literal["input"], Literal["output"]],
+        debug: bool = False,
+    ):
+        # Basically create new InputDataAdress from the definitions
+        # of each input, in the new hub version, while assigning the
+        # previous value to matching inputs or outputs.
+        # i.e: update the 'required' key of an input.
+        (
+            engine_data_addresses,
+            hub_data_addresses,
+            result,
+        ) = self._update_data_address(engine_io, hub_io)
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required"
+                " parameters if needed."
+            )
+
+        # Ask for a missing InputDataAdress if .
+        for name in hub_data_addresses.keys():
+            if name not in engine_data_addresses.keys():
+                hub_data_address = hub_data_addresses[name]
+                try:
+                    if "value" not in hub_data_address.keys():
+                        self._console.print(
+                            f"Insert values for {source} '{name[0]}' of routine '{routine_name}' ({routine_type}):"
+                        )
+                        new_value = prompt_data_address_value()
+                        hub_data_address["value"] = new_value
+                    result.append(InputDataAdress(**hub_data_address))
+                except Exception as e:
+                    raise UpdateParametersError(
+                        hub_data_address, step, "Failed Updating Input"
+                    ) from e
+        return result
+
     def _update_input(
         self,
         previous: List[InputParameter],
@@ -323,6 +377,64 @@ class ComponentUpgradeManager:
                         parameter, step, "Failed Updating Input"
                     ) from e
         return result
+
+    def _update_routine_config(
+        self,
+        previous: List[InputParameter],
+        hub: List[InputParameter],
+        debug: bool = False,
+    ):
+        prev_parameters, hub_parameters, result = self._update_parameters(
+            previous, hub
+        )
+        step = 2
+        if debug:
+            self._console.print(
+                "Updating parameters, we will ask for missing required"
+                " parameters if needed."
+            )
+        for param in hub_parameters.keys():
+            if param not in prev_parameters.keys():
+                parameter = hub_parameters[param]
+                try:
+                    if (
+                        "value" not in parameter.keys()
+                        and parameter["required"]
+                    ):
+                        new_value = prompt_param(
+                            parameter, prefix="Input value for routine config"
+                        )
+                        parameter["value"] = new_value
+                    result.append(InputParameter(**parameter))
+                except Exception as e:
+                    raise UpdateParametersError(
+                        parameter, step, "Failed Updating Input"
+                    ) from e
+        return result
+
+    def _update_data_address(
+        self,
+        previous: List[InputDataAdress],
+        hub: List[Union[InputDataAdress, DataAdress]],
+    ):
+        hub_parameters = {
+            (x.name, x.type): {k: v for k, v in x.dict().items()} for x in hub
+        }
+        prev_parameters = {
+            (x.name, x.type): {k: v for k, v in x.dict().items()}
+            for x in previous
+        }
+        result = []
+        for param in prev_parameters.keys():
+            try:
+                if param in hub_parameters.keys():
+                    hub_parameters[param]["value"] = prev_parameters[param][
+                        "value"
+                    ]
+                    result.append(InputDataAdress(**hub_parameters[param]))
+            except Exception as e:
+                raise UpdateParametersError(hub_parameters[param]) from e
+        return prev_parameters, hub_parameters, result
 
     def _update_parameters(
         self,
@@ -397,7 +509,7 @@ class ComponentUpgradeManager:
         create_new: bool = False,
     ):
         self._console.print(
-            f"Creating component objects for {new_component.name}"
+            f"Creating component objects for component '{new_component.name}'"
         )
         old_component_objects = ComponentObject.list(
             component_id=self.component_id
@@ -434,6 +546,72 @@ class ComponentUpgradeManager:
                 raise ComponentUpgradeManagerException(
                     f"Could not update component object {obj.name}"
                 ) from e
+
+    def _create_component_routines(
+        self,
+        new_component: Component,
+        hub_component: HubComponent,
+        create_new: bool = False,
+    ):
+        self._console.print(
+            f"Creating routines for component '{new_component.name}'"
+        )
+        routines = RoutineObject.list(component_id=self.component_id)
+
+        for routine in routines:
+            try:
+                matching_routine = next(
+                    (
+                        hub_routine
+                        for hub_routine in hub_component.routines
+                        if hub_routine.name == routine.type
+                    ),
+                    None,
+                )
+                if matching_routine:
+                    new_inputs = self._update_routine_io(
+                        routine.input,
+                        matching_routine.input,
+                        routine.name,
+                        routine.type,
+                        source="input",
+                    )
+                    new_outputs = self._update_routine_io(
+                        routine.output,
+                        matching_routine.output,
+                        routine.name,
+                        routine.type,
+                        source="output",
+                    )
+                    new_configs = self._update_routine_config(
+                        routine.config, matching_routine.config
+                    )
+                    if create_new:
+                        new_routine = RoutineObject(
+                            name=routine.name,
+                            component_id=new_component.id,
+                            status=routine.status,
+                            type=routine.type,
+                            description=routine.description,
+                            input=new_inputs,
+                            output=new_outputs,
+                            config=new_configs,
+                        )
+                        new_routine.save()
+                    else:
+                        routine.input = new_inputs
+                        routine.output = new_outputs
+                        routine.config = new_configs
+                        routine.save()
+                    self._console.print(
+                        f"Routine '{routine.name}' saved succesfully"
+                    )
+
+            except Exception as e:
+                raise ComponentUpgradeManagerException(
+                    f"Could not update component routine {routine.name}: {e}"
+                ) from e
+        return
 
     def _create_new_component(
         self,
@@ -484,6 +662,10 @@ class ComponentUpgradeManager:
             self._create_component_objects(
                 from_component, hub_component, create_new=False
             )
+            self._create_component_routines(
+                from_component, hub_component, create_new=False
+            )
+
         except (
             InvalidComponentId,
             VersionUpdateError,
@@ -510,6 +692,9 @@ class ComponentUpgradeManager:
                 from_component, hub_component, new_inputs
             )
             self._create_component_objects(
+                new_component, hub_component, create_new=True
+            )
+            self._create_component_routines(
                 new_component, hub_component, create_new=True
             )
         except (

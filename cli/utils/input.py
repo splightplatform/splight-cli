@@ -7,6 +7,32 @@ import click
 Primitive = Union[int, str, float, bool]
 
 
+def prompt_data_address_value():
+    while True:
+        asset_id = click.prompt(
+            text="Asset ID",
+            type=str,
+            default=None,
+        )
+        if asset_id:
+            break
+        else:
+            click.echo("Asset ID cannot be empty. Please try again.")
+
+    while True:
+        attribute_id = click.prompt(
+            text="Attribute ID",
+            type=str,
+            default=None,
+        )
+        if attribute_id:
+            break
+        else:
+            click.echo("Attribute ID cannot be empty. Please try again.")
+
+    return {"asset": asset_id, "attribute": attribute_id}
+
+
 def prompt_param(param: Dict[str, Primitive], prefix: str = "") -> Primitive:
     """Prompt the user for a single parameter
 
