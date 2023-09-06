@@ -45,9 +45,8 @@ The routines defined by the component are:
      {% endfor %}
 {% endfor -%}
 {%- else -%}
-This component does not have any custom type.
+This component does not have any routines.
 {%- endif -%}
-
 
 ### Custom Types
 
