@@ -24,6 +24,31 @@ The component's input parameters are:
 This component does not have any input parameter.
 {%- endif %}
 
+### Routines
+
+{% if routines is not none -%}
+The custom types defined by the component are:
+
+{% for routine in routines -%}
+  - {{routine.name}}
+    Configs:
+     {% for p in routine.config -%}
+      - {{p.name}} [{{p.type}}]: (Default: {{p.value}}) {{p.description}}
+     {% endfor %}
+    Inputs:
+     {% for p in routine.input -%}
+      - {{p.name}} [{{p.type}}] of type [{{p.value_type}}]: (Default: {{p.value}}) {{p.description}}
+     {% endfor %}
+    Outputs:
+     {% for p in routine.output -%}
+      - {{p.name}} [{{p.type}}] of type [{{p.value_type}}]: (Default: {{p.value}}) {{p.description}}
+     {% endfor %}
+{% endfor -%}
+{%- else -%}
+This component does not have any custom type.
+{%- endif -%}
+
+
 ### Custom Types
 
 {% if custom_types is not none -%}
