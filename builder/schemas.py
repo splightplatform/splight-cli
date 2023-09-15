@@ -1,6 +1,7 @@
 from typing import List, Optional
 
 from pydantic import BaseModel
+from webhook.schemas import APIObject
 
 
 class BuildSpec(BaseModel):
@@ -16,7 +17,7 @@ class BuildSpec(BaseModel):
 VERIFICATION_CHOICES = ["verified", "unverified", "official"]
 
 
-class HubComponent(BaseModel):
+class HubComponent(APIObject):
     id: Optional[str]
     name: str
     splight_cli_version: str
@@ -35,3 +36,6 @@ class HubComponent(BaseModel):
     min_component_capacity: Optional[str]
     usage_count: int = 0
     version: str
+
+    class WebhookConfig:
+        webhook_path = "v2/hub/component/webhook/"
