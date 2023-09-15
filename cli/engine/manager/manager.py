@@ -20,8 +20,8 @@ from splight_lib.models.base import (
     SplightDatalakeBaseModel,
 )
 from splight_lib.models.component import (
-    DataAdress,
-    InputDataAdress,
+    DataAddress,
+    InputDataAddress,
     InputParameter,
     Parameter,
 )
@@ -306,8 +306,8 @@ class ComponentUpgradeManager:
 
     def _update_routine_io(
         self,
-        engine_io: List[InputDataAdress],
-        hub_io: List[InputDataAdress],
+        engine_io: List[InputDataAddress],
+        hub_io: List[InputDataAddress],
         routine_name: str,
         routine_type: str,
         source: Union[Literal["input"], Literal["output"]],
@@ -340,7 +340,7 @@ class ComponentUpgradeManager:
                         )
                         new_value = prompt_data_address_value()
                         hub_data_address["value"] = new_value
-                    result.append(InputDataAdress(**hub_data_address))
+                    result.append(InputDataAddress(**hub_data_address))
                 except Exception as e:
                     raise UpdateParametersError(
                         hub_data_address, step, "Failed Updating Input"
@@ -414,8 +414,8 @@ class ComponentUpgradeManager:
 
     def _update_data_address(
         self,
-        previous: List[InputDataAdress],
-        hub: List[Union[InputDataAdress, DataAdress]],
+        previous: List[InputDataAddress],
+        hub: List[Union[InputDataAddress, DataAddress]],
     ):
         hub_parameters = {
             (x.name, x.type): {k: v for k, v in x.dict().items()} for x in hub
@@ -431,7 +431,7 @@ class ComponentUpgradeManager:
                     hub_parameters[param]["value"] = prev_parameters[param][
                         "value"
                     ]
-                    result.append(InputDataAdress(**hub_parameters[param]))
+                    result.append(InputDataAddress(**hub_parameters[param]))
             except Exception as e:
                 raise UpdateParametersError(hub_parameters[param]) from e
         return prev_parameters, hub_parameters, result
