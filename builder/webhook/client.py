@@ -1,9 +1,8 @@
 from typing import Generic, Type, TypeVar
 
-import requests
 from furl import furl
 from pydantic import BaseSettings
-from rest_framework.response import Response
+from requests import Response
 from webhook.auth import HmacSignature
 from webhook.schemas import APIObject
 
