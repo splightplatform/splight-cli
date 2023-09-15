@@ -313,7 +313,7 @@ class ComponentUpgradeManager:
         source: Union[Literal["input"], Literal["output"]],
         debug: bool = False,
     ):
-        # Basically create new InputDataAdress from the definitions
+        # Basically create new InputDataAddress from the definitions
         # of each input, in the new hub version, while assigning the
         # previous value to matching inputs or outputs.
         # i.e: update the 'required' key of an input.
@@ -329,7 +329,7 @@ class ComponentUpgradeManager:
                 " parameters if needed."
             )
 
-        # Ask for a missing InputDataAdress if .
+        # Ask for a missing InputDataAddress if .
         for name in hub_data_addresses.keys():
             if name not in engine_data_addresses.keys():
                 hub_data_address = hub_data_addresses[name]
