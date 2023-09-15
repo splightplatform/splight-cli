@@ -5,10 +5,7 @@ from furl import furl
 from pydantic import BaseSettings
 from rest_framework.response import Response
 from webhook.auth import HmacSignature
-from webhook.schemas import APIObject, SplightBaseSchema
-
-# Idk if this is a client, maybe we should move it to a different folder
-
+from webhook.schemas import APIObject
 
 T = TypeVar("T", bound=APIObject)
 K = TypeVar("K")
