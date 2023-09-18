@@ -19,7 +19,7 @@ class APIObject(SplightBaseSchema):
         return WebhookClient[Self](schema=self.__class__)
 
     def save(self):
-        self._webhook_client.update(state=self)
+        self._webhook_client.update(instance=self, pk=self.id)
 
     class WebhookConfig:
         webhook_path: str
