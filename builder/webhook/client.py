@@ -1,5 +1,6 @@
 from typing import Generic, Type, TypeVar
 
+import requests
 from furl import furl
 from pydantic import BaseModel, BaseSettings
 from requests import Response
