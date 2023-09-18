@@ -5,6 +5,7 @@ from webhook.schemas import APIObject
 
 
 class BuildSpec(BaseModel):
+    id: str
     name: str
     version: str
     access_id: str
