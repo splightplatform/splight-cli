@@ -37,6 +37,7 @@ class Builder:
         self.build_spec = build_spec
         self.context = Context()
         self.hub_component = HubComponent(
+            id=self.build_spec.id,
             name=self.build_spec.name,
             version=self.build_spec.version,
             splight_cli_version=self.build_spec.cli_version,
