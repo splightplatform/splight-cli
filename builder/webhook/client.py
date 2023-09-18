@@ -1,12 +1,11 @@
 from typing import Generic, Type, TypeVar
 
 from furl import furl
-from pydantic import BaseSettings
+from pydantic import BaseModel, BaseSettings
 from requests import Response
 from webhook.auth import HmacSignature
-from webhook.schemas import APIObject
 
-T = TypeVar("T", bound=APIObject)
+T = TypeVar("T", bound=BaseModel)
 K = TypeVar("K")
 
 
