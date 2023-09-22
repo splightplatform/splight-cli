@@ -8,9 +8,8 @@ import requests
 import typer
 from constants import BuildStatus
 from docker.errors import APIError, BuildError
-from models import BuildSpec, HubComponent
 from pydantic import BaseSettings
-from webhook import WebhookClient, WebhookEvent
+from schemas import BuildSpec, HubComponent
 
 app = typer.Typer(name="Splight Component Builder")
 logging.basicConfig(level=logging.DEBUG)
@@ -22,33 +21,6 @@ class Context(BaseSettings):
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
-
-
-class ComponentManager:
-    def __init__(self, url):
-        self.url = "/".join([url, "v2", "hub", "component", "webhook", ""])
-        self.webhook_client = WebhookClient()
-
-    def update(self, component: HubComponent):
-        event = WebhookEvent(
-            event_name="hubcomponent-update",
-            object_type="HubComponent",
-            data=component.dict(),
-        )
-        payload, signature = self.webhook_client.construct_payload(event)
-        headers = {"Splight-Signature": signature}
-        request = requests.Request(
-            "POST", self.url, data=payload, headers=headers
-        )
-        prepped = request.prepare()
-        with requests.Session() as session:
-            response = session.send(prepped)
-        if response.status_code != 200:
-            raise Exception(
-                f"Error updating component: {response.status_code} -"
-                f" {response.content}"
-            )
-        logger.info(f"{response.status_code} - {response.content}")
 
 
 class Builder:
@@ -65,6 +37,7 @@ class Builder:
         self.build_spec = build_spec
         self.context = Context()
         self.hub_component = HubComponent(
+            id=self.build_spec.id,
             name=self.build_spec.name,
             version=self.build_spec.version,
             splight_cli_version=self.build_spec.cli_version,
@@ -75,15 +48,18 @@ class Builder:
     def build_and_push_component(self):
         logger.info("Building and pushing component")
         try:
-            self._update_component_build_status(BuildStatus.BUILDING)
+            self.hub_component.build_status = BuildStatus.BUILDING
+            self.hub_component.save()
             self._build_component()
             self._push_component()
             self._update_min_component_capacity()
-            self._update_component_build_status(BuildStatus.SUCCESS)
+            self.hub_component.build_status = BuildStatus.SUCCESS
+            self.hub_component.save()
         except Exception as exc:
             logger.exception(exc)
             logger.error("Build failed: ", exc)
-            self._update_component_build_status(BuildStatus.FAILED)
+            self.hub_component.build_status = BuildStatus.FAILED
+            self.hub_component.save()
 
     @property
     def registry(self):
@@ -123,11 +99,6 @@ class Builder:
             .decode()
             .split(":")[1]
         )
-
-    @cached_property
-    def component_manager(self):
-        logger.info("Creating component manager")
-        return ComponentManager(self.context.SPLIGHT_API_HOST)
 
     @property
     def docker_client(self):
@@ -177,11 +148,6 @@ class Builder:
         except APIError as e:
             logger.error(f"Error pushing component: {e}")
             raise e
-
-    def _update_component_build_status(self, build_status: BuildStatus):
-        logger.info(f"Updating component build status to {build_status}")
-        self.hub_component.build_status = build_status
-        self._save_component()
 
     def _update_min_component_capacity(self):
         logger.info("Saving image size")
