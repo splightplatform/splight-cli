@@ -13,7 +13,7 @@ class WebhookEvent(BaseModel):
 
 
 class WebhookSettings(BaseSettings):
-    SPLIGHTD_WEBHOOK_SECRET: str
+    SPLIGHT_WEBHOOK_SECRET: str
 
 
 class WebhookClient:
@@ -37,10 +37,10 @@ class WebhookClient:
 
     def validate_signature(self, payload: bytes, signature: str) -> bool:
         return HmacSignature.verify_header(
-            payload, signature, self._settings.SPLIGHTD_WEBHOOK_SECRET
+            payload, signature, self._settings.SPLIGHT_WEBHOOK_SECRET
         )
 
     def get_signature(self, payload: bytes) -> str:
-        hmac = HmacSignature(secret=self._settings.SPLIGHTD_WEBHOOK_SECRET)
+        hmac = HmacSignature(secret=self._settings.SPLIGHT_WEBHOOK_SECRET)
         signature = hmac.compute_header_signature(payload)
         return signature
