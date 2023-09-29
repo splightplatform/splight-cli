@@ -3,5 +3,6 @@ FROM $RUNNER_IMAGE
 COPY configure.py configure.py
 
 ARG CONFIGURE_SPEC
+ARG SPLIGHT_CLI_VERSION
 RUN pip install splight-cli==${SPLIGHT_CLI_VERSION}
 RUN python configure.py -c "$CONFIGURE_SPEC"
