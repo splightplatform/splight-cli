@@ -78,7 +78,7 @@ class Builder:
 
     @property
     def runner_image(self):
-        return f"{self.registry}/splight-admin:latest"
+        return f"{self.registry}/splight-admin:0.1.0rc0"
         # return f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
 
     @property
