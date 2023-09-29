@@ -130,7 +130,6 @@ class Builder:
                 pull=True,
             )
         except BuildError as exc:
-            self._show_build_logs(build_logs)
             logger.exception(exc)
             logger.error(f"Error building component: {exc}")
             raise exc
