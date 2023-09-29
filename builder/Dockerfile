@@ -4,5 +4,11 @@ COPY configure.py configure.py
 
 ARG CONFIGURE_SPEC
 ARG SPLIGHT_CLI_VERSION
+ARG COMPONENT_PATH
+
+WORKDIR /app
 RUN pip install splight-cli==${SPLIGHT_CLI_VERSION}
 RUN python configure.py -c "$CONFIGURE_SPEC"
+WORKDIR ${COMPONENT_PATH}
+
+ENTRYPOINT ["splight-runner", "run-component"]
