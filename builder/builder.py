@@ -4,7 +4,6 @@ from functools import cached_property
 
 import boto3
 import docker
-import requests
 import typer
 from constants import BuildStatus
 from docker.errors import APIError, BuildError
@@ -79,7 +78,8 @@ class Builder:
 
     @property
     def runner_image(self):
-        return f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
+        return f"{self.registry}/splight-admin:latest"
+        # return f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
 
     @property
     def tag(self):
@@ -123,6 +123,7 @@ class Builder:
                 tag=self.tag,
                 buildargs={
                     "RUNNER_IMAGE": self.runner_image,
+                    "SPLIGHT_CLI_VERSION": self.build_spec.cli_version,
                     "CONFIGURE_SPEC": self.build_spec.json(),
                 },
                 network_mode="host",
