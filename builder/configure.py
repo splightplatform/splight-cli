@@ -1,7 +1,12 @@
 import argparse
 import json
+import os
 import subprocess
 from asyncio.log import logger
+
+SPLIGHT_HOME = os.path.join(os.path.expanduser("~"), ".splight")
+SPLIGHT_CONFIG = os.path.join(SPLIGHT_HOME, "config")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Executes a hub component.")
@@ -63,3 +68,7 @@ if __name__ == "__main__":
         logger.error(f"Stdout: {e.stdout}")
         logger.error(f"Stderr: {e.stderr}")
         exit(1)
+    finally:
+        logger.info("Removing splight config file")
+        if os.path.exists(SPLIGHT_CONFIG):
+            os.remove(SPLIGHT_CONFIG)
