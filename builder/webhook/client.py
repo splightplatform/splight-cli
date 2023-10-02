@@ -25,13 +25,13 @@ class InvalidSchema(Exception):
 
 
 class WebhookClientSettings(BaseSettings):
-    SPLIGHTD_WEBHOOK_SECRET: str
+    SPLIGHT_WEBHOOK_SECRET: str
     SPLIGHT_API_HOST: str
 
 
 class WebhookClient(Generic[T]):
     settings = WebhookClientSettings()
-    SECRET = settings.SPLIGHTD_WEBHOOK_SECRET
+    SECRET = settings.SPLIGHT_WEBHOOK_SECRET
     API_HOST = furl(settings.SPLIGHT_API_HOST)
 
     def __init__(self, schema: Type[T]) -> None:
