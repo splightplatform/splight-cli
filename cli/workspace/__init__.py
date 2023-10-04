@@ -26,7 +26,7 @@ def list(ctx: typer.Context) -> None:
         console.print(
             f"Error configuring Splight Hub: {str(e)}", style=error_style
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @workspace_app.command()
@@ -47,7 +47,7 @@ def create(
         console.print(
             f"Error configuring Splight Hub: {str(e)}", style=error_style
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @workspace_app.command()
@@ -65,7 +65,7 @@ def show(
         console.print(
             f"Error showing workspace contents: {str(e)}", style=error_style
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @workspace_app.command()
@@ -78,7 +78,7 @@ def delete(
         console.print(f"Deleted workspace {name}", style=success_style)
     except Exception as e:
         console.print(e, style=error_style)
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @workspace_app.command()
@@ -93,4 +93,4 @@ def select(
         console.print(
             f"Error configuring Splight Hub: {str(e)}", style=error_style
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
