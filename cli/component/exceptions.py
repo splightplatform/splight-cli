@@ -1,10 +1,6 @@
 from typing import Set
 
 
-class ComponentExecutionError(Exception):
-    pass
-
-
 class InvalidCSVColumns(Exception):
     def __init__(self, columns: Set[str]):
         self._msg = (

@@ -1,7 +1,6 @@
 import json
 import os
 import subprocess
-import sys
 from enum import auto
 from pathlib import Path
 from typing import List, Optional
@@ -10,13 +9,10 @@ from caseconverter import pascalcase
 from jinja2 import Template
 from rich.console import Console
 from splight_lib.client.database import LOCAL_DB_FILE
-from splight_lib.component.exceptions import LogsStreamerError
-from splight_lib.component.log_streamer import ComponentLogsStreamer
 from splight_lib.component.spec import Spec
 from strenum import LowercaseStrEnum
 
 from cli.component.exceptions import (
-    ComponentExecutionError,
     ComponentTestError,
     ComponentTestFileDoesNotExists,
     InvalidSplightCLIVersion,
@@ -148,57 +144,7 @@ class ComponentManager:
         loader = InitLoader(path=path)
         loader.load()
 
-    def run(
-        self,
-        path: str,
-        component_id: str,
-        local_environment: bool = False,
-    ):
-        """Executes a component
-
-        Parameters
-        ----------
-        path: str
-            The component's path
-        component_id: str
-            The id for the components.
-        local_environment: bool
-            A boolean to define if the component should use local database.
-        """
-        spec = Spec.from_file(os.path.join(path, SPEC_FILE))
-        self._validate_cli_version(spec.splight_cli_version)
-        component_cmd = self._execution_command("python", component_id)
-        component_path = Path(path).resolve()
-        environment = os.environ.copy()
-        environment.update({"LOCAL_ENVIRONMENT": f"{local_environment}"})
-        stdout = sys.stdout if local_environment else subprocess.PIPE
-        component_process = subprocess.Popen(
-            component_cmd,
-            shell=False,
-            cwd=component_path,
-            env=environment,
-            stdout=stdout,
-            stderr=subprocess.PIPE,
-            bufsize=True,
-            universal_newlines=False,
-        )
-
-        try:
-            if not local_environment:
-                streamer = ComponentLogsStreamer(
-                    component_process, component_id=component_id
-                )
-                streamer.start()
-            else:
-                component_process.communicate()
-        except LogsStreamerError:
-            component_process.communicate()
-        except Exception as exc:
-            component_process.kill()
-            raise ComponentExecutionError(
-                "Error during component execution"
-            ) from exc
-
+    # TODO: Check if the test command should be removed also
     def test(
         self,
         path: str,
