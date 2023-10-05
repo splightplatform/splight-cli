@@ -2,13 +2,9 @@ import os
 from dataclasses import dataclass
 from unittest.mock import call, mock_open, patch
 
-import pytest
 from splight_lib.component.spec import Spec
 
 from cli.component.component import ComponentManager
-from cli.component.exceptions import (
-    InvalidSplightCLIVersion,
-)
 
 COMPONENT_PATH = "./cli/tests/test_component/"
 COMPONENT_FILES = [
