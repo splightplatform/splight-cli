@@ -44,7 +44,7 @@ def create(
         )
     except Exception as e:
         console.print(f"Error creating component: {str(e)}", style=error_style)
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -68,7 +68,7 @@ def run(
     except Exception as e:
         logger.exception(e)
         console.print(f"Error running component: {str(e)}", style=error_style)
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -87,7 +87,7 @@ def install_requirements(
             f"Error installing component requirements: {str(e)}",
             style=error_style,
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -109,7 +109,7 @@ def readme(
         console.print(
             f"Error generating component README: {str(e)}", style=error_style
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -133,7 +133,7 @@ def test(
     except Exception as e:
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)
-        typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -150,4 +150,4 @@ def create_local_db(
         console.print(
             f"Error creating local component db: {str(e)}", style=error_style
         )
-        typer.Exit(1)
+        raise typer.Exit(code=1)
