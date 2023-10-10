@@ -32,7 +32,7 @@ def push(
         manager.push(path, force=force)
     except Exception as exc:
         console.print(f"Error pushing component: {exc}", style=error_style)
-        raise typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -46,7 +46,7 @@ def pull(
         manager.pull(name=name, version=version)
     except Exception as exc:
         console.print(f"Error pulling component: {exc}", style=error_style)
-        raise typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -56,7 +56,7 @@ def list(ctx: typer.Context):
         manager.list_components()
     except Exception as exc:
         console.print(f"Error listing components: {exc}", style=error_style)
-        raise typer.Exit(1)
+        raise typer.Exit(code=1)
 
 
 @component_app.command()
@@ -70,4 +70,4 @@ def versions(
         console.print(
             f"Error getting component versions: {exc}", style=error_style
         )
-        raise typer.Exit(1)
+        raise typer.Exit(code=1)

@@ -29,4 +29,4 @@ def check_credentials(ctx: typer.Context):
             'Please set you Splight credentials with "splight configure"',
             style=error_style,
         )
-        raise typer.Exit(1)
+        raise typer.Exit(code=1)
