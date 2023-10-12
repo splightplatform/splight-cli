@@ -46,7 +46,8 @@ def check_files(plan: Dict, state: Dict):
     state_assets = state["solution"]["assets"]
     if len(plan_assets) != len(state_assets):
         raise ValueError(
-            "The number of assets defined in the plan is different from the ones defined in the state file."
+            "The number of assets defined in the plan is different from the "
+            "ones defined in the state file."
         )
 
     state_asset_names = [a["name"] for a in state_assets]
@@ -54,14 +55,16 @@ def check_files(plan: Dict, state: Dict):
         plan_asset_name = asset["name"]
         if plan_asset_name not in state_asset_names:
             raise MissingElement(
-                f"Plan asset {plan_asset_name} was not found in the state assets."
+                f"Plan asset {plan_asset_name} was not found in the state "
+                "assets."
             )
 
     plan_components = plan["solution"]["components"]
     state_components = state["solution"]["components"]
     if len(plan_components) != len(state_components):
         raise ValueError(
-            "The number of components defined in the plan is different from the ones defined in the state file."
+            "The number of components defined in the plan is different from "
+            "the ones defined in the state file."
         )
 
     state_comp_names = [c["name"] for c in state_components]
@@ -69,5 +72,6 @@ def check_files(plan: Dict, state: Dict):
         plan_comp_name = comp["name"]
         if plan_comp_name not in state_comp_names:
             raise MissingElement(
-                f"Plan component {plan_comp_name} was not found in the state components."
+                f"Plan component {plan_comp_name} was not found in the state "
+                "components."
             )
