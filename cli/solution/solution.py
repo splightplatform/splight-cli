@@ -76,15 +76,3 @@ class SolutionManager:
             if result.update:
                 assets_list[i].update(result.updated_dict)
                 save_yaml(self._state_path, self._state)
-
-    # def _process_components_plan(self):
-    #     bprint("\nComparing Components...")
-    #     components_list = plan["solution"]["components"]
-    #     for component_plan in components_list:
-    #         component_state = self._comparison.find_state_component(
-    #             component_plan, state
-    #         )
-    #         if component_state is not None:
-    #             self._comparison.compare_dict(
-    #                 component_plan, component_state, self._EXCLUDE_ID_REGEX
-    #             )
