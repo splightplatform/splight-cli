@@ -26,14 +26,30 @@ def callback(ctx: typer.Context):
 @solution_app.command()
 def plan(
     ctx: typer.Context,
-    yaml_file: str = typer.Argument(..., help="Path to yaml file"),
+    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
     state_file: str = typer.Option(
-        None, "--state", "-s", help="Path to state yaml file "
+        None, "--state", "-s", help="Path to state yaml file."
     ),
 ) -> None:
     try:
-        manager = SolutionManager()
-        manager.plan(yaml_file, state_file)
+        manager = SolutionManager(plan_file, state_file, apply=False)
+        manager.execute()
     except Exception as e:
         console.print(f"Error planning solution: {str(e)}", style=error_style)
+        raise typer.Exit(code=1)
+
+
+@solution_app.command()
+def apply(
+    ctx: typer.Context,
+    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
+    state_file: str = typer.Option(
+        None, "--state", "-s", help="Path to state yaml file."
+    ),
+) -> None:
+    try:
+        manager = SolutionManager(plan_file, state_file, apply=True)
+        manager.execute()
+    except Exception as e:
+        console.print(f"Error applying solution: {str(e)}", style=error_style)
         raise typer.Exit(code=1)
