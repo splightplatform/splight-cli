@@ -70,7 +70,7 @@ class SolutionManager:
     def _apply_asset_state(self):
         assets_list = self._state["solution"]["assets"]
         for i in range(len(assets_list)):
-            result = self._apply_exec.execute(
+            result = self._apply_exec.apply(
                 model=Asset, local_dict=assets_list[i]
             )
             if result.update:

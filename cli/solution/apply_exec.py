@@ -14,7 +14,23 @@ class ApplyExecutor:
     def __init__(self, state: StrKeyDict):
         self._state = state
 
-    def execute(self, model: SplightTypes, local_dict: StrKeyDict):
+    def apply(
+        self, model: SplightTypes, local_dict: StrKeyDict
+    ) -> ApplyResult:
+        """Applies changes to the remote engine if needed.
+
+        Parameters
+        ----------
+        model : SplightTypes
+            A Splight model.
+        local_dict : StrKeyDict
+            Instance to be saved (or not) as a dictionary.
+
+        Returns
+        -------
+        ApplyResult
+            Named tuple containing the result of the apply step.
+        """
         model_name = model.__name__
         instance_id = local_dict["id"]
 
@@ -32,13 +48,27 @@ class ApplyExecutor:
 
     def _compare_with_remote(
         self, model: SplightTypes, local_dict: StrKeyDict
-    ):
+    ) -> ApplyResult:
+        """Compares the local instance with the remote instances if any.
+
+        Parameters
+        ----------
+        model : SplightTypes
+            A Splight model.
+        local_dict : StrKeyDict
+            Instance to be saved (or not) as a dictionary.
+
+        Returns
+        -------
+        ApplyResult
+            Named tuple containing the result of the apply step.
+        """
         model_name = model.__name__
         instance_id = local_dict["id"]
 
         remote_list = model.list(id__in=instance_id)
         if remote_list:
-            remote_instance = remote_list[0].dict()
+            remote_instance = to_dict(remote_list[0])
             diff = DeepDiff(local_dict, remote_instance)
             if diff:
                 bprint(
