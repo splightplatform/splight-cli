@@ -1,20 +1,23 @@
 ## {{component_name}} {{component_type | capitalize}} - {{version}}
 
-<!--toc:start-->
 - [Description](#description)
 - [Inputs](#inputs)
 - [Routines](#routines)
-{%- if routines is not none -%}
+{%- if routines != []-%}
 {%- for routine in routines %}
   - [{{routine.name}}](#{{routine.name | lower}})
 {%- endfor %}
 {%- endif %}
 - [Custom Types](#custom-types)
-<!--toc:end-->
+{%- if custom_types != []-%}
+{%- for type in custom_types %}
+  - [{{type.name}}](#{{type.name | lower}})
+{%- endfor %}
+{%- endif %}
 
 ### Description
 
-{% if description is not none %}{{description}}{% else %}COMPLETE COMPONENT DESCRIPTION{% endif %}
+{{description | default("COMPLETE COMPONENT DESCRIPTION", true)}}
 
 ### Inputs
 
@@ -48,7 +51,6 @@ The routines defined by the component are:
     {% for field in routine.output -%}
     | output | {{field.name}} | {{field.value_type}} | {{field.value | default("-", true)}} | {{field.required | default("True", true)}} | {{field.description | default("-", true)}} |
     {% endfor -%}
-
 {% endfor -%}
 {%- else -%}
 This component does not have any routines.
@@ -62,9 +64,9 @@ The custom types defined by the component are:
   - #### {{type.name}}
 
     | name | type | default | required | description |
-    |---------|------|------|---------|----------|-------------|
-    {% for field in type -%}
-    | config | {{field.name}} | {{field.type}} | {{field.value | default("-", true)}} | {{field.required | default("True")}} | {{field.description | default("-", true)}} |
+    |------|------|---------|----------|-------------|
+    {% for field in type.fields -%}
+    | {{field.name}} | {{field.type}} | {{field.value | default("-", true)}} | {{field.required | default("True")}} | {{field.description | default("-", true)}} |
     {% endfor -%}
 
 {% endfor -%}
