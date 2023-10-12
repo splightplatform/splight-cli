@@ -35,10 +35,10 @@ class SolutionManager:
         self._apply_exec = ApplyExecutor(self._state)
 
     def execute(self):
+        console.print("\nStarting plan step...", style=self.PRINT_STYLE)
         if self._state is None:
             self._generate_state()
         else:
-            console.print("\nStarting plan step...", style=self.PRINT_STYLE)
             self._generate_assets_state()
             # self._generate_components_state()
 
@@ -62,7 +62,6 @@ class SolutionManager:
             save_yaml(self._state_path, self._state)
 
     def _generate_assets_state(self):
-        bprint("\nGenerating Assets state...")
         assets_list = self._plan["solution"]["assets"]
         for asset_plan in assets_list:
             self._plan_exec.compare_state_asset(asset_plan)
