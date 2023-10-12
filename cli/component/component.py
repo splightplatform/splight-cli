@@ -127,10 +127,6 @@ class ComponentManager:
             component_type=spec.component_type,
             inputs=spec.input,
             custom_types=spec.custom_types,
-            bindings=parsed_bindings,
-            commands=spec.commands,
-            output=spec.output,
-            endpoints=spec.endpoints,
             routines=spec.routines,
         )
         with open(os.path.join(path, README_FILE), "w+") as f:
