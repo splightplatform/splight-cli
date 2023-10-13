@@ -1,4 +1,4 @@
-## {{component_name}} {{component_type | capitalize}} - {{version}}
+# {{component_name}} {{component_type | capitalize}} - {{version}}
 
 - [Description](#description)
 - [Inputs](#inputs)
