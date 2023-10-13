@@ -65,7 +65,11 @@ class PlanExecutor:
         diff = DeepDiff(
             plan_component,
             state_component_found,
-            exclude_regex_paths=["\['id'\]", "\['value'\]"],
+            exclude_regex_paths=[
+                r"\['id'\]",
+                r"\['input'\]\[\d+\]\['value'\]",
+                r"\['output'\]\[\d+\]\['value'\]",
+            ],
         )
         if diff:
             bprint(
@@ -96,12 +100,12 @@ class PlanExecutor:
         for routine in routines:
             for _input in routine["input"]:
                 if _input.get("value", None) is not None:
-                    self._is_possible_asset_attr(_input)
+                    self._is_state_asset_attr(_input)
             for _output in routine["output"]:
                 if _input.get("value", None) is not None:
-                    self._is_possible_asset_attr(_output)
+                    self._is_state_asset_attr(_output)
 
-    def _is_possible_asset_attr(self, io_elem: StrKeyDict):
+    def _is_state_asset_attr(self, io_elem: StrKeyDict):
         multiple = io_elem.get("multiple", False)
         input_value = io_elem["value"] if multiple else [io_elem["value"]]
         for data_addr in input_value:
