@@ -40,7 +40,7 @@ class SolutionManager:
             self._generate_state()
         else:
             self._generate_assets_state()
-            # self._generate_components_state()
+            self._generate_components_state()
 
         if self._apply:
             console.print("\nStarting apply step...", style=self.PRINT_STYLE)
@@ -65,6 +65,11 @@ class SolutionManager:
         assets_list = self._plan["solution"]["assets"]
         for asset_plan in assets_list:
             self._plan_exec.compare_state_asset(asset_plan)
+
+    def _generate_components_state(self):
+        components_list = self._plan["solution"]["components"]
+        for component_plan in components_list:
+            self._plan_exec.compare_state_component(component_plan)
 
     def _apply_asset_state(self):
         assets_list = self._state["solution"]["assets"]
