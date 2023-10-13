@@ -1,116 +1,77 @@
-# {{component_name}} {{component_type}}
+# {{component_name}} {{component_type | capitalize}} - {{version}}
 
-## Version: {{version}}
-
-## Table of Contents  
-1. [Description](#description)
-2. [Input](#Input)
-3. [Output](#Output)
-4. [Bindings](#Bindings)
+- [Description](#description)
+- [Inputs](#inputs)
+- [Routines](#routines)
+{%- if routines != []-%}
+{%- for routine in routines %}
+  - [{{routine.name}}](#{{routine.name | lower}})
+{%- endfor %}
+{%- endif %}
+- [Custom Types](#custom-types)
+{%- if custom_types != []-%}
+{%- for type in custom_types %}
+  - [{{type.name}}](#{{type.name | lower}})
+{%- endfor %}
+{%- endif %}
 
 ### Description
 
-{% if description is not none %}{{description}}{% else %}COMPLETE COMPONENT DESCRIPTION{% endif %}
+{{description | default("COMPLETE COMPONENT DESCRIPTION", true)}}
 
-### Input
+### Inputs
 
-{% if inputs is not none -%}
+{% if inputs != [] -%}
 The component's input parameters are:
 
+| name | type | default | required | description |
+|------|------|---------|----------|-------------|
 {% for input in inputs -%}
-  - {{input.name}} [{{input.type}}]: (Default: {{input.value}}) {{input.description}}
+| {{input.name}} | {{input.type}} | {{input.value | default("-", true)}} | {{input.required | default("True")}} | {{input.description | default("-", true)}} |
 {% endfor -%}
 {%- else -%}
-This component does not have any input parameter.
+This component does not have any inputs.
 {%- endif %}
 
 ### Routines
 
-{% if routines is not none -%}
+{% if routines != [] -%}
 The routines defined by the component are:
+{% for routine in routines %}
+  - #### {{routine.name}}
 
-{% for routine in routines -%}
-  - {{routine.name}}
-    Configs:
-     {% for p in routine.config -%}
-      - {{p.name}} [{{p.type}}]: (Default: {{p.value}}) {{p.description}}
-     {% endfor %}
-    Inputs:
-     {% for p in routine.input -%}
-      - {{p.name}} [{{p.type}}] of type [{{p.value_type}}]: (Default: {{p.value}}) {{p.description}}
-     {% endfor %}
-    Outputs:
-     {% for p in routine.output -%}
-      - {{p.name}} [{{p.type}}] of type [{{p.value_type}}]: (Default: {{p.value}}) {{p.description}}
-     {% endfor %}
+    | section | name | type | default | required | description |
+    |---------|------|------|---------|----------|-------------|
+    {% for field in routine.config -%}
+    | config | {{field.name}} | {{field.type}} | {{field.value | default("-", true)}} | {{field.required | default("True")}} | {{field.description | default("-", true)}} |
+    {% endfor -%}
+    {% for field in routine.input -%}
+    | input | {{field.name}} | {{field.value_type}} | {{field.value | default("-", true)}} | {{field.required | default("True", true)}} | {{field.description | default("-", true)}} |
+    {% endfor -%}
+    {% for field in routine.output -%}
+    | output | {{field.name}} | {{field.value_type}} | {{field.value | default("-", true)}} | {{field.required | default("True", true)}} | {{field.description | default("-", true)}} |
+    {% endfor -%}
 {% endfor -%}
 {%- else -%}
 This component does not have any routines.
-{%- endif -%}
+{%- endif %}
 
 ### Custom Types
 
-{% if custom_types is not none -%}
+{% if custom_types != [] -%}
 The custom types defined by the component are:
+{% for type in custom_types %}
+  - #### {{type.name}}
 
-{% for item in custom_types -%}
-  - {{item.name}}
-     {% for p in item.fields -%}
-      - {{p.name}} [{{p.type}}]: (Default: {{p.value}}) {{p.description}}
-     {% endfor %}
+    | name | type | default | required | description |
+    |------|------|---------|----------|-------------|
+    {% for field in type.fields -%}
+    | {{field.name}} | {{field.type}} | {{field.value | default("-", true)}} | {{field.required | default("True")}} | {{field.description | default("-", true)}} |
+    {% endfor -%}
+
 {% endfor -%}
 {%- else -%}
-This component does not have any custom type.
-{%- endif -%}
-
-### Output
-
-{% if output is not none -%}
-The component's output are:
-
-{% for out in output -%}
-  - {{out.name}}:
-    {% for field in out.fields -%}
-      - {{field.name}} [{{field.type}}]
-    {% endfor %}
-{% endfor %}
-{%- else -%}
-This component does not have any output.
-{%- endif -%}
-
-### Bindings
-
-{% if bindings -%}
-{% for val in bindings -%}
-  {{loop.index}}. {{val.name}}: The binding **{{val.name}}** is executed when the action **{{val.object_action}}** is applied on a **{{val.object_type}}**.
-{% endfor %}
-{%- else -%}
-This component does not have any binding.
+This component does not have any custom types.
 {%- endif %}
 
-### Commands
 
-{% if commands -%}
-The component commands are the following:
-
-{% for val in commands -%}
-  {{loop.index}}. {{val.name}}: 
-    {% for field in val.fields -%}
-      {{field.name}} [{{field.type}}]
-    {% endfor %}
-{% endfor %}
-{%- else -%}
-This component does not have any command.
-{%- endif -%}
-
-### Endpoints
-
-{% if endpoints -%}
-The component's endpoints are:
-
-{% for val in endpoints -%}
-  {{loop.index}}. Endpoint **{{val.name}}** on port {{val.port}}.
-{% endfor %}
-{%- else -%}
-This component does not have any endpoint
-{%- endif -%}
