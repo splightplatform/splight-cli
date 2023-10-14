@@ -31,7 +31,7 @@ class SolutionManager:
         )
         if self._state is not None:
             check_files(self._plan, self._state)
-        self._plan_exec = PlanExecutor(self._state)
+        self._plan_exec = PlanExecutor(self._state, self._plan)
         self._apply_exec = ApplyExecutor(self._state)
 
     def execute(self):
@@ -45,11 +45,11 @@ class SolutionManager:
         if self._apply:
             console.print("\nStarting apply step...", style=self.PRINT_STYLE)
             self._apply_asset_state()
+            self._apply_exec.replace_data_addr()
             # self._apply_components_state()
 
     def _generate_state(self):
         self._state = self._plan.copy()
-        # Replace assets in component routines
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."

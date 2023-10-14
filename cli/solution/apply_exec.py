@@ -46,6 +46,31 @@ class ApplyExecutor:
             return ApplyResult(True, to_dict(remote_instance))
         return ApplyResult(False, None)
 
+    def replace_data_addr(self):
+        state_components = self._state["solution"]["components"]
+        for i in range(len(state_components)):
+            routines = state_components[i].get("routines", [])
+            for routine in routines:
+                self._replace_routine_data_addr(routine)
+
+    def _replace_routine_data_addr(self, routine: StrKeyDict):
+        for _input in routine["input"]:
+            if _input.get("value", None) is not None:
+                _input["value"] = self._get_new_value(_input)
+        for _output in routine["output"]:
+            if _output.get("value", None) is not None:
+                _output["value"] = self._get_new_value(_output)
+
+    def _get_new_value(self, io_elem):
+        multiple = io_elem.get("multiple", False)
+        if multiple:
+            return [self._parse_data_addr(da) for da in io_elem]
+        else:
+            return self._parse_data_addr(io_elem)
+
+    def _parse_data_addr(self, data_addr):
+        pass
+
     def _compare_with_remote(
         self, model: SplightTypes, local_dict: StrKeyDict
     ) -> ApplyResult:

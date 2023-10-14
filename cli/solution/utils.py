@@ -1,4 +1,6 @@
 import json
+import re
+from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, Union
 
@@ -11,6 +13,8 @@ console = Console()
 
 StrKeyDict = Dict[str, Any]
 SplightTypes = Union[Asset, Component, RoutineObject]
+
+MatchResult = namedtuple("MatchResult", ["type", "asset", "attribute"])
 
 
 class MissingElement(Exception):
@@ -75,3 +79,13 @@ def check_files(plan: Dict, state: Dict):
                 f"Plan component {plan_comp_name} was not found in the state "
                 "components."
             )
+
+
+def parse_str_data_addr(data_addr_str: str) -> MatchResult:
+    """local.{{asset_name}}{{attr_name}}"""
+    local_or_engine, name_str = data_addr_str.split(".")
+    regex = re.compile(r"{{(.*)}}{{(.*)}}")
+    result = regex.search(name_str)
+    return MatchResult(
+        type=local_or_engine, asset=result.group(1), attribute=result.group(2)
+    )

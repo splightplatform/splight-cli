@@ -102,13 +102,13 @@ class PlanExecutor:
                 if _input.get("value", None) is not None:
                     self._is_state_asset_attr(_input)
             for _output in routine["output"]:
-                if _input.get("value", None) is not None:
+                if _output.get("value", None) is not None:
                     self._is_state_asset_attr(_output)
 
     def _is_state_asset_attr(self, io_elem: StrKeyDict):
         multiple = io_elem.get("multiple", False)
-        input_value = io_elem["value"] if multiple else [io_elem["value"]]
-        for data_addr in input_value:
+        io_values = io_elem["value"] if multiple else [io_elem["value"]]
+        for data_addr in io_values:
             ids_str = f"{data_addr['asset']}-{data_addr['attribute']}"
             if ids_str not in self._possible_asset_attr:
                 raise MissingDataAddress(
