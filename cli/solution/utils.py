@@ -81,11 +81,13 @@ def check_files(plan: Dict, state: Dict):
             )
 
 
-def parse_str_data_addr(data_addr_str: str) -> MatchResult:
-    """local.{{asset_name}}{{attr_name}}"""
-    local_or_engine, name_str = data_addr_str.split(".")
-    regex = re.compile(r"{{(.*)}}{{(.*)}}")
+def parse_str_data_addr(data_addr_val: StrKeyDict) -> MatchResult:
+    """local.{{asset_name}}"""
+    local_or_engine, name_str = data_addr_val["asset"].split(".")
+    regex = re.compile(r"{{(.*)}}")
     result = regex.search(name_str)
     return MatchResult(
-        type=local_or_engine, asset=result.group(1), attribute=result.group(2)
+        type=local_or_engine,
+        asset=result.group(1),
+        attribute=data_addr_val["attribute"],
     )

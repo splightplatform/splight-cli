@@ -5,7 +5,13 @@ from deepdiff import DeepDiff
 from rich import print
 from splight_lib.models import Asset
 
-from cli.solution.utils import SplightTypes, StrKeyDict, bprint, to_dict
+from cli.solution.utils import (
+    SplightTypes,
+    StrKeyDict,
+    bprint,
+    parse_str_data_addr,
+    to_dict,
+)
 
 ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
@@ -64,12 +70,22 @@ class ApplyExecutor:
     def _get_new_value(self, io_elem):
         multiple = io_elem.get("multiple", False)
         if multiple:
-            return [self._parse_data_addr(da) for da in io_elem]
+            return [self._parse_data_addr(da) for da in io_elem["value"]]
         else:
-            return self._parse_data_addr(io_elem)
+            return self._parse_data_addr(io_elem["value"])
 
     def _parse_data_addr(self, data_addr):
-        pass
+        result = parse_str_data_addr(data_addr)
+        state_assets = self._state["solution"]["assets"]
+        for asset in state_assets:
+            if asset["name"] == result.asset:
+                asset_id = asset["id"]
+                for attr in asset["attributes"]:
+                    if attr["name"] == result.attribute:
+                        attr_id = attr["id"]
+                        break
+                break
+        return {"asset": asset_id, "attribute": attr_id}
 
     def _compare_with_remote(
         self, model: SplightTypes, local_dict: StrKeyDict

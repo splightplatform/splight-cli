@@ -1,6 +1,6 @@
 from deepdiff import DeepDiff
 
-from cli.solution.utils import StrKeyDict, bprint
+from cli.solution.utils import StrKeyDict, bprint, parse_str_data_addr
 
 
 class MissingDataAddress(Exception):
@@ -13,10 +13,10 @@ class PlanExecutor:
 
         self._possible_asset_attr = set()
         for asset in self._state["solution"]["assets"]:
-            asset_id = asset["id"]
+            asset_name = asset["name"]
             for attr in asset["attributes"]:
-                attr_id = attr["id"]
-                self._possible_asset_attr.add(f"{asset_id}-{attr_id}")
+                attr_name = attr["name"]
+                self._possible_asset_attr.add(f"{asset_name}-{attr_name}")
 
     def compare_state_asset(self, asset_plan: StrKeyDict):
         """Finds and compares an asset from the plan with the analogous in the
@@ -109,7 +109,8 @@ class PlanExecutor:
         multiple = io_elem.get("multiple", False)
         io_values = io_elem["value"] if multiple else [io_elem["value"]]
         for data_addr in io_values:
-            ids_str = f"{data_addr['asset']}-{data_addr['attribute']}"
+            result = parse_str_data_addr(data_addr)
+            ids_str = f"{result.asset}-{result.attribute}"
             if ids_str not in self._possible_asset_attr:
                 raise MissingDataAddress(
                     f"The asset id: {data_addr['asset']} "
