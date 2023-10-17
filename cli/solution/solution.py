@@ -33,7 +33,16 @@ class SolutionManager:
             self._generate_state()
         check_files(self._plan, self._state)
         self._plan_exec = PlanExecutor(self._state)
-        self._apply_exec = ApplyExecutor(self._state)
+        self._apply_exec = ApplyExecutor(
+            self._state,
+            regex_to_exclude={
+                Component.__name__: [
+                    r"root\['routines'\]",
+                    r"root\['deployment_capacity'\]",
+                    r"root\['deployment_type'\]",
+                ]
+            },
+        )
 
     def execute(self):
         console.print("\nStarting plan step...", style=self.PRINT_STYLE)

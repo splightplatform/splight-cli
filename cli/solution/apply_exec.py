@@ -17,8 +17,9 @@ ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
 
 class ApplyExecutor:
-    def __init__(self, state: StrKeyDict):
+    def __init__(self, state: StrKeyDict, regex_to_exclude: StrKeyDict):
         self._state = state
+        self._model_to_regex = regex_to_exclude
 
     def apply(
         self, model: SplightTypes, local_dict: StrKeyDict
@@ -114,10 +115,11 @@ class ApplyExecutor:
         remote_list = model.list(id__in=instance_id)
         if remote_list:
             remote_instance = to_dict(remote_list[0])
+            exclude_regex = self._model_to_regex.get(model_name, None)
             diff = DeepDiff(
                 local_dict,
                 remote_instance,
-                exclude_regex_paths=r"root\['routines'\]",
+                exclude_regex_paths=exclude_regex,
             )
             if diff:
                 bprint(
