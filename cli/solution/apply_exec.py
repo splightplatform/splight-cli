@@ -60,15 +60,17 @@ class ApplyExecutor:
                 self._replace_routine_data_addr(routine)
 
     def _replace_routine_data_addr(self, routine: StrKeyDict):
-        for _input in routine["input"]:
-            if _input.get("value", None) is not None:
-                _input["value"] = self._get_new_value(_input)
-        for _output in routine["output"]:
-            if _output.get("value", None) is not None:
-                _output["value"] = self._get_new_value(_output)
+        for io_elem in routine["input"] + routine["output"]:
+            if io_elem.get("value", None) is not None:
+                io_elem["value"] = self._get_new_value(io_elem)
 
     def _get_new_value(self, io_elem):
         multiple = io_elem.get("multiple", False)
+        if not multiple and isinstance(io_elem["value"], list):
+            raise ValueError(
+                f"Passed 'multiple: False' but value of {io_elem['name']} is "
+                "a list. Aborted."
+            )
         if multiple:
             return [self._parse_data_addr(da) for da in io_elem["value"]]
         else:
@@ -76,6 +78,8 @@ class ApplyExecutor:
 
     def _parse_data_addr(self, data_addr):
         result = parse_str_data_addr(data_addr)
+        if result.is_id:
+            return {"asset": result.asset, "attribute": result.attribute}
         state_assets = self._state["solution"]["assets"]
         for asset in state_assets:
             if asset["name"] == result.asset:

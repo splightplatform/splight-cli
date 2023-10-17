@@ -98,18 +98,17 @@ class PlanExecutor:
     def _check_assets_are_defined(self, state_component_found: StrKeyDict):
         routines = state_component_found.get("routines", [])
         for routine in routines:
-            for _input in routine["input"]:
-                if _input.get("value", None) is not None:
-                    self._is_state_asset_attr(_input)
-            for _output in routine["output"]:
-                if _output.get("value", None) is not None:
-                    self._is_state_asset_attr(_output)
+            for io_elem in routine["input"] + routine["output"]:
+                if io_elem.get("value", None) is not None:
+                    self._is_state_asset_attr(io_elem)
 
     def _is_state_asset_attr(self, io_elem: StrKeyDict):
         multiple = io_elem.get("multiple", False)
         io_values = io_elem["value"] if multiple else [io_elem["value"]]
         for data_addr in io_values:
             result = parse_str_data_addr(data_addr)
+            if result.is_id:
+                continue
             ids_str = f"{result.asset}-{result.attribute}"
             if ids_str not in self._possible_asset_attr:
                 raise MissingDataAddress(

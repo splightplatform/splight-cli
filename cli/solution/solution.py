@@ -29,24 +29,20 @@ class SolutionManager:
             if self._state_path is not None
             else None
         )
-        if self._state is not None:
-            check_files(self._plan, self._state)
-            self._plan_exec = PlanExecutor(self._state)
-            self._apply_exec = ApplyExecutor(self._state)
+        if self._state is None:
+            self._generate_state()
+        check_files(self._plan, self._state)
+        self._plan_exec = PlanExecutor(self._state)
+        self._apply_exec = ApplyExecutor(self._state)
 
     def execute(self):
         console.print("\nStarting plan step...", style=self.PRINT_STYLE)
-        if self._state is None:
-            self._generate_state()
-        else:
-            self._generate_assets_state()
-            self._generate_components_state()
+        self._generate_assets_state()
+        self._generate_components_state()
 
         if self._apply:
             console.print("\nStarting apply step...", style=self.PRINT_STYLE)
             self._apply_asset_state()
-            self._apply_exec.replace_data_addr()
-            save_yaml(self._state_path, self._state)
             # self._apply_components_state()
 
     def _generate_state(self):
@@ -80,4 +76,5 @@ class SolutionManager:
             )
             if result.update:
                 assets_list[i].update(result.updated_dict)
+                self._apply_exec.replace_data_addr()
                 save_yaml(self._state_path, self._state)

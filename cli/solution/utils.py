@@ -1,5 +1,6 @@
 import json
 import re
+import uuid
 from collections import namedtuple
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -14,7 +15,9 @@ console = Console()
 StrKeyDict = Dict[str, Any]
 SplightTypes = Union[Asset, Component, RoutineObject]
 
-MatchResult = namedtuple("MatchResult", ["type", "asset", "attribute"])
+MatchResult = namedtuple(
+    "MatchResult", ["is_id", "type", "asset", "attribute"]
+)
 
 
 class MissingElement(Exception):
@@ -81,13 +84,31 @@ def check_files(plan: Dict, state: Dict):
             )
 
 
+def is_valid_uuid(possible_uuid: str):
+    try:
+        uuid.UUID(str(possible_uuid))
+        return True
+    except ValueError:
+        return False
+
+
 def parse_str_data_addr(data_addr_val: StrKeyDict) -> MatchResult:
     """local.{{asset_name}}"""
-    local_or_engine, name_str = data_addr_val["asset"].split(".")
+    asset = data_addr_val["asset"]
+    attribute = data_addr_val["attribute"]
+    if is_valid_uuid(asset) and is_valid_uuid(attribute):
+        return MatchResult(
+            is_id=True,
+            type="engine",
+            asset=asset,
+            attribute=attribute,
+        )
+    local_or_engine, name_str = asset.split(".")
     regex = re.compile(r"{{(.*)}}")
     result = regex.search(name_str)
     return MatchResult(
+        is_id=False,
         type=local_or_engine,
         asset=result.group(1),
-        attribute=data_addr_val["attribute"],
+        attribute=attribute,
     )
