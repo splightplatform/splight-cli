@@ -3,7 +3,7 @@ from typing import Optional
 
 import typer
 from rich.console import Console
-from splight_lib.models import Asset
+from splight_lib.models import Asset, Component, RoutineObject
 
 from cli.solution.apply_exec import ApplyExecutor
 from cli.solution.plan_exec import PlanExecutor
@@ -42,8 +42,8 @@ class SolutionManager:
 
         if self._apply:
             console.print("\nStarting apply step...", style=self.PRINT_STYLE)
-            self._apply_asset_state()
-            # self._apply_components_state()
+            self._apply_assets_state()
+            self._apply_components_state()
 
     def _generate_state(self):
         self._state = self._plan.copy()
@@ -68,7 +68,7 @@ class SolutionManager:
         for component_plan in components_list:
             self._plan_exec.compare_state_component(component_plan)
 
-    def _apply_asset_state(self):
+    def _apply_assets_state(self):
         assets_list = self._state["solution"]["assets"]
         for i in range(len(assets_list)):
             result = self._apply_exec.apply(
@@ -78,3 +78,30 @@ class SolutionManager:
                 assets_list[i].update(result.updated_dict)
                 self._apply_exec.replace_data_addr()
                 save_yaml(self._state_path, self._state)
+
+    def _apply_components_state(self):
+        components_list = self._state["solution"]["components"]
+        for i in range(len(components_list)):
+            component = components_list[i]
+            result = self._apply_exec.apply(
+                model=Component, local_dict=component
+            )
+            if result.update:
+                updated_routines = self._apply_routines_state(
+                    component, result.updated_dict
+                )
+                components_list[i].update(result.updated_dict)
+                components_list[i]["routines"] = updated_routines
+                save_yaml(self._state_path, self._state)
+
+    def _apply_routines_state(self, component, updated_component):
+        routine_list = component["routines"]
+        component_id = updated_component["id"]
+        for i in range(len(routine_list)):
+            routine_list[i]["component_id"] = component_id
+            result = self._apply_exec.apply(
+                model=RoutineObject, local_dict=routine_list[i]
+            )
+            if result.update:
+                routine_list[i].update(result.updated_dict)
+        return routine_list

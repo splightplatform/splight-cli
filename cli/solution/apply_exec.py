@@ -38,7 +38,7 @@ class ApplyExecutor:
             Named tuple containing the result of the apply step.
         """
         model_name = model.__name__
-        instance_id = local_dict["id"]
+        instance_id = local_dict.get("id", None)
 
         if instance_id is not None:
             return self._compare_with_remote(model, local_dict)
@@ -114,7 +114,11 @@ class ApplyExecutor:
         remote_list = model.list(id__in=instance_id)
         if remote_list:
             remote_instance = to_dict(remote_list[0])
-            diff = DeepDiff(local_dict, remote_instance)
+            diff = DeepDiff(
+                local_dict,
+                remote_instance,
+                exclude_regex_paths=r"root\['routines'\]",
+            )
             if diff:
                 bprint(
                     f"\nThe remote {model_name} with id {instance_id} has the "
@@ -156,7 +160,7 @@ class ApplyExecutor:
         return ApplyResult(False, None)
 
     def _remove_ids(self, model_name, local_dict):
-        if model_name == Asset.__class__.__name__:
+        if model_name == Asset.__name__:
             local_dict["id"] = None
             for attr in local_dict["attributes"]:
                 attr["id"] = None
