@@ -109,7 +109,6 @@ class ComponentManager:
         ReadmeExists thrown when the README.md file already exist and
         force=False
         """
-
         spec_file_path = os.path.join(path, SPEC_FILE)
         spec = Spec.from_file(spec_file_path)
         name = spec.name
@@ -118,7 +117,7 @@ class ComponentManager:
         if os.path.exists(os.path.join(path, README_FILE)) and not force:
             raise ReadmeExists(path)
         template = get_template("auto_readme.md")
-        
+
         readme = template.render(
             component_name=name,
             version=version,
