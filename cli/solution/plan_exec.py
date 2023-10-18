@@ -96,6 +96,14 @@ class PlanExecutor:
         bprint(state_component_found)
 
     def _check_assets_are_defined(self, state_component_found: StrKeyDict):
+        """Checks if the assets of a component are defined or not in the state
+        file.
+
+        Parameters
+        ----------
+        state_component_found : StrKeyDict
+            The state component.
+        """
         routines = state_component_found.get("routines", [])
         for routine in routines:
             for io_elem in routine["input"] + routine["output"]:
@@ -103,6 +111,18 @@ class PlanExecutor:
                     self._is_state_asset_attr(io_elem)
 
     def _is_state_asset_attr(self, io_elem: StrKeyDict):
+        """Raises an exception if an asset is not defined in the state file.
+
+        Parameters
+        ----------
+        io_elem : StrKeyDict
+            Input or output dictionary element.
+
+        Raises
+        ------
+        MissingDataAddress
+            Raised when an asset is not defined in the state file.
+        """
         multiple = io_elem.get("multiple", False)
         io_values = io_elem["value"] if multiple else [io_elem["value"]]
         for data_addr in io_values:

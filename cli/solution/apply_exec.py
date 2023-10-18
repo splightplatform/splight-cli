@@ -1,4 +1,5 @@
 from collections import namedtuple
+from typing import Dict, List, Union
 
 import typer
 from deepdiff import DeepDiff
@@ -54,6 +55,7 @@ class ApplyExecutor:
         return ApplyResult(False, None)
 
     def replace_data_addr(self):
+        """Replaces assets data addresses in component's routines."""
         state_components = self._state["solution"]["components"]
         for i in range(len(state_components)):
             routines = state_components[i].get("routines", [])
@@ -61,11 +63,38 @@ class ApplyExecutor:
                 self._replace_routine_data_addr(routine)
 
     def _replace_routine_data_addr(self, routine: StrKeyDict):
+        """Replaces assets data addresses in a routine.
+
+        Parameters
+        ----------
+        routine : StrKeyDict
+            The routine where we will replace the data addresses.
+        """
         for io_elem in routine["input"] + routine["output"]:
             if io_elem.get("value", None) is not None:
                 io_elem["value"] = self._get_new_value(io_elem)
 
-    def _get_new_value(self, io_elem):
+    def _get_new_value(
+        self, io_elem: Union[List[Dict], Dict]
+    ) -> Union[List[Dict], Dict]:
+        """Gets a new data address value.
+
+        Parameters
+        ----------
+        io_elem : Union[List[Dict], Dict]
+            Input or output element to replace with the corresponding data
+            addresses.
+
+        Returns
+        -------
+        Union[List[Dict], Dict]
+            Input or output element where data addresses were replaced.
+
+        Raises
+        ------
+        ValueError
+            Raised if passed a multiple: false element and a list value.
+        """
         multiple = io_elem.get("multiple", False)
         if not multiple and isinstance(io_elem["value"], list):
             raise ValueError(
@@ -77,7 +106,19 @@ class ApplyExecutor:
         else:
             return self._parse_data_addr(io_elem["value"])
 
-    def _parse_data_addr(self, data_addr):
+    def _parse_data_addr(self, data_addr: StrKeyDict) -> Dict[str, str]:
+        """Parses a data address ids.
+
+        Parameters
+        ----------
+        data_addr : StrKeyDict
+            The data address to be parsed.
+
+        Returns
+        -------
+        Dict[str, str]
+            A dictionary containing the asset and attribute ids.
+        """
         result = parse_str_data_addr(data_addr)
         if result.is_id:
             return {"asset": result.asset, "attribute": result.attribute}
@@ -161,8 +202,19 @@ class ApplyExecutor:
             return ApplyResult(True, to_dict(remote_instance))
         return ApplyResult(False, None)
 
-    def _remove_ids(self, model_name, local_dict):
-        if model_name == Asset.__name__:
+    def _remove_ids(self, model: SplightTypes, local_dict: StrKeyDict):
+        """Removes ids to a given dictionary representing a particular model.
+
+        Parameters
+        ----------
+        model : SplightTypes
+            Either an Asset, a Component or a RoutineObject.
+        local_dict : StrKeyDict
+            Dictionary representing either an Asset, a Component or
+            a RoutineObject.
+        """
+
+        if model == Asset.__name__:
             local_dict["id"] = None
             for attr in local_dict["attributes"]:
                 attr["id"] = None
