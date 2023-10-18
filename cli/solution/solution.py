@@ -55,6 +55,7 @@ class SolutionManager:
             self._apply_components_state()
 
     def _generate_state(self):
+        """Generates the state file if not passed."""
         self._state = self._plan.copy()
         bprint(
             "No state file was passed hence the following state file was "
@@ -68,16 +69,19 @@ class SolutionManager:
             save_yaml(self._state_path, self._state)
 
     def _generate_assets_state(self):
+        """Compares assets in the state file."""
         assets_list = self._plan["solution"]["assets"]
         for asset_plan in assets_list:
             self._plan_exec.compare_state_asset(asset_plan)
 
     def _generate_components_state(self):
+        """Compares components in the state file."""
         components_list = self._plan["solution"]["components"]
         for component_plan in components_list:
             self._plan_exec.compare_state_component(component_plan)
 
     def _apply_assets_state(self):
+        """Applies Assets states to the engine."""
         assets_list = self._state["solution"]["assets"]
         for i in range(len(assets_list)):
             result = self._apply_exec.apply(
@@ -89,6 +93,7 @@ class SolutionManager:
                 save_yaml(self._state_path, self._state)
 
     def _apply_components_state(self):
+        """Applies Components states to the engine."""
         components_list = self._state["solution"]["components"]
         for i in range(len(components_list)):
             component = components_list[i]
@@ -104,6 +109,7 @@ class SolutionManager:
                 save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(self, component, updated_component):
+        """Applies RoutineObject states to the engine."""
         routine_list = component["routines"]
         component_id = updated_component["id"]
         for i in range(len(routine_list)):

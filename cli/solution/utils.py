@@ -84,7 +84,7 @@ def check_files(plan: Dict, state: Dict):
             )
 
 
-def is_valid_uuid(possible_uuid: str):
+def is_valid_uuid(possible_uuid: str) -> bool:
     try:
         uuid.UUID(str(possible_uuid))
         return True
@@ -93,7 +93,21 @@ def is_valid_uuid(possible_uuid: str):
 
 
 def parse_str_data_addr(data_addr_val: StrKeyDict) -> MatchResult:
-    """local.{{asset_name}}"""
+    """Parses a dictionary where the key 'asset' has a string of the form
+    <local/engine>.{{<asset-name>}} and returns just the <asset-name>.
+
+    Parameters
+    ----------
+    data_addr_val : StrKeyDict
+        Data address to process.
+
+    Returns
+    -------
+    MatchResult
+        Returns a named tuple with the asset, attribute, a type which can be
+        either 'local' or 'engine' and a boolean which says if the asset and
+        attribute names are ids or not.
+    """
     asset = data_addr_val["asset"]
     attribute = data_addr_val["attribute"]
     if is_valid_uuid(asset) and is_valid_uuid(attribute):
