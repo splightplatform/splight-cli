@@ -1,20 +1,15 @@
 import argparse
 import base64
-import json
 import logging
 from functools import cached_property
 
 import boto3
 import docker
-import requests
-
-# import typer
 from constants import BuildStatus
 from docker.errors import APIError, BuildError
 from pydantic import BaseSettings
 from schemas import BuildSpec, HubComponent
 
-# app = typer.Typer(name="Splight Component Builder")
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
@@ -186,7 +181,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    # print(dir(args))
     build_spec_base64 = args.build_spec[0]
 
     build_spec_str = base64.b64decode(build_spec_base64).decode("utf-8")

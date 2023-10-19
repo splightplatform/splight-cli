@@ -3,27 +3,21 @@ import subprocess
 from typing import List
 
 import boto3
-
-# import tarfile
 import py7zr
-
-# import logging
-
-
-# logger = logging.getLogger()
 
 INIT_FILE = "Initialization"
 
 
 class HubComponentManager:
-    def __init__(self, name: str, version: str) -> None:
+    def __init__(self, spec) -> None:
         self.path = "Sum-1.1.5"
-        # print(os.listdir())
+        self.name = spec["name"]
+        self.version = spec["version"]
+        self.hub_component_id = spec["id"]
         # self._validate()
 
     def _handle_RUN(self, command: List[str]) -> None:
         command: str = " ".join(command)
-        # logger.debug(f"Running initialization command: {command} ...")
         try:
             subprocess.run(command, check=True, cwd=self.path, shell=True)
         except subprocess.CalledProcessError as e:

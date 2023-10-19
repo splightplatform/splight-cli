@@ -22,7 +22,6 @@ if __name__ == "__main__":
     hub_version = configure_spec["version"]
     hub_component_id = configure_spec["id"]
 
-    manager = HubComponentManager(name=hub_name, version=hub_version)
+    manager = HubComponentManager(spec=configure_spec)
     manager.download_component()
     manager.install_requirements()
-    exit(0)
