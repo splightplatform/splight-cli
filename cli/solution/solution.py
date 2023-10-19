@@ -89,11 +89,11 @@ class SolutionManager:
             )
             if result.update:
                 assets_list[i].update(result.updated_dict)
-                self._apply_exec.replace_data_addr()
                 save_yaml(self._state_path, self._state)
 
     def _apply_components_state(self):
         """Applies Components states to the engine."""
+        self._apply_exec.replace_data_addr()
         components_list = self._state["solution"]["components"]
         for i in range(len(components_list)):
             component = components_list[i]
