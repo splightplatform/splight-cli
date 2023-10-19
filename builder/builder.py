@@ -7,8 +7,9 @@ import docker
 import typer
 from constants import BuildStatus
 from docker.errors import APIError, BuildError
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 from schemas import BuildSpec, HubComponent
+from settings import aws_config
 
 app = typer.Typer(name="Splight Component Builder")
 logging.basicConfig(level=logging.DEBUG)
@@ -123,11 +124,18 @@ class Builder:
                 buildargs={
                     "RUNNER_IMAGE": self.runner_image,
                     "CONFIGURE_SPEC": self.build_spec.json(),
+                    "AWS_ACCESS_KEY_ID": aws_config.AWS_ACCESS_KEY_ID,
+                    "AWS_SECRET_ACCESS_KEY": aws_config.AWS_SECRET_ACCESS_KEY,
                 },
                 network_mode="host",
                 pull=True,
             )
         except BuildError as exc:
+            error_message = exc.build_log
+            for log_entry in error_message:
+                for _, message in log_entry.items():
+                    logger.debug(message)
+
             logger.exception(exc)
             logger.error(f"Error building component: {exc}")
             raise exc

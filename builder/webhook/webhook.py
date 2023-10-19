@@ -2,7 +2,8 @@ import json
 from functools import cached_property
 from typing import Dict, Optional, Tuple
 
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 from webhook.auth import HmacSignature
 
 

@@ -2,7 +2,8 @@ from typing import Generic, Type, TypeVar
 
 import requests
 from furl import furl
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings
 from requests import Response
 from webhook.auth import HmacSignature
 
