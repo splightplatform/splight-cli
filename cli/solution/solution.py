@@ -21,16 +21,14 @@ class SolutionManager:
     ):
         self._apply = apply
         self._plan_path = Path(plan_path)
-        self._state_path = state_path
+        self._state_path = Path(state_path) if state_path else None
 
         self._plan = load_yaml(plan_path)
         self._state = (
             load_yaml(self._state_path)
             if self._state_path is not None
-            else None
+            else self._generate_state_from_plan()
         )
-        if self._state is None:
-            self._generate_state()
         check_files(self._plan, self._state)
         self._plan_exec = PlanExecutor(self._state)
         self._apply_exec = ApplyExecutor(
@@ -54,19 +52,20 @@ class SolutionManager:
             self._apply_assets_state()
             self._apply_components_state()
 
-    def _generate_state(self):
+    def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
-        self._state = self._plan.copy()
+        state = self._plan.copy()
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
         )
-        bprint(self._state)
+        bprint(state)
         self._state_path = self._plan_path.parent / self.DEFAULT_STATE_PATH
         bprint(f"The state file will be saved to {self._state_path}")
         confirm = typer.confirm("Do you want to save it?")
         if confirm:
-            save_yaml(self._state_path, self._state)
+            save_yaml(self._state_path, state)
+        return state
 
     def _generate_assets_state(self):
         """Compares assets in the state file."""
