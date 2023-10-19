@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import typer
 from deepdiff import DeepDiff
@@ -9,7 +9,6 @@ from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 from cli.solution.models import Solution
 from cli.solution.utils import (
     SplightTypes,
-    StrKeyDict,
     bprint,
     parse_str_data_addr,
     to_dict,
@@ -20,7 +19,7 @@ ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
 class ApplyExecutor:
     def __init__(
-        self, plan: Solution, state: Solution, regex_to_exclude: StrKeyDict
+        self, plan: Solution, state: Solution, regex_to_exclude: Dict[str, Any]
     ):
         self._plan = plan
         self._state = state
@@ -115,7 +114,7 @@ class ApplyExecutor:
 
         Parameters
         ----------
-        data_addr : StrKeyDict
+        data_addr : Dict[str, str]
             The data address to be parsed.
 
         Returns

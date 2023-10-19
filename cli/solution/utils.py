@@ -3,7 +3,7 @@ import re
 import uuid
 from collections import namedtuple
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Dict, Union
 
 import yaml
 from pydantic import BaseModel
@@ -15,7 +15,6 @@ from cli.solution.models import Solution
 
 console = Console()
 
-StrKeyDict = Dict[str, Any]
 SplightTypes = Union[Asset, Component, RoutineObject]
 
 MatchResult = namedtuple(
