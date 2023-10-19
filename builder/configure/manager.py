@@ -4,17 +4,28 @@ from typing import List
 
 import boto3
 import py7zr
+from settings import s3_settings
 
 INIT_FILE = "Initialization"
 
 
 class HubComponentManager:
     def __init__(self, spec) -> None:
-        self.path = "Sum-1.1.5"
         self.name = spec["name"]
         self.version = spec["version"]
         self.hub_component_id = spec["id"]
-        # self._validate()
+
+    @property
+    def boto3_key(self):
+        return f"component_files/{self.hub_component_id}/{self.name}-{self.version}.7z"
+
+    @property
+    def zip_filename(self):
+        return f"{self.name}-{self.version}.7z"
+
+    @property
+    def path(self):
+        return f"{self.name}-{self.version}"
 
     def _handle_RUN(self, command: List[str]) -> None:
         command: str = " ".join(command)
@@ -44,29 +55,21 @@ class HubComponentManager:
             prefix: str = command[0]
             handler = getattr(self, f"_handle_{prefix}", None)
             if not handler:
-                #                 raise Exception(f"Invalid command: {prefix}")
-                print(f"Invalid command: {prefix}")
+                raise Exception(f"Invalid command: {prefix}")
             handler(command[1:])
 
     def download_component(self):
-        print("Downloading...")
-        filename = "asdfasdf.7z"
-
         s3_client = boto3.client("s3")
         s3_client.download_file(
-            Bucket="integration-splight-api-storage",
-            Key="component_files/97f71a89-b42e-4ecb-b02a-51965d974d44/Sum-1.1.5.7z",
-            Filename=filename,
+            Bucket=s3_settings.S3_BUCKET_NAME,
+            Key=self.boto3_key,
+            Filename=self.zip_filename,
         )
 
-        with py7zr.SevenZipFile(filename, "r") as z:
+        with py7zr.SevenZipFile(self.zip_filename, "r") as z:
             z.extractall(path=".")
 
-        print("\n\n\n")
-        print(os.listdir())
-        print("\n\n\n")
-
     def _validate(self):
-        # VALIDATE FILES
+        # VALIDATE INIT FILE EXISTS
         if not os.path.isfile(os.path.join(self.path, INIT_FILE)):
             raise Exception(f"{INIT_FILE} file is missing in {self.path}")

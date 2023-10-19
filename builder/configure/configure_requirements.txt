@@ -1,3 +1,4 @@
 boto3==1.28.12
 py7zr==0.18.5
 typing==3.7.4.3
+pydantic_settings==2.0.3

@@ -126,6 +126,7 @@ class Builder:
                     "CONFIGURE_SPEC": self.build_spec.json(),
                     "AWS_ACCESS_KEY_ID": aws_config.AWS_ACCESS_KEY_ID,
                     "AWS_SECRET_ACCESS_KEY": aws_config.AWS_SECRET_ACCESS_KEY,
+                    "S3_BUCKET_NAME": aws_config.S3_BUCKET_NAME,
                 },
                 network_mode="host",
                 pull=True,
