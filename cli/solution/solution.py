@@ -8,15 +8,19 @@ from splight_lib.models import Asset, Component, RoutineObject
 from cli.solution.apply_exec import ApplyExecutor
 from cli.solution.models import Solution
 from cli.solution.plan_exec import PlanExecutor
-from cli.solution.utils import bprint, check_files, load_yaml, save_yaml
+from cli.solution.utils import (
+    DEFAULT_STATE_PATH,
+    PRINT_STYLE,
+    bprint,
+    check_files,
+    load_yaml,
+    save_yaml,
+)
 
 console = Console()
 
 
 class SolutionManager:
-    DEFAULT_STATE_PATH = "state.yml"
-    PRINT_STYLE = "bold black on white"
-
     def __init__(
         self, plan_path: str, state_path: Optional[str], apply: bool = False
     ):
@@ -44,12 +48,12 @@ class SolutionManager:
         )
 
     def execute(self):
-        console.print("\nStarting plan step...", style=self.PRINT_STYLE)
+        console.print("\nStarting plan step...", style=PRINT_STYLE)
         self._generate_assets_state()
         self._generate_components_state()
 
         if self._apply:
-            console.print("\nStarting apply step...", style=self.PRINT_STYLE)
+            console.print("\nStarting apply step...", style=PRINT_STYLE)
             self._apply_assets_state()
             self._apply_components_state()
 
@@ -61,7 +65,7 @@ class SolutionManager:
             "generated from the plan."
         )
         bprint(state)
-        self._state_path = self._plan_path.parent / self.DEFAULT_STATE_PATH
+        self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
         bprint(f"The state file will be saved to {self._state_path}")
         confirm = typer.confirm("Do you want to save it?")
         if confirm:
