@@ -85,7 +85,7 @@ class SolutionManager:
         assets_list = self._state.assets
         for i in range(len(assets_list)):
             result = self._apply_exec.apply(
-                model=Asset, local_dict=assets_list[i]
+                model=Asset, local_instance=assets_list[i]
             )
             if result.update:
                 assets_list[i] = Asset.parse_obj(result.updated_dict)
@@ -98,7 +98,7 @@ class SolutionManager:
         for i in range(len(components_list)):
             component = components_list[i]
             result = self._apply_exec.apply(
-                model=Component, local_dict=component
+                model=Component, local_instance=component
             )
             if result.update:
                 updated_routines = self._apply_routines_state(
@@ -117,7 +117,7 @@ class SolutionManager:
         for i in range(len(routine_list)):
             routine_list[i].component_id = component_id
             result = self._apply_exec.apply(
-                model=RoutineObject, local_dict=routine_list[i]
+                model=RoutineObject, local_instance=routine_list[i]
             )
             if result.update:
                 routine_list[i] = RoutineObject.parse_obj(result.updated_dict)

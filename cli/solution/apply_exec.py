@@ -18,10 +18,7 @@ ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
 
 class ApplyExecutor:
-    def __init__(
-        self, plan: Solution, state: Solution, regex_to_exclude: Dict[str, Any]
-    ):
-        self._plan = plan
+    def __init__(self, state: Solution, regex_to_exclude: Dict[str, Any]):
         self._state = state
         self._model_to_regex = regex_to_exclude
 
@@ -51,7 +48,6 @@ class ApplyExecutor:
         print(local_instance)
         create = typer.confirm("Are you sure?")
         if create:
-            local_instance = model.parse_obj(local_instance)
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
             return ApplyResult(True, to_dict(remote_instance))
@@ -183,7 +179,6 @@ class ApplyExecutor:
                 print(local_instance)
                 update = typer.confirm("Are you sure?")
                 if update:
-                    local_instance = model.parse_obj(local_instance)
                     local_instance.save()
                     return ApplyResult(True, to_dict(local_instance))
                 return ApplyResult(False, None)
@@ -199,7 +194,6 @@ class ApplyExecutor:
         print(local_instance)
         create = typer.confirm("Are you sure?")
         if create:
-            local_instance = model.parse_obj(local_instance)
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
             return ApplyResult(True, to_dict(remote_instance))
