@@ -42,41 +42,46 @@ def load_yaml(yaml_path: Path):
     return loaded_yaml
 
 
-def save_yaml(yaml_path: Path, yaml_dict: Dict):
+def save_yaml(yaml_path: Path, dict_to_save: Dict):
     bprint(f"Saving {yaml_path}...")
+    dict_to_save = (
+        dict_to_save
+        if isinstance(dict_to_save, dict)
+        else to_dict(dict_to_save)
+    )
     with open(yaml_path, "w") as f:
-        yaml.dump(yaml_dict, f, indent=2)
+        yaml.dump(dict_to_save, f, indent=2)
 
 
 def check_files(plan: Dict, state: Dict):
-    plan_assets = plan["solution"]["assets"]
-    state_assets = state["solution"]["assets"]
+    plan_assets = plan.assets
+    state_assets = state.assets
     if len(plan_assets) != len(state_assets):
         raise ValueError(
             "The number of assets defined in the plan is different from the "
             "ones defined in the state file."
         )
 
-    state_asset_names = [a["name"] for a in state_assets]
+    state_asset_names = [a.name for a in state_assets]
     for asset in plan_assets:
-        plan_asset_name = asset["name"]
+        plan_asset_name = asset.name
         if plan_asset_name not in state_asset_names:
             raise MissingElement(
                 f"Plan asset {plan_asset_name} was not found in the state "
                 "assets."
             )
 
-    plan_components = plan["solution"]["components"]
-    state_components = state["solution"]["components"]
+    plan_components = plan.components
+    state_components = state.components
     if len(plan_components) != len(state_components):
         raise ValueError(
             "The number of components defined in the plan is different from "
             "the ones defined in the state file."
         )
 
-    state_comp_names = [c["name"] for c in state_components]
+    state_comp_names = [c.name for c in state_components]
     for comp in plan_components:
-        plan_comp_name = comp["name"]
+        plan_comp_name = comp.name
         if plan_comp_name not in state_comp_names:
             raise MissingElement(
                 f"Plan component {plan_comp_name} was not found in the state "

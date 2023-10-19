@@ -6,6 +6,7 @@ from deepdiff import DeepDiff
 from rich import print
 from splight_lib.models import Asset
 
+from cli.solution.models import Solution
 from cli.solution.utils import (
     SplightTypes,
     StrKeyDict,
@@ -18,7 +19,10 @@ ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
 
 class ApplyExecutor:
-    def __init__(self, state: StrKeyDict, regex_to_exclude: StrKeyDict):
+    def __init__(
+        self, plan: Solution, state: Solution, regex_to_exclude: StrKeyDict
+    ):
+        self._plan = plan
         self._state = state
         self._model_to_regex = regex_to_exclude
 
@@ -40,7 +44,7 @@ class ApplyExecutor:
             Named tuple containing the result of the apply step.
         """
         model_name = model.__name__
-        instance_id = local_dict.get("id", None)
+        instance_id = local_dict.id
 
         if instance_id is not None:
             return self._compare_with_remote(model, local_dict)
@@ -56,9 +60,9 @@ class ApplyExecutor:
 
     def replace_data_addr(self):
         """Replaces assets data addresses in component's routines."""
-        state_components = self._state["solution"]["components"]
+        state_components = self._state.components
         for i in range(len(state_components)):
-            routines = state_components[i].get("routines", [])
+            routines = state_components[i].routines
             for routine in routines:
                 self._replace_routine_data_addr(routine)
 
@@ -70,9 +74,9 @@ class ApplyExecutor:
         routine : StrKeyDict
             The routine where we will replace the data addresses.
         """
-        for io_elem in routine["input"] + routine["output"]:
-            if io_elem.get("value", None) is not None:
-                io_elem["value"] = self._get_new_value(io_elem)
+        for io_elem in routine.input + routine.output:
+            if io_elem.value is not None:
+                io_elem.value = self._get_new_value(io_elem)
 
     def _get_new_value(
         self, io_elem: Union[List[Dict], Dict]
@@ -95,16 +99,16 @@ class ApplyExecutor:
         ValueError
             Raised if passed a multiple: false element and a list value.
         """
-        multiple = io_elem.get("multiple", False)
-        if not multiple and isinstance(io_elem["value"], list):
+        multiple = io_elem.multiple
+        if not multiple and isinstance(io_elem.value, list):
             raise ValueError(
-                f"Passed 'multiple: False' but value of {io_elem['name']} is "
+                f"Passed 'multiple: False' but value of {io_elem.name} is "
                 "a list. Aborted."
             )
         if multiple:
-            return [self._parse_data_addr(da) for da in io_elem["value"]]
+            return [self._parse_data_addr(da) for da in io_elem.value]
         else:
-            return self._parse_data_addr(io_elem["value"])
+            return self._parse_data_addr(io_elem.value)
 
     def _parse_data_addr(self, data_addr: StrKeyDict) -> Dict[str, str]:
         """Parses a data address ids.
@@ -122,13 +126,13 @@ class ApplyExecutor:
         result = parse_str_data_addr(data_addr)
         if result.is_id:
             return {"asset": result.asset, "attribute": result.attribute}
-        state_assets = self._state["solution"]["assets"]
+        state_assets = self._state.assets
         for asset in state_assets:
-            if asset["name"] == result.asset:
-                asset_id = asset["id"]
-                for attr in asset["attributes"]:
-                    if attr["name"] == result.attribute:
-                        attr_id = attr["id"]
+            if asset.name == result.asset:
+                asset_id = asset.id
+                for attr in asset.attributes:
+                    if attr.name == result.attribute:
+                        attr_id = attr.id
                         break
                 break
         return {"asset": asset_id, "attribute": attr_id}
@@ -151,15 +155,15 @@ class ApplyExecutor:
             Named tuple containing the result of the apply step.
         """
         model_name = model.__name__
-        instance_id = local_dict["id"]
+        instance_id = local_dict.id
 
         remote_list = model.list(id__in=instance_id)
         if remote_list:
-            remote_instance = to_dict(remote_list[0])
+            remote_instance = remote_list[0]
             exclude_regex = self._model_to_regex.get(model_name, None)
             diff = DeepDiff(
-                local_dict,
-                remote_instance,
+                to_dict(local_dict),
+                to_dict(remote_instance),
                 exclude_regex_paths=exclude_regex,
             )
             if diff:
@@ -215,8 +219,8 @@ class ApplyExecutor:
         """
 
         if model == Asset.__name__:
-            local_dict["id"] = None
-            for attr in local_dict["attributes"]:
-                attr["id"] = None
+            local_dict.id = None
+            for attr in local_dict.attributes:
+                attr.id = None
         else:
-            local_dict["id"] = None
+            local_dict.id = None
