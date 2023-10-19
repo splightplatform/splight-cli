@@ -4,9 +4,8 @@ from typing import List
 
 import boto3
 import py7zr
+from constants import INIT_FILE
 from settings import s3_settings
-
-INIT_FILE = "Initialization"
 
 
 class HubComponentManager:
