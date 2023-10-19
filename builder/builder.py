@@ -6,6 +6,7 @@ import boto3
 import docker
 import typer
 from docker.errors import APIError, BuildError
+from packaging import version
 from pydantic_settings import BaseSettings
 from settings import aws_config
 from splight_lib_internal.constants.builder import BuildStatus
@@ -77,7 +78,13 @@ class Builder:
 
     @property
     def runner_image(self):
-        return f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
+        cli_version = version.parse(self.build_spec.cli_version)
+        if cli_version < version.parse("4.0.0"):
+            return (
+                f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
+            )
+        else:
+            return f"{self.registry}/splight-admin:latest"
 
     @property
     def tag(self):
@@ -168,13 +175,6 @@ class Builder:
             if image_size <= cap:
                 return size
         return "very_large"
-
-    def _save_component(self):
-        logger.info("Saving component")
-        try:
-            self.component_manager.update(component=self.hub_component)
-        except Exception as e:
-            logger.error(f"Error saving component: {e}")
 
 
 @app.command()
