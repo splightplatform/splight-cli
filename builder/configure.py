@@ -1,7 +1,7 @@
 import argparse
 import json
 
-from install_requirements import HubComponentManager
+from manager import HubComponentManager
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Executes a hub component.")
@@ -16,11 +16,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     configure_spec = json.loads(args.configure_spec[0])
-
-    # TODO remove this overparsing
-    hub_name = configure_spec["name"]
-    hub_version = configure_spec["version"]
-    hub_component_id = configure_spec["id"]
 
     manager = HubComponentManager(spec=configure_spec)
     manager.download_component()

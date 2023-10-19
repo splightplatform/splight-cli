@@ -1,15 +1,16 @@
-import argparse
 import base64
 import logging
 from functools import cached_property
 
 import boto3
 import docker
+import typer
 from constants import BuildStatus
 from docker.errors import APIError, BuildError
 from pydantic import BaseSettings
 from schemas import BuildSpec, HubComponent
 
+app = typer.Typer(name="Splight Component Builder")
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 
@@ -169,23 +170,22 @@ class Builder:
             logger.error(f"Error saving component: {e}")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Executes a hub component.")
-    parser.add_argument(
+@app.command()
+def main(
+    build_spec_base64: str = typer.Option(
+        ...,
         "-b",
         "--build-spec",
         help="build spec as base64",
-        type=str,
-        nargs=1,
-        required=True,
     )
-
-    args = parser.parse_args()
-    build_spec_base64 = args.build_spec[0]
-
+):
     build_spec_str = base64.b64decode(build_spec_base64).decode("utf-8")
     build_spec = BuildSpec.parse_raw(build_spec_str)
     logger.debug(f"Build spec: {build_spec.json()}")
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
+
+
+if __name__ == "__main__":
+    app()
