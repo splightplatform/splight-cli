@@ -54,8 +54,6 @@ class Builder:
             self._build_component()
             self._push_component()
             self._update_min_component_capacity()
-            # self.hub_component.build_status = BuildStatus.SUCCESS
-            # self.hub_component.save()
         except Exception as exc:
             logger.exception(exc)
             logger.error("Build failed: ", exc)
