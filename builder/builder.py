@@ -7,10 +7,9 @@ import docker
 import typer
 from docker.errors import APIError, BuildError
 from pydantic_settings import BaseSettings
-from schemas import BuildSpec
 from settings import aws_config
 from splight_lib_internal.constants.builder import BuildStatus
-from splight_lib_internal.schemas.builder import HubComponent
+from splight_lib_internal.schemas.builder import BuildSpec, HubComponent
 
 app = typer.Typer(name="Splight Component Builder")
 logging.basicConfig(level=logging.DEBUG)
