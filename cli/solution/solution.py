@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import typer
 from rich.console import Console
@@ -108,7 +108,9 @@ class SolutionManager:
                 components_list[i].routines = updated_routines
                 save_yaml(self._state_path, self._state)
 
-    def _apply_routines_state(self, component, updated_component):
+    def _apply_routines_state(
+        self, component: Component, updated_component: Component
+    ) -> List[RoutineObject]:
         """Applies RoutineObject states to the engine."""
         routine_list = component.routines
         component_id = updated_component.id

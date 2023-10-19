@@ -26,8 +26,8 @@ class PlanExecutor:
 
         Parameters
         ----------
-        asset_plan : StrKeyDict
-            An Asset instance as a dictionary.
+        asset_plan : Asset
+            An Asset instance.
         """
         state_assets = self._state.assets
         for i in range(len(state_assets)):
@@ -48,13 +48,13 @@ class PlanExecutor:
                 break
 
     def compare_state_component(self, plan_component: Component):
-        """Finds and compares an asset from the plan with the analogous in the
-        state file printing the plan in case it's executed.
+        """Finds and compares a Component from the plan with the analogous in
+        the state file printing the plan in case it's executed.
 
         Parameters
         ----------
-        asset_plan : StrKeyDict
-            An Asset instance as a dictionary.
+        plan_commponent : Component
+            A Component instance.
         """
         state_components = self._state.components
         state_component_found = None
@@ -98,12 +98,12 @@ class PlanExecutor:
         bprint(state_component_found)
 
     def _check_assets_are_defined(self, state_component_found: Component):
-        """Checks if the assets of a component are defined or not in the state
-        file.
+        """Checks if the assets of a component routine are defined or not in
+        the state file.
 
         Parameters
         ----------
-        state_component_found : StrKeyDict
+        state_component_found : Component
             The state component.
         """
         routines = state_component_found.routines

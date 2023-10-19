@@ -6,9 +6,12 @@ from pathlib import Path
 from typing import Any, Dict, Union
 
 import yaml
+from pydantic import BaseModel
 from rich.console import Console
 from rich.style import Style
 from splight_lib.models import Asset, Component, RoutineObject
+
+from cli.solution.models import Solution
 
 console = Console()
 
@@ -42,18 +45,18 @@ def load_yaml(yaml_path: Path):
     return loaded_yaml
 
 
-def save_yaml(yaml_path: Path, dict_to_save: Dict):
+def save_yaml(yaml_path: Path, elem_to_save: Union[BaseModel, Dict]):
     bprint(f"Saving {yaml_path}...")
     dict_to_save = (
-        dict_to_save
-        if isinstance(dict_to_save, dict)
-        else to_dict(dict_to_save)
+        elem_to_save
+        if isinstance(elem_to_save, dict)
+        else to_dict(elem_to_save)
     )
     with open(yaml_path, "w") as f:
         yaml.dump(dict_to_save, f, indent=2)
 
 
-def check_files(plan: Dict, state: Dict):
+def check_files(plan: Solution, state: Solution):
     plan_assets = plan.assets
     state_assets = state.assets
     if len(plan_assets) != len(state_assets):
@@ -97,13 +100,13 @@ def is_valid_uuid(possible_uuid: str) -> bool:
         return False
 
 
-def parse_str_data_addr(data_addr_val: StrKeyDict) -> MatchResult:
+def parse_str_data_addr(data_addr_val: Dict[str, str]) -> MatchResult:
     """Parses a dictionary where the key 'asset' has a string of the form
     <local/engine>.{{<asset-name>}} and returns just the <asset-name>.
 
     Parameters
     ----------
-    data_addr_val : StrKeyDict
+    data_addr_val : Dict[str, str]
         Data address to process.
 
     Returns
