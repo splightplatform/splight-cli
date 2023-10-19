@@ -5,11 +5,12 @@ from functools import cached_property
 import boto3
 import docker
 import typer
-from constants import BuildStatus
 from docker.errors import APIError, BuildError
 from pydantic_settings import BaseSettings
-from schemas import BuildSpec, HubComponent
+from schemas import BuildSpec
 from settings import aws_config
+from splight_lib_internal.constants.builder import BuildStatus
+from splight_lib_internal.schemas.builder import HubComponent
 
 app = typer.Typer(name="Splight Component Builder")
 logging.basicConfig(level=logging.DEBUG)
@@ -123,7 +124,7 @@ class Builder:
                 tag=self.tag,
                 buildargs={
                     "RUNNER_IMAGE": self.runner_image,
-                    "CONFIGURE_SPEC": self.build_spec.json(),
+                    "CONFIGURE_SPEC": self.build_spec.model_dump_json(),
                     "AWS_ACCESS_KEY_ID": aws_config.AWS_ACCESS_KEY_ID,
                     "AWS_SECRET_ACCESS_KEY": aws_config.AWS_SECRET_ACCESS_KEY,
                     "S3_BUCKET_NAME": aws_config.S3_BUCKET_NAME,
@@ -181,16 +182,15 @@ class Builder:
 
 @app.command()
 def main(
-    build_spec_base64: str = typer.Option(
+    build_spec_str: str = typer.Option(
         ...,
         "-b",
         "--build-spec",
-        help="build spec as base64",
+        help="build spec as string",
     )
 ):
-    build_spec_str = base64.b64decode(build_spec_base64).decode("utf-8")
-    build_spec = BuildSpec.parse_raw(build_spec_str)
-    logger.debug(f"Build spec: {build_spec.json()}")
+    build_spec = BuildSpec.model_validate_json(build_spec_str)
+    logger.debug(f"Build spec: {build_spec.model_dump_json()}")
 
     builder = Builder(build_spec)
     builder.build_and_push_component()
