@@ -134,7 +134,7 @@ class PlanExecutor:
             ids_str = f"{result.asset}-{result.attribute}"
             if ids_str not in self._possible_asset_attr:
                 raise MissingDataAddress(
-                    f"The asset id: {data_addr.asset} "
-                    f"attribute id: {data_addr.attribute} is "
+                    f"The asset id: {data_addr['asset']} "
+                    f"attribute id: {data_addr['attribute']} is "
                     "not defined in the state file. Aborted."
                 )
