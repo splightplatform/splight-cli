@@ -35,6 +35,7 @@ def main(
         help="build spec as string",
     )
 ):
+    build_spec_str = build_spec_str.replace("=", ":")
     build_spec = BuildSpec.model_validate_json(build_spec_str)
     logger.debug(f"Build spec: {build_spec.model_dump_json()}")
 
