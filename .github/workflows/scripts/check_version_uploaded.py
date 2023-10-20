@@ -6,7 +6,7 @@ from pkg_resources import parse_version as parse
 
 
 class PypiVersionError(Exception):
-    """Raised when the version is not greater than the one on pypi."""
+    """Raised if the local version was already uploaded to pypi."""
 
 
 def get_pypi_versions(project_name: str):
@@ -16,14 +16,13 @@ def get_pypi_versions(project_name: str):
 
 
 if __name__ == "__main__":
-    """Compares versions between the local repository and the package on pypi.
+    """Checks the version was not uploaded.
 
     Args:
         local_version (arg 1) (str): local version number (x.y.z)
         project_name (arg 2) (str): name of the project on pypi
     Raises:
-        PypiVersionError: if the local version is not greater than the one on
-        pypi
+        PypiVersionError: if the local version was already uploaded to pypi
     """
     local_version = sys.argv[1]
     project_name = sys.argv[2]

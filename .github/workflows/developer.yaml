@@ -44,7 +44,7 @@ jobs:
         run: python3 .github/workflows/scripts/check_dev_version.py ${{ env.CURRENT_VERSION }}
 
       - name: Verifies the dev version is not uploaded.
-        run: python .github/workflows/scripts/check_dev_version_not_uploaded.py ${{ env.CURRENT_VERSION }} $LIBRARY_NAME
+        run: python .github/workflows/scripts/check_version_uploaded.py ${{ env.CURRENT_VERSION }} $LIBRARY_NAME
 
   upload_developer_to_pypi:
     runs-on: ubuntu-latest
