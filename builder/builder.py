@@ -19,7 +19,6 @@ logger = logging.getLogger()
 
 
 class Context(BaseSettings):
-    SPLIGHT_API_HOST: str
     WORKSPACE: str
     REGISTRY: str
     REPOSITORY_NAME: str = "splight-components"
