@@ -53,7 +53,6 @@ class Builder:
             self.hub_component.save()
             self._build_component()
             self._push_component()
-            self._update_min_component_capacity()
         except Exception as exc:
             logger.exception(exc)
             logger.error("Build failed: ", exc)
@@ -160,21 +159,6 @@ class Builder:
         except APIError as e:
             logger.error(f"Error pushing component: {e}")
             raise e
-
-    def _update_min_component_capacity(self):
-        logger.info("Saving image size")
-        image = self.docker_client.images.get(self.tag)
-        # get image size in GB
-        image_size = float(image.attrs["Size"] / 10**9)
-        self.hub_component.min_component_capacity = (
-            self._get_min_component_capacity(image_size)
-        )
-
-    def _get_min_component_capacity(self, image_size: float) -> str:
-        for size, cap in self._component_capacity:
-            if image_size <= cap:
-                return size
-        return "very_large"
 
 
 @app.command()
