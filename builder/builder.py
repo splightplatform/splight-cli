@@ -5,6 +5,7 @@ from functools import cached_property
 import boto3
 import docker
 import typer
+from constants import NEW_RUNNER_CLI_VERSION
 from docker.errors import APIError, BuildError
 from packaging import version
 from pydantic_settings import BaseSettings
@@ -77,8 +78,8 @@ class Builder:
 
     @property
     def runner_image(self):
-        cli_version = version.parse(self.build_spec.cli_version)
-        if cli_version < version.parse("4.0.0"):
+        cli_version = version.parse(self.build_spec.cli_version).release
+        if cli_version < version.parse(NEW_RUNNER_CLI_VERSION).release:
             return (
                 f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
             )
