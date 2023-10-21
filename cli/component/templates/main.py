@@ -17,7 +17,7 @@ class {{component_name}}(SplightBaseComponent):
         super().__init__(component_id)
         self._logger = getLogger("MyComponent")
 
-    def start(self):
+    def run_component(self):
         self.execution_engine.start(
             Task(
                 handler=self._run,
