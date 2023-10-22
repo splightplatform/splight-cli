@@ -22,7 +22,7 @@
 ### Inputs
 
 {% if inputs != [] -%}
-The component's input parameters are:
+The component inputs are:
 
 | name | type | default | required | description |
 |------|------|---------|----------|-------------|
@@ -36,7 +36,7 @@ This component does not have any inputs.
 ### Routines
 
 {% if routines != [] -%}
-The routines defined by the component are:
+The component routines are:
 {% for routine in routines %}
   - #### {{routine.name}}
 
@@ -59,7 +59,7 @@ This component does not have any routines.
 ### Custom Types
 
 {% if custom_types != [] -%}
-The custom types defined by the component are:
+The component custom types are:
 {% for type in custom_types %}
   - #### {{type.name}}
 
