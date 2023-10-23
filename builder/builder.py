@@ -1,10 +1,10 @@
 import base64
 import logging
+import os
 from functools import cached_property
 
 import boto3
 import docker
-import requests
 import typer
 from constants import BuildStatus
 from docker.errors import APIError, BuildError
@@ -79,7 +79,7 @@ class Builder:
 
     @property
     def runner_image(self):
-        return f"{self.registry}/splight-runner:{self.build_spec.cli_version}"
+        return f"{self.registry}/splight-admin:latest"
 
     @property
     def tag(self):
@@ -117,12 +117,19 @@ class Builder:
     def _build_component(self):
         logger.info("Building component")
         try:
+            component_path = os.path.join(
+                "/app",
+                self.build_spec.name,
+                self.build_spec.version.replace(".", "_"),
+            )
             # TODO: add dockerfile to use
             _, build_logs = self.docker_client.images.build(
                 path=".",
                 tag=self.tag,
                 buildargs={
                     "RUNNER_IMAGE": self.runner_image,
+                    "SPLIGHT_CLI_VERSION": self.build_spec.cli_version,
+                    "COMPONENT_PATH": component_path,
                     "CONFIGURE_SPEC": self.build_spec.json(),
                 },
                 network_mode="host",
