@@ -117,9 +117,7 @@ class ComponentManager:
         if os.path.exists(os.path.join(path, README_FILE)) and not force:
             raise ReadmeExists(path)
         template = get_template("auto_readme.md")
-        parsed_bindings = [
-            json.loads(binding.json()) for binding in spec.bindings
-        ]
+
         readme = template.render(
             component_name=name,
             version=version,
@@ -127,10 +125,6 @@ class ComponentManager:
             component_type=spec.component_type,
             inputs=spec.input,
             custom_types=spec.custom_types,
-            bindings=parsed_bindings,
-            commands=spec.commands,
-            output=spec.output,
-            endpoints=spec.endpoints,
             routines=spec.routines,
         )
         with open(os.path.join(path, README_FILE), "w+") as f:
