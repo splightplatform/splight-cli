@@ -52,3 +52,6 @@ Thumbs.db
 
 # Eggs
 *.egg-info
+
+
+cli/solution/*.yml
