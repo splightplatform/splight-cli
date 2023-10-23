@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Union
 
 import typer
 from deepdiff import DeepDiff
-from rich import print
+from rich import rprint as rprint
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 
 from cli.solution.models import Solution
@@ -45,7 +45,7 @@ class ApplyExecutor:
         if instance_id is not None:
             return self._compare_with_remote(model, local_instance)
         bprint(f"You are about to create the following {model_name}:")
-        print(local_instance)
+        rprint(local_instance)
         create = typer.confirm("Are you sure?")
         if create:
             local_instance.save()
@@ -166,7 +166,7 @@ class ApplyExecutor:
                     f"\nThe remote {model_name} with id {instance_id} has the "
                     " following differences with the local item:"
                 )
-                print(diff)
+                rprint(diff)
                 update = typer.confirm(
                     "Do you want to update the local instance?"
                 )
@@ -176,7 +176,7 @@ class ApplyExecutor:
                     f"\nYou are about to override the remote {model_name} "
                     f"with your local {model_name}:"
                 )
-                print(local_instance)
+                rprint(local_instance)
                 update = typer.confirm("Are you sure?")
                 if update:
                     local_instance.save()
@@ -188,10 +188,10 @@ class ApplyExecutor:
             )
             return ApplyResult(False, None)
         bprint(f"\nThe following {model_name} was not found remotely")
-        print(local_instance)
+        rprint(local_instance)
         self._remove_ids(model_name, local_instance)
         bprint(f"\nYou are about to create the following {model_name}:")
-        print(local_instance)
+        rprint(local_instance)
         create = typer.confirm("Are you sure?")
         if create:
             local_instance.save()
