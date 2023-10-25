@@ -51,7 +51,7 @@ class ApplyExecutor:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
             return ApplyResult(True, to_dict(remote_instance))
-        return ApplyResult(False, None)
+        return ApplyResult(False, to_dict(local_instance))
 
     def replace_data_addr(self):
         """Replaces assets data addresses in component's routines."""
@@ -171,7 +171,7 @@ class ApplyExecutor:
                     "Do you want to update the local instance?"
                 )
                 if update:
-                    return ApplyResult(True, remote_instance)
+                    return ApplyResult(True, to_dict(remote_instance))
                 bprint(
                     f"\nYou are about to override the remote {model_name} "
                     f"with your local {model_name}:"
@@ -181,12 +181,12 @@ class ApplyExecutor:
                 if update:
                     local_instance.save()
                     return ApplyResult(True, to_dict(local_instance))
-                return ApplyResult(False, None)
+                return ApplyResult(False, to_dict(local_instance))
             bprint(
                 f"Nothing to update, the same {model_name} was found "
                 "remotely"
             )
-            return ApplyResult(False, None)
+            return ApplyResult(False, to_dict(local_instance))
         bprint(f"\nThe following {model_name} was not found remotely")
         print(local_instance)
         self._remove_ids(model_name, local_instance)
@@ -197,7 +197,7 @@ class ApplyExecutor:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
             return ApplyResult(True, to_dict(remote_instance))
-        return ApplyResult(False, None)
+        return ApplyResult(False, to_dict(local_instance))
 
     def _remove_ids(self, model: SplightTypes, local_instance: SplightTypes):
         """Removes ids to a given dictionary representing a particular model.

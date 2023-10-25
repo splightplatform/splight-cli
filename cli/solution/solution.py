@@ -105,12 +105,12 @@ class SolutionManager:
                 model=Component, local_instance=component
             )
             if result.update:
-                updated_routines = self._apply_routines_state(
-                    component, Component.parse_obj(result.updated_dict)
-                )
                 components_list[i] = Component.parse_obj(result.updated_dict)
-                components_list[i].routines = updated_routines
                 save_yaml(self._state_path, self._state)
+            components_list[i].routines = self._apply_routines_state(
+                component, Component.parse_obj(result.updated_dict)
+            )
+            save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(
         self, component: Component, updated_component: Component
