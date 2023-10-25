@@ -48,14 +48,14 @@ class SolutionManager:
         )
 
     def execute(self):
-        console.print("\nStarting plan step...", style=PRINT_STYLE)
-        self._generate_assets_state()
-        self._generate_components_state()
-
         if self._apply:
             console.print("\nStarting apply step...", style=PRINT_STYLE)
             self._apply_assets_state()
             self._apply_components_state()
+        else:
+            console.print("\nStarting plan step...", style=PRINT_STYLE)
+            self._generate_assets_state()
+            self._generate_components_state()
 
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
