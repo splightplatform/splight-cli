@@ -17,6 +17,10 @@ from cli.solution.utils import (
 ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
 
+class UndefinedID(Exception):
+    ...
+
+
 class ApplyExecutor:
     def __init__(self, state: Solution, regex_to_exclude: Dict[str, Any]):
         self._state = state
@@ -120,6 +124,7 @@ class ApplyExecutor:
         """
         result = parse_str_data_addr(data_addr)
         if result.is_id:
+            self._check_ids_are_defined(result)
             return {"asset": result.asset, "attribute": result.attribute}
         state_assets = self._state.assets
         for asset in state_assets:
@@ -131,6 +136,29 @@ class ApplyExecutor:
                         break
                 break
         return {"asset": asset_id, "attribute": attr_id}
+
+    def _check_ids_are_defined(self, result: ApplyResult):
+        """Checks if an asset id is defined in the state file.
+
+        Parameters
+        ----------
+        result : ApplyResult
+            The result from parsing the asset string.
+
+        Raises
+        ------
+        UndefinedID
+            raised when the asset is not found in the state file.
+        """
+        for asset in self._state.assets:
+            if result.asset == asset.id:
+                for attr in asset.attributes:
+                    if result.attribute == attr.id:
+                        return
+        raise UndefinedID(
+            f"Routine Error: The asset: {result.asset} attribute: "
+            f"{result.attribute} is not defined in the state file."
+        )
 
     def _compare_with_remote(
         self, model: SplightTypes, local_instance: SplightTypes
