@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from cli.solution.solution import Solution
 from cli.solution.utils import to_dict
 
@@ -426,7 +428,7 @@ TEST_STATE_FILLED = {
                         },
                     ],
                     "description": "",
-                    "id": None,
+                    "id": "j1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
                     "input": [
                         {
                             "choices": None,
@@ -438,8 +440,8 @@ TEST_STATE_FILLED = {
                             "sensitive": False,
                             "type": "DataAddress",
                             "value": {
-                                "asset": "local.{{test_asset}}",
-                                "attribute": "attr_1",
+                                "asset": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
+                                "attribute": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
                             },
                             "value_type": "Number",
                         },
@@ -466,12 +468,12 @@ TEST_STATE_FILLED = {
                             "type": "DataAddress",
                             "value": [
                                 {
-                                    "asset": "local.{{test_asset}}",
-                                    "attribute": "attr_2",
+                                    "asset": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
+                                    "attribute": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
                                 },
                                 {
-                                    "asset": "local.{{test_asset}}",
-                                    "attribute": "attr_3",
+                                    "asset": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
+                                    "attribute": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
                                 },
                             ],
                             "value_type": "Number",
@@ -489,8 +491,8 @@ TEST_STATE_FILLED = {
                             "sensitive": False,
                             "type": "DataAddress",
                             "value": {
-                                "asset": "local.{{test_asset}}",
-                                "attribute": "attr_4",
+                                "asset": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
+                                "attribute": "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08",
                             },
                             "value_type": "Number",
                         },
@@ -553,3 +555,11 @@ TEST_STATE_MISSING_ADDRESS_2.components[0].routines[0].input[2].value[0] = {
     "attribute": "attr_4",
 }
 TEST_STATE_MISSING_ADDRESS_2 = to_dict(TEST_STATE_MISSING_ADDRESS_2)
+
+
+def get_plan():
+    return deepcopy(TEST_PLAN)
+
+
+def get_state():
+    return deepcopy(TEST_STATE_FILLED)
