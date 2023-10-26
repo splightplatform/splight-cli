@@ -5,6 +5,7 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Dict, Union
 
+import typer
 import yaml
 from pydantic import BaseModel
 from rich.console import Console
@@ -153,3 +154,7 @@ def parse_str_data_addr(data_addr_val: Dict[str, str]) -> MatchResult:
         asset=result.group(1),
         attribute=attribute,
     )
+
+
+def confirm_or_yes(yes_to_all: bool, string: str) -> bool:
+    return True if yes_to_all else typer.confirm(string)

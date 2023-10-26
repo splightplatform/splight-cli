@@ -30,9 +30,12 @@ def plan(
     state_file: str = typer.Option(
         None, "--state", "-s", help="Path to state yaml file."
     ),
+    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
     try:
-        manager = SolutionManager(plan_file, state_file, apply=False)
+        manager = SolutionManager(
+            plan_file, state_file, apply=False, yes_to_all=yes_to_all
+        )
         manager.execute()
     except Exception as e:
         console.print(f"Error planning solution: {str(e)}", style=error_style)
@@ -46,9 +49,12 @@ def apply(
     state_file: str = typer.Option(
         None, "--state", "-s", help="Path to state yaml file."
     ),
+    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
     try:
-        manager = SolutionManager(plan_file, state_file, apply=True)
+        manager = SolutionManager(
+            plan_file, state_file, apply=True, yes_to_all=yes_to_all
+        )
         manager.execute()
     except Exception as e:
         console.print(f"Error applying solution: {str(e)}", style=error_style)

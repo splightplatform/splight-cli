@@ -1,7 +1,6 @@
 from collections import namedtuple
 from typing import Any, Dict, List, Union
 
-import typer
 from deepdiff import DeepDiff
 from rich import print
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
@@ -10,6 +9,7 @@ from cli.solution.models import Solution
 from cli.solution.utils import (
     SplightTypes,
     bprint,
+    confirm_or_yes,
     parse_str_data_addr,
     to_dict,
 )
@@ -22,8 +22,14 @@ class UndefinedID(Exception):
 
 
 class ApplyExecutor:
-    def __init__(self, state: Solution, regex_to_exclude: Dict[str, Any]):
+    def __init__(
+        self,
+        state: Solution,
+        yes_to_all: bool,
+        regex_to_exclude: Dict[str, Any],
+    ):
         self._state = state
+        self._yes_to_all = yes_to_all
         self._model_to_regex = regex_to_exclude
 
     def apply(
@@ -50,7 +56,7 @@ class ApplyExecutor:
             return self._compare_with_remote(model, local_instance)
         bprint(f"You are about to create the following {model_name}:")
         print(local_instance)
-        create = typer.confirm("Are you sure?")
+        create = confirm_or_yes(self._yes_to_all, "Are you sure?")
         if create:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
@@ -195,8 +201,9 @@ class ApplyExecutor:
                     " following differences with the local item:"
                 )
                 print(diff)
-                update = typer.confirm(
-                    "Do you want to update the local instance?"
+                update = confirm_or_yes(
+                    self._yes_to_all,
+                    "Do you want to update the local instance?",
                 )
                 if update:
                     return ApplyResult(True, to_dict(remote_instance))
@@ -205,7 +212,7 @@ class ApplyExecutor:
                     f"with your local {model_name}:"
                 )
                 print(local_instance)
-                update = typer.confirm("Are you sure?")
+                update = confirm_or_yes(self._yes_to_all, "Are you sure?")
                 if update:
                     local_instance.save()
                     return ApplyResult(True, to_dict(local_instance))
@@ -220,7 +227,7 @@ class ApplyExecutor:
         self._remove_ids(model_name, local_instance)
         bprint(f"\nYou are about to create the following {model_name}:")
         print(local_instance)
-        create = typer.confirm("Are you sure?")
+        create = confirm_or_yes(self._yes_to_all, "Are you sure?")
         if create:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)

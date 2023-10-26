@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-import typer
 from rich.console import Console
 from splight_lib.models import Asset, Component, RoutineObject
 
@@ -13,6 +12,7 @@ from cli.solution.utils import (
     PRINT_STYLE,
     bprint,
     check_files,
+    confirm_or_yes,
     load_yaml,
     save_yaml,
 )
@@ -22,9 +22,14 @@ console = Console()
 
 class SolutionManager:
     def __init__(
-        self, plan_path: str, state_path: Optional[str], apply: bool = False
+        self,
+        plan_path: str,
+        state_path: Optional[str],
+        apply: bool = False,
+        yes_to_all: bool = False,
     ):
         self._apply = apply
+        self._yes_to_all = yes_to_all
         self._plan_path = Path(plan_path)
         self._state_path = Path(state_path) if state_path else None
 
@@ -38,6 +43,7 @@ class SolutionManager:
         self._plan_exec = PlanExecutor(self._state)
         self._apply_exec = ApplyExecutor(
             self._state,
+            self._yes_to_all,
             regex_to_exclude={
                 Component.__name__: [
                     r"root\['routines'\]",
@@ -67,7 +73,7 @@ class SolutionManager:
         bprint(state)
         self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
         bprint(f"The state file will be saved to {self._state_path}")
-        confirm = typer.confirm("Do you want to save it?")
+        confirm = confirm_or_yes(self._yes_to_all, "Do you want to save it?")
         if confirm:
             save_yaml(self._state_path, state)
         return state
