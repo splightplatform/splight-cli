@@ -25,6 +25,7 @@ MatchResult = namedtuple(
 
 DEFAULT_STATE_PATH = "state.yml"
 PRINT_STYLE = "bold black on white"
+IMPORT_PREFIX = "imported_"
 
 
 class MissingElement(Exception):

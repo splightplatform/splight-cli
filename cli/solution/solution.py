@@ -1,11 +1,14 @@
 from pathlib import Path
 from typing import List, Optional, Tuple
+from uuid import UUID
 
+import typer
 from rich.console import Console
 from splight_lib.models import Asset, Component, RoutineObject
 
 from cli.solution.apply_exec import ApplyExecutor
-from cli.solution.models import Solution
+from cli.solution.importer import ImporterExecutor
+from cli.solution.models import ElementType, Solution
 from cli.solution.plan_exec import PlanExecutor
 from cli.solution.utils import (
     DEFAULT_STATE_PATH,
@@ -15,6 +18,7 @@ from cli.solution.utils import (
     confirm_or_yes,
     load_yaml,
     save_yaml,
+    to_dict,
 )
 
 console = Console()
@@ -40,6 +44,7 @@ class SolutionManager:
             else self._generate_state_from_plan()
         )
         check_files(self._plan, self._state)
+        self._import_exec = ImporterExecutor(self._plan, self._state)
         self._plan_exec = PlanExecutor(self._state)
         self._apply_exec = ApplyExecutor(
             self._state,
@@ -63,9 +68,25 @@ class SolutionManager:
             self._generate_assets_state()
             self._generate_components_state()
 
+    def import_element(self, element: ElementType, id: UUID):
+        """Imports an element and saves it to both the plan and state file.
+
+        Parameters
+        ----------
+        element : ElementType
+            A string which is either 'asset' or 'component'.
+        id : UUID
+            The UUID of the element we want to import.
+        """
+        result = self._import_exec.import_element(element, id)
+        if result.was_imported:
+            self._plan, self._state = result.plan, result.state
+            save_yaml(self._plan_path, self._plan)
+            save_yaml(self._state_path, self._state)
+
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
-        state = self._plan.copy()
+        state = Solution.parse_obj(to_dict(self._plan))
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
@@ -76,6 +97,8 @@ class SolutionManager:
         confirm = confirm_or_yes(self._yes_to_all, "Do you want to save it?")
         if confirm:
             save_yaml(self._state_path, state)
+        else:
+            raise typer.Abort("Cannot continue without a state file.")
         return state
 
     def _generate_assets_state(self):
@@ -101,6 +124,15 @@ class SolutionManager:
                 assets_list[i] = Asset.parse_obj(result.updated_dict)
                 save_yaml(self._state_path, self._state)
 
+        imported_assets_list = self._state.imported_assets
+        for i in range(len(imported_assets_list)):
+            result = self._apply_exec.apply(
+                model=Asset, local_instance=imported_assets_list[i]
+            )
+            if result.update:
+                imported_assets_list[i] = Asset.parse_obj(result.updated_dict)
+                save_yaml(self._state_path, self._state)
+
     def _apply_components_state(self):
         """Applies Components states to the engine."""
         self._apply_exec.replace_data_addr()
@@ -117,6 +149,24 @@ class SolutionManager:
                 component, Component.parse_obj(result.updated_dict)
             )
             components_list[i].routines = updated_routines
+            if was_updated:
+                save_yaml(self._state_path, self._state)
+
+        imported_comp_list = self._state.imported_components
+        for i in range(len(imported_comp_list)):
+            component = imported_comp_list[i]
+            result = self._apply_exec.apply(
+                model=Component, local_instance=component
+            )
+            if result.update:
+                imported_comp_list[i] = Component.parse_obj(
+                    result.updated_dict
+                )
+                save_yaml(self._state_path, self._state)
+            updated_routines, was_updated = self._apply_routines_state(
+                component, Component.parse_obj(result.updated_dict)
+            )
+            imported_comp_list[i].routines = updated_routines
             if was_updated:
                 save_yaml(self._state_path, self._state)
 

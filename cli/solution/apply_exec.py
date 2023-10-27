@@ -156,7 +156,7 @@ class ApplyExecutor:
         UndefinedID
             raised when the asset is not found in the state file.
         """
-        for asset in self._state.assets:
+        for asset in self._state.assets + self._state.imported_assets:
             if result.asset == asset.id:
                 for attr in asset.attributes:
                     if result.attribute == attr.id:
