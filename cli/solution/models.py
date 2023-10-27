@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Optional
 
 from pydantic import BaseModel
@@ -14,6 +15,11 @@ from splight_lib.models.component import (
     Output,
     RoutineStatus,
 )
+
+
+class ElementType(str, Enum):
+    asset = "asset"
+    component = "component"
 
 
 class SplightObject(SplightDatabaseBaseModel):
@@ -49,3 +55,5 @@ class Component(SplightDatabaseBaseModel):
 class Solution(BaseModel):
     assets: List[Asset]
     components: List[Component]
+    imported_assets: Optional[List[Asset]] = []
+    imported_components: Optional[List[Asset]] = []
