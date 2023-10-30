@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import typer
 from rich.console import Console
@@ -48,14 +48,14 @@ class SolutionManager:
         )
 
     def execute(self):
-        console.print("\nStarting plan step...", style=PRINT_STYLE)
-        self._generate_assets_state()
-        self._generate_components_state()
-
         if self._apply:
             console.print("\nStarting apply step...", style=PRINT_STYLE)
             self._apply_assets_state()
             self._apply_components_state()
+        else:
+            console.print("\nStarting plan step...", style=PRINT_STYLE)
+            self._generate_assets_state()
+            self._generate_components_state()
 
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
@@ -105,24 +105,28 @@ class SolutionManager:
                 model=Component, local_instance=component
             )
             if result.update:
-                updated_routines = self._apply_routines_state(
-                    component, Component.parse_obj(result.updated_dict)
-                )
                 components_list[i] = Component.parse_obj(result.updated_dict)
-                components_list[i].routines = updated_routines
+                save_yaml(self._state_path, self._state)
+            updated_routines, was_updated = self._apply_routines_state(
+                component, Component.parse_obj(result.updated_dict)
+            )
+            components_list[i].routines = updated_routines
+            if was_updated:
                 save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(
         self, component: Component, updated_component: Component
-    ) -> List[RoutineObject]:
+    ) -> Tuple[List[RoutineObject], bool]:
         """Applies RoutineObject states to the engine."""
         routine_list = component.routines
         component_id = updated_component.id
+        update_results = False
         for i in range(len(routine_list)):
             routine_list[i].component_id = component_id
             result = self._apply_exec.apply(
                 model=RoutineObject, local_instance=routine_list[i]
             )
             if result.update:
+                update_results = True
                 routine_list[i] = RoutineObject.parse_obj(result.updated_dict)
-        return routine_list
+        return routine_list, update_results

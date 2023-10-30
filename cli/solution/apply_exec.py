@@ -17,6 +17,10 @@ from cli.solution.utils import (
 ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
 
 
+class UndefinedID(Exception):
+    ...
+
+
 class ApplyExecutor:
     def __init__(self, state: Solution, regex_to_exclude: Dict[str, Any]):
         self._state = state
@@ -51,7 +55,7 @@ class ApplyExecutor:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
             return ApplyResult(True, to_dict(remote_instance))
-        return ApplyResult(False, None)
+        return ApplyResult(False, to_dict(local_instance))
 
     def replace_data_addr(self):
         """Replaces assets data addresses in component's routines."""
@@ -120,6 +124,7 @@ class ApplyExecutor:
         """
         result = parse_str_data_addr(data_addr)
         if result.is_id:
+            self._check_ids_are_defined(result)
             return {"asset": result.asset, "attribute": result.attribute}
         state_assets = self._state.assets
         for asset in state_assets:
@@ -131,6 +136,29 @@ class ApplyExecutor:
                         break
                 break
         return {"asset": asset_id, "attribute": attr_id}
+
+    def _check_ids_are_defined(self, result: ApplyResult):
+        """Checks if an asset id is defined in the state file.
+
+        Parameters
+        ----------
+        result : ApplyResult
+            The result from parsing the asset string.
+
+        Raises
+        ------
+        UndefinedID
+            raised when the asset is not found in the state file.
+        """
+        for asset in self._state.assets:
+            if result.asset == asset.id:
+                for attr in asset.attributes:
+                    if result.attribute == attr.id:
+                        return
+        raise UndefinedID(
+            f"Routine Error: The asset: {result.asset} attribute: "
+            f"{result.attribute} is not defined in the state file."
+        )
 
     def _compare_with_remote(
         self, model: SplightTypes, local_instance: SplightTypes
@@ -171,7 +199,7 @@ class ApplyExecutor:
                     "Do you want to update the local instance?"
                 )
                 if update:
-                    return ApplyResult(True, remote_instance)
+                    return ApplyResult(True, to_dict(remote_instance))
                 bprint(
                     f"\nYou are about to override the remote {model_name} "
                     f"with your local {model_name}:"
@@ -181,12 +209,12 @@ class ApplyExecutor:
                 if update:
                     local_instance.save()
                     return ApplyResult(True, to_dict(local_instance))
-                return ApplyResult(False, None)
+                return ApplyResult(False, to_dict(local_instance))
             bprint(
                 f"Nothing to update, the same {model_name} was found "
                 "remotely"
             )
-            return ApplyResult(False, None)
+            return ApplyResult(False, to_dict(local_instance))
         bprint(f"\nThe following {model_name} was not found remotely")
         rprint(local_instance)
         self._remove_ids(model_name, local_instance)
@@ -197,7 +225,7 @@ class ApplyExecutor:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
             return ApplyResult(True, to_dict(remote_instance))
-        return ApplyResult(False, None)
+        return ApplyResult(False, to_dict(local_instance))
 
     def _remove_ids(self, model: SplightTypes, local_instance: SplightTypes):
         """Removes ids to a given dictionary representing a particular model.

@@ -30,6 +30,10 @@ class MissingElement(Exception):
     ...
 
 
+class ElemnentAlreadyDefined(Exception):
+    ...
+
+
 def to_dict(instance):
     return json.loads(instance.json())
 
@@ -68,13 +72,19 @@ def check_files(plan: Solution, state: Solution):
             "ones defined in the state file."
         )
 
-    state_asset_names = [a.name for a in state_assets]
+    seen_state_assets = {a.name: 0 for a in state_assets}
     for asset in plan_assets:
         plan_asset_name = asset.name
-        if plan_asset_name not in state_asset_names:
+        if plan_asset_name not in seen_state_assets.keys():
             raise MissingElement(
                 f"Plan asset {plan_asset_name} was not found in the state "
                 "assets."
+            )
+        seen_state_assets[plan_asset_name] += 1
+        if seen_state_assets[plan_asset_name] > 1:
+            raise ElemnentAlreadyDefined(
+                f"The asset {plan_asset_name} is already defined. Asset names"
+                " must be unique."
             )
 
     plan_components = plan.components
@@ -85,13 +95,19 @@ def check_files(plan: Solution, state: Solution):
             "the ones defined in the state file."
         )
 
-    state_comp_names = [c.name for c in state_components]
+    seen_state_comps = {c.name: 0 for c in state_components}
     for comp in plan_components:
         plan_comp_name = comp.name
-        if plan_comp_name not in state_comp_names:
+        if plan_comp_name not in seen_state_comps.keys():
             raise MissingElement(
                 f"Plan component {plan_comp_name} was not found in the state "
                 "components."
+            )
+        seen_state_comps[plan_comp_name] += 1
+        if seen_state_comps[plan_comp_name] > 1:
+            raise ElemnentAlreadyDefined(
+                f"The component {plan_comp_name} is already defined. "
+                "Component names must be unique."
             )
 
 
