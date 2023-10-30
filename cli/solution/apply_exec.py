@@ -2,7 +2,7 @@ from collections import namedtuple
 from typing import Any, Dict, List, Union
 
 from deepdiff import DeepDiff
-from rich import rprint as rprint
+from rich import print as rprint
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 
 from cli.solution.models import Solution
