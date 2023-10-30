@@ -2,7 +2,7 @@ from collections import namedtuple
 from typing import Any, Dict, List, Union
 
 from deepdiff import DeepDiff
-from rich import print
+from rich import rprint as rprint
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 
 from cli.solution.models import Solution
@@ -63,7 +63,7 @@ class ApplyExecutor:
                 model, local_instance, not_found_is_exception
             )
         bprint(f"You are about to create the following {model_name}:")
-        print(local_instance)
+        rprint(local_instance)
         create = confirm_or_yes(self._yes_to_all, "Are you sure?")
         if create:
             local_instance.save()
@@ -214,7 +214,7 @@ class ApplyExecutor:
                     f"\nThe remote {model_name} with id {instance_id} has the "
                     " following differences with the local item:"
                 )
-                print(diff)
+                rprint(diff)
                 update = confirm_or_yes(
                     self._yes_to_all,
                     "Do you want to update the local instance?",
@@ -225,7 +225,7 @@ class ApplyExecutor:
                     f"\nYou are about to override the remote {model_name} "
                     f"with your local {model_name}:"
                 )
-                print(local_instance)
+                rprint(local_instance)
                 update = confirm_or_yes(self._yes_to_all, "Are you sure?")
                 if update:
                     local_instance.save()
@@ -243,10 +243,10 @@ class ApplyExecutor:
                 "remotely, a valid remote id must be specified."
             )
         bprint(f"\nThe following {model_name} was not found remotely")
-        print(local_instance)
+        rprint(local_instance)
         self._remove_ids(model_name, local_instance)
         bprint(f"\nYou are about to create the following {model_name}:")
-        print(local_instance)
+        rprint(local_instance)
         create = confirm_or_yes(self._yes_to_all, "Are you sure?")
         if create:
             local_instance.save()
