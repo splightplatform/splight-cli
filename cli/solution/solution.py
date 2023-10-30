@@ -127,7 +127,9 @@ class SolutionManager:
         imported_assets_list = self._state.imported_assets
         for i in range(len(imported_assets_list)):
             result = self._apply_exec.apply(
-                model=Asset, local_instance=imported_assets_list[i]
+                model=Asset,
+                local_instance=imported_assets_list[i],
+                not_found_is_exception=True,
             )
             if result.update:
                 imported_assets_list[i] = Asset.parse_obj(result.updated_dict)
@@ -156,7 +158,9 @@ class SolutionManager:
         for i in range(len(imported_comp_list)):
             component = imported_comp_list[i]
             result = self._apply_exec.apply(
-                model=Component, local_instance=component
+                model=Component,
+                local_instance=component,
+                not_found_is_exception=True,
             )
             if result.update:
                 imported_comp_list[i] = Component.parse_obj(
@@ -164,14 +168,19 @@ class SolutionManager:
                 )
                 save_yaml(self._state_path, self._state)
             updated_routines, was_updated = self._apply_routines_state(
-                component, Component.parse_obj(result.updated_dict)
+                component,
+                Component.parse_obj(result.updated_dict),
+                not_found_is_exception=True,
             )
             imported_comp_list[i].routines = updated_routines
             if was_updated:
                 save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(
-        self, component: Component, updated_component: Component
+        self,
+        component: Component,
+        updated_component: Component,
+        not_found_is_exception: bool = False,
     ) -> Tuple[List[RoutineObject], bool]:
         """Applies RoutineObject states to the engine."""
         routine_list = component.routines
@@ -180,7 +189,9 @@ class SolutionManager:
         for i in range(len(routine_list)):
             routine_list[i].component_id = component_id
             result = self._apply_exec.apply(
-                model=RoutineObject, local_instance=routine_list[i]
+                model=RoutineObject,
+                local_instance=routine_list[i],
+                not_found_is_exception=not_found_is_exception,
             )
             if result.update:
                 update_results = True

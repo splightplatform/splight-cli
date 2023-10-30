@@ -33,7 +33,10 @@ class ApplyExecutor:
         self._model_to_regex = regex_to_exclude
 
     def apply(
-        self, model: SplightTypes, local_instance: SplightTypes
+        self,
+        model: SplightTypes,
+        local_instance: SplightTypes,
+        not_found_is_exception: bool = False,
     ) -> ApplyResult:
         """Applies changes to the remote engine if needed.
 
@@ -43,6 +46,9 @@ class ApplyExecutor:
             A Splight model.
         local_instance : SplightTypes
             Instance to be saved (or not).
+        not_found_is_exception : bool
+            Raises an exception if the local instance (with an id) is not found
+            remotely.
 
         Returns
         -------
@@ -53,7 +59,9 @@ class ApplyExecutor:
         instance_id = local_instance.id
 
         if instance_id is not None:
-            return self._compare_with_remote(model, local_instance)
+            return self._compare_with_remote(
+                model, local_instance, not_found_is_exception
+            )
         bprint(f"You are about to create the following {model_name}:")
         print(local_instance)
         create = confirm_or_yes(self._yes_to_all, "Are you sure?")
@@ -167,7 +175,10 @@ class ApplyExecutor:
         )
 
     def _compare_with_remote(
-        self, model: SplightTypes, local_instance: SplightTypes
+        self,
+        model: SplightTypes,
+        local_instance: SplightTypes,
+        not_found_is_exception: bool = False,
     ) -> ApplyResult:
         """Compares the local instance with the remote instances if any.
 
@@ -177,6 +188,9 @@ class ApplyExecutor:
             A Splight model.
         local_dict : SplightTypes
             Instance to be saved (or not).
+        not_found_is_exception : bool
+            Raises an exception if the local instance (with an id) is not found
+            remotely.
 
         Returns
         -------
@@ -222,6 +236,12 @@ class ApplyExecutor:
                 "remotely"
             )
             return ApplyResult(False, to_dict(local_instance))
+        if not_found_is_exception:
+            raise UndefinedID(
+                f"The {model_name} with id {instance_id} "
+                f"(named: {local_instance.name}) was not found "
+                "remotely, a valid remote id must be specified."
+            )
         bprint(f"\nThe following {model_name} was not found remotely")
         print(local_instance)
         self._remove_ids(model_name, local_instance)
