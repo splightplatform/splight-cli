@@ -56,4 +56,4 @@ class Solution(BaseModel):
     assets: List[Asset]
     components: List[Component]
     imported_assets: Optional[List[Asset]] = []
-    imported_components: Optional[List[Asset]] = []
+    imported_components: Optional[List[Component]] = []

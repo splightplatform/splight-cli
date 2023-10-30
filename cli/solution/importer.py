@@ -3,7 +3,7 @@ from typing import Tuple
 from uuid import UUID
 
 from rich.console import Console
-from splight_lib.models import Asset, Component
+from splight_lib.models import Asset, Component, RoutineObject
 
 from cli.solution.models import ElementType, Solution
 from cli.solution.utils import IMPORT_PREFIX
@@ -50,6 +50,8 @@ class ImporterExecutor:
             )
         model = self._map_element_to_model[element]
         retrieved_elem = model.retrieve(resource_id=id)
+        if element == "component":
+            retrieved_elem.routines = RoutineObject.list(component_id=id)
 
         plan_import_elems = getattr(self._plan, f"{IMPORT_PREFIX}{element}s")
         plan_import_elems.append(retrieved_elem)
