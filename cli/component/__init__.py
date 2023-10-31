@@ -48,30 +48,6 @@ def create(
 
 
 @component_app.command()
-def run(
-    ctx: typer.Context,
-    path: str = typer.Argument(..., help="Path to component source code"),
-    component_id: str = typer.Option(
-        None, "--component-id", "-id", help="Component's ID"
-    ),
-    local_dev: bool = typer.Option(False, "--local"),
-    input: Optional[str] = typer.Option(
-        None, "--input", "-i", help="Input Values [Deprecated]"
-    ),
-) -> None:
-    try:
-        manager = ComponentManager()
-        console.print("Running component...", style=success_style)
-        manager.run(
-            path, component_id=component_id, local_environment=local_dev
-        )
-    except Exception as e:
-        logger.exception(e)
-        console.print(f"Error running component: {str(e)}", style=error_style)
-        raise typer.Exit(code=1)
-
-
-@component_app.command()
 def install_requirements(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),
