@@ -271,6 +271,8 @@ TEST_PLAN = {
             "version": "LightSplightForecaster-1.0.3",
         }
     ],
+    "imported_assets": [],
+    "imported_components": [],
 }
 TEST_STATE_FILLED = {
     "assets": [
@@ -540,6 +542,8 @@ TEST_STATE_FILLED = {
             "version": "LightSplightForecaster-1.0.3",
         }
     ],
+    "imported_assets": [],
+    "imported_components": [],
 }
 
 TEST_STATE_MISSING_ADDRESS = Solution.parse_obj(TEST_PLAN.copy())
