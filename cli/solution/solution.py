@@ -10,11 +10,11 @@ from cli.solution.apply_exec import ApplyExecutor
 from cli.solution.importer import ImporterExecutor
 from cli.solution.models import ElementType, Solution
 from cli.solution.plan_exec import PlanExecutor
+from cli.solution.solution_checker import SolutionChecker
 from cli.solution.utils import (
     DEFAULT_STATE_PATH,
     PRINT_STYLE,
     bprint,
-    check_files,
     confirm_or_yes,
     load_yaml,
     save_yaml,
@@ -29,10 +29,8 @@ class SolutionManager:
         self,
         plan_path: str,
         state_path: Optional[str],
-        apply: bool = False,
         yes_to_all: bool = False,
     ):
-        self._apply = apply
         self._yes_to_all = yes_to_all
         self._plan_path = Path(plan_path)
         self._state_path = Path(state_path) if state_path else None
@@ -43,7 +41,7 @@ class SolutionManager:
             if self._state_path is not None
             else self._generate_state_from_plan()
         )
-        check_files(self._plan, self._state)
+        self._sol_checker = SolutionChecker(self._plan, self._state)
         self._import_exec = ImporterExecutor(self._plan, self._state)
         self._plan_exec = PlanExecutor(self._state)
         self._apply_exec = ApplyExecutor(
@@ -58,15 +56,17 @@ class SolutionManager:
             },
         )
 
-    def execute(self):
-        if self._apply:
-            console.print("\nStarting apply step...", style=PRINT_STYLE)
-            self._apply_assets_state()
-            self._apply_components_state()
-        else:
-            console.print("\nStarting plan step...", style=PRINT_STYLE)
-            self._generate_assets_state()
-            self._generate_components_state()
+    def apply(self):
+        console.print("\nStarting apply step...", style=PRINT_STYLE)
+        check_result = self._sol_checker.check()
+        # self._delete_assets_and_components(check_result)
+        self._apply_assets_state()
+        self._apply_components_state()
+
+    def plan(self):
+        console.print("\nStarting plan step...", style=PRINT_STYLE)
+        self._generate_assets_state()
+        self._generate_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
         """Imports an element and saves it to both the plan and state file.
@@ -112,6 +112,13 @@ class SolutionManager:
         components_list = self._plan.components
         for component_plan in components_list:
             self._plan_exec.compare_state_component(component_plan)
+
+    def _delete_assets_and_components(self, check_result):
+        for asset in check_result.assets_to_delete:
+            self._apply_exec.delete(asset)
+
+        for component in check_result.components_to_delete:
+            self._apply_exec.delete(component)
 
     def _apply_assets_state(self):
         """Applies Assets states to the engine."""
