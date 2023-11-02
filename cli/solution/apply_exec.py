@@ -5,7 +5,7 @@ from deepdiff import DeepDiff
 from rich import print as rprint
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 
-from cli.solution.models import Solution
+from cli.solution.models import StateSolution
 from cli.solution.utils import (
     SplightTypes,
     bprint,
@@ -24,7 +24,7 @@ class UndefinedID(Exception):
 class ApplyExecutor:
     def __init__(
         self,
-        state: Solution,
+        state: StateSolution,
         yes_to_all: bool,
         regex_to_exclude: Dict[str, Any],
     ):

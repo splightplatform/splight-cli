@@ -1,7 +1,7 @@
 from deepdiff import DeepDiff
 from splight_lib.models.component import Asset, Component, InputDataAddress
 
-from cli.solution.models import Solution
+from cli.solution.models import StateSolution
 from cli.solution.utils import bprint, parse_str_data_addr, to_dict
 
 
@@ -10,7 +10,7 @@ class MissingDataAddress(Exception):
 
 
 class PlanExecutor:
-    def __init__(self, state: Solution):
+    def __init__(self, state: StateSolution):
         self._state = state
 
         self._possible_asset_attr = set()

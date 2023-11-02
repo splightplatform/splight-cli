@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.style import Style
 from splight_lib.models import Asset, Component, RoutineObject
 
-from cli.solution.models import Solution
+from cli.solution.models import PlanSolution, StateSolution
 
 console = Console()
 
@@ -65,7 +65,7 @@ def save_yaml(yaml_path: Path, elem_to_save: Union[BaseModel, Dict]):
         yaml.dump(dict_to_save, f, indent=2)
 
 
-def check_files(plan: Solution, state: Solution):
+def check_files(plan: PlanSolution, state: StateSolution):
     plan_assets = plan.assets
     state_assets = state.assets
     if len(plan_assets) != len(state_assets):
