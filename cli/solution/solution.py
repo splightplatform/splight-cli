@@ -8,7 +8,7 @@ from splight_lib.models import Asset, Component, RoutineObject
 
 from cli.solution.apply_exec import ApplyExecutor
 from cli.solution.importer import ImporterExecutor
-from cli.solution.models import ElementType, Solution
+from cli.solution.models import ElementType, PlanSolution, StateSolution
 from cli.solution.plan_exec import PlanExecutor
 from cli.solution.solution_checker import SolutionChecker
 from cli.solution.utils import (
@@ -35,9 +35,9 @@ class SolutionManager:
         self._plan_path = Path(plan_path)
         self._state_path = Path(state_path) if state_path else None
 
-        self._plan = Solution.parse_obj(load_yaml(plan_path))
+        self._plan = PlanSolution.parse_obj(load_yaml(plan_path))
         self._state = (
-            Solution.parse_obj(load_yaml(self._state_path))
+            StateSolution.parse_obj(load_yaml(self._state_path))
             if self._state_path is not None
             else self._generate_state_from_plan()
         )
@@ -59,6 +59,10 @@ class SolutionManager:
     def apply(self):
         console.print("\nStarting apply step...", style=PRINT_STYLE)
         check_result = self._sol_checker.check()
+        console.print(check_result)
+        import ipdb
+
+        ipdb.set_trace()
         # self._delete_assets_and_components(check_result)
         self._apply_assets_state()
         self._apply_components_state()
@@ -86,7 +90,7 @@ class SolutionManager:
 
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
-        state = Solution.parse_obj(to_dict(self._plan))
+        state = StateSolution.parse_obj(to_dict(self._plan))
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
@@ -129,6 +133,7 @@ class SolutionManager:
             )
             if result.update:
                 assets_list[i] = Asset.parse_obj(result.updated_dict)
+                self._update_resource_map(i, "assets", assets_list[i].id)
                 save_yaml(self._state_path, self._state)
 
         imported_assets_list = self._state.imported_assets
@@ -140,6 +145,9 @@ class SolutionManager:
             )
             if result.update:
                 imported_assets_list[i] = Asset.parse_obj(result.updated_dict)
+                self._update_resource_map(
+                    i, imported_assets_list[i], imported=True
+                )
                 save_yaml(self._state_path, self._state)
 
     def _apply_components_state(self):
