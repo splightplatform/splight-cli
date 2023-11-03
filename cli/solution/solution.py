@@ -41,7 +41,7 @@ class SolutionManager:
             if self._state_path is not None
             else self._generate_state_from_plan()
         )
-        self._sol_checker = SolutionChecker(self._plan, self._state)
+        self._solution_checker = SolutionChecker(self._plan, self._state)
         self._import_exec = ImporterExecutor(self._plan, self._state)
         self._plan_exec = PlanExecutor(self._state)
         self._apply_exec = ApplyExecutor(
@@ -52,18 +52,19 @@ class SolutionManager:
                     r"root\['routines'\]",
                     r"root\['deployment_capacity'\]",
                     r"root\['deployment_type'\]",
-                ]
+                ],
+                RoutineObject.__name__: [
+                    r"root\['config'\]\[\d+\]\['description'\]",
+                    r"root\['input'\]\[\d+\]\['description'\]",
+                    r"root\['output'\]\[\d+\]\['description'\]",
+                ],
             },
         )
 
     def apply(self):
         console.print("\nStarting apply step...", style=PRINT_STYLE)
-        check_result = self._sol_checker.check()
-        console.print(check_result)
-        import ipdb
-
-        ipdb.set_trace()
-        # self._delete_assets_and_components(check_result)
+        check_result = self._solution_checker.check()
+        self._delete_assets_and_components(check_result)
         self._apply_assets_state()
         self._apply_components_state()
 
@@ -133,7 +134,6 @@ class SolutionManager:
             )
             if result.update:
                 assets_list[i] = Asset.parse_obj(result.updated_dict)
-                self._update_resource_map(i, "assets", assets_list[i].id)
                 save_yaml(self._state_path, self._state)
 
         imported_assets_list = self._state.imported_assets
@@ -145,9 +145,6 @@ class SolutionManager:
             )
             if result.update:
                 imported_assets_list[i] = Asset.parse_obj(result.updated_dict)
-                self._update_resource_map(
-                    i, imported_assets_list[i], imported=True
-                )
                 save_yaml(self._state_path, self._state)
 
     def _apply_components_state(self):

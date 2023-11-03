@@ -79,6 +79,17 @@ class ApplyExecutor:
             for routine in routines:
                 self._replace_routine_data_addr(routine)
 
+    def delete(self, model: SplightTypes, local_instance: SplightTypes):
+        model_name = model.__name__
+
+        bprint(f"You are about to delete the following {model_name}:")
+        rprint(local_instance)
+        create = confirm_or_yes(self._yes_to_all, "Are you sure?")
+        if create:
+            local_instance.delete()
+            return ApplyResult(True, None)
+        return ApplyResult(False, None)
+
     def _replace_routine_data_addr(self, routine: RoutineObject):
         """Replaces assets data addresses in a routine.
 
@@ -141,6 +152,7 @@ class ApplyExecutor:
             self._check_ids_are_defined(result)
             return {"asset": result.asset, "attribute": result.attribute}
         state_assets = self._state.assets
+        asset_id, attr_id = None, None
         for asset in state_assets:
             if asset.name == result.asset:
                 asset_id = asset.id
@@ -149,6 +161,11 @@ class ApplyExecutor:
                         attr_id = attr.id
                         break
                 break
+        if asset_id is None or attr_id is None:
+            raise UndefinedID(
+                f"The asset: '{result.asset}' attribute: '{result.attribute}' "
+                "is not defined."
+            )
         return {"asset": asset_id, "attribute": attr_id}
 
     def _check_ids_are_defined(self, result: ApplyResult):
