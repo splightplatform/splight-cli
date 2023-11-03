@@ -64,6 +64,7 @@ class SolutionManager:
     def apply(self):
         console.print("\nStarting apply step...", style=PRINT_STYLE)
         check_result = self._solution_checker.check()
+        self._plan, self._state = check_result.plan, check_result.state
         self._delete_assets_and_components(check_result)
         self._apply_assets_state()
         self._apply_components_state()

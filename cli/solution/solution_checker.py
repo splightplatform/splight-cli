@@ -58,7 +58,7 @@ class SolutionChecker:
             for i in range(len(state_assets)):
                 if state_assets[i].name == plan_asset_name:
                     state_assets[i] = self._update_asset(
-                        state_assets[i], asset
+                        asset, state_assets[i]
                     )
                     break
 
@@ -94,7 +94,7 @@ class SolutionChecker:
             for i in range(len(state_asset.attributes)):
                 if state_asset.attributes[i].name == plan_attr_name:
                     state_asset.attributes[i] = self._update_attribute(
-                        state_asset.attributes[i], attr
+                        attr, state_asset.attributes[i]
                     )
                     break
         unseen_state_attributes = [
@@ -130,7 +130,7 @@ class SolutionChecker:
             for i in range(len(state_components)):
                 if state_components[i].name == plan_component_name:
                     state_components[i] = self._update_component(
-                        state_components[i], component
+                        component, state_components[i]
                     )
                     break
 
@@ -168,7 +168,7 @@ class SolutionChecker:
             for i in range(len(state_component.routines)):
                 if state_component.routines[i].name == plan_routine_name:
                     state_component.routines[i] = self._update_routine(
-                        state_component.routines[i], routine
+                        routine, state_component.routines[i]
                     )
                     break
         unseen_state_routines = [

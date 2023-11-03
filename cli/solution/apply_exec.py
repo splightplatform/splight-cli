@@ -246,7 +246,10 @@ class ApplyExecutor:
                 update = confirm_or_yes(self._yes_to_all, "Are you sure?")
                 if update:
                     local_instance.save()
-                    return ApplyResult(True, to_dict(local_instance))
+                    remote_instance = model.retrieve(
+                        resource_id=local_instance.id
+                    )
+                    return ApplyResult(True, to_dict(remote_instance))
                 return ApplyResult(False, to_dict(local_instance))
             bprint(
                 f"Nothing to update, the same {model_name} was found "
