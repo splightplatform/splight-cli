@@ -1,6 +1,10 @@
 from collections import namedtuple
+from typing import List
 
 from rich.console import Console
+from splight_lib.models import Asset, Attribute, RoutineObject
+
+from cli.solution.models import Component
 
 CheckResult = namedtuple(
     "CheckResult",
@@ -19,7 +23,14 @@ class SolutionChecker:
         self._plan = plan
         self._state = state
 
-    def check(self):
+    def check(self) -> CheckResult:
+        """Looks for changes in the plan and adds them to the state file.
+
+        Returns
+        -------
+        CheckResult
+            The result after checking the assets and components.
+        """
         assets_to_delete = self._check_assets(
             self._plan.assets, self._state.assets
         )
@@ -41,7 +52,28 @@ class SolutionChecker:
             state=self._state,
         )
 
-    def _check_assets(self, plan_assets, state_assets):
+    def _check_assets(
+        self, plan_assets: List[Asset], state_assets: List[Asset]
+    ) -> List[Asset]:
+        """Checks plan assets against state assets.
+
+        Parameters
+        ----------
+        plan_assets : List[Asset]
+            List of plan assets.
+        state_assets : List[Asset]
+            List of state assets.
+
+        Returns
+        -------
+        List[Asset]
+            List of state assets to delete.
+
+        Raises
+        ------
+        ElemnentAlreadyDefined
+            Raised when a plan asset is already defined.
+        """
         seen_state_assets = {a.name: 0 for a in state_assets}
         for idx, asset in enumerate(plan_assets):
             plan_asset_name = asset.name
@@ -73,7 +105,26 @@ class SolutionChecker:
 
         return assets_to_delete
 
-    def _update_asset(self, plan_asset, state_asset):
+    def _update_asset(self, plan_asset: Asset, state_asset: Asset) -> Asset:
+        """Updates a state asset based on the analogous plan asset.
+
+        Parameters
+        ----------
+        plan_asset : Asset
+            Plan asset.
+        state_asset : Asset
+            State Asset to update.
+
+        Returns
+        -------
+        Asset
+            The updated state asset.
+
+        Raises
+        ------
+        ElemnentAlreadyDefined
+            Raised when an attribute was defined twice.
+        """
         plan_asset_dict = plan_asset.dict(
             exclude={"attributes"}, exclude_none=True, exclude_unset=True
         )
@@ -106,14 +157,53 @@ class SolutionChecker:
 
         return state_asset
 
-    def _update_attribute(self, plan_attribute, state_attribute):
+    def _update_attribute(
+        self, plan_attribute: Attribute, state_attribute: Attribute
+    ) -> Attribute:
+        """Updates the given state attribute.
+
+        Parameters
+        ----------
+        plan_attribute : Attribute
+            The plan attribute from which we will update the state attribute.
+        state_attribute : Attribute
+            The state attribute to update.
+
+        Returns
+        -------
+        Attribute
+            Returns the updated state attribute.
+        """
         plan_attribute_dict = plan_attribute.dict(
             exclude_none=True,
             exclude_unset=True,
         )
         return state_attribute.copy(update=plan_attribute_dict)
 
-    def _check_components(self, plan_components, state_components):
+    def _check_components(
+        self,
+        plan_components: List[Component],
+        state_components: List[Component],
+    ) -> List[Component]:
+        """Checks plan components against state components.
+
+        Parameters
+        ----------
+        plan_component : List[Component]
+            List of plan components.
+        state_component : List[Component]
+            List of state components.
+
+        Returns
+        -------
+        List[Component]
+            List of state components to delete.
+
+        Raises
+        ------
+        ElemnentAlreadyDefined
+            Raised when a plan component is already defined.
+        """
         seen_state_components = {a.name: 0 for a in state_components}
         for idx, component in enumerate(plan_components):
             plan_component_name = component.name
@@ -145,7 +235,28 @@ class SolutionChecker:
 
         return components_to_delete
 
-    def _update_component(self, plan_component, state_component):
+    def _update_component(
+        self, plan_component: Component, state_component: Component
+    ) -> Component:
+        """Updates a state component based on the analogous plan component.
+
+        Parameters
+        ----------
+        plan_component : Component
+            Plan component.
+        state_component : Component
+            State Component to update.
+
+        Returns
+        -------
+        Component
+            The updated state Component.
+
+        Raises
+        ------
+        ElemnentAlreadyDefined
+            Raised when a routine was defined twice.
+        """
         plan_component_dict = plan_component.dict(
             exclude={"routines"},
             exclude_none=True,
@@ -180,7 +291,23 @@ class SolutionChecker:
 
         return state_component
 
-    def _update_routine(self, plan_routine, state_routine):
+    def _update_routine(
+        self, plan_routine: RoutineObject, state_routine: RoutineObject
+    ) -> RoutineObject:
+        """Updates a state routine based on the plan routine.
+
+        Parameters
+        ----------
+        plan_routine : RoutineObject
+            A plan routine.
+        state_routine : RoutineObject
+            A state routine.
+
+        Returns
+        -------
+        RoutineObject
+            The state routine updated.
+        """
         plan_routine_dict = plan_routine.dict(
             exclude_none=True,
             exclude_unset=True,

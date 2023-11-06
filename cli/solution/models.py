@@ -25,4 +25,4 @@ class PlanSolution(BaseModel):
 
 
 class StateSolution(PlanSolution):
-    resources_map: Dict[str, str] = Field(default_factory=dict)
+    ...
