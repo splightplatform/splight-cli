@@ -16,7 +16,7 @@ def test_plan_print(load_patch, save_patch):
     state = TEST_PLAN.copy()
     load_patch.side_effect = [TEST_PLAN, state]
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
-    solution_manager.execute()
+    solution_manager.plan()
 
 
 @pytest.mark.parametrize(
@@ -28,4 +28,4 @@ def test_plan_fails(load_patch, save_patch, state_dict):
     load_patch.side_effect = [TEST_PLAN, state_dict]
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     with pytest.raises(MissingDataAddress):
-        solution_manager.execute()
+        solution_manager.plan()

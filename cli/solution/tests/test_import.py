@@ -20,9 +20,7 @@ def test_import_asset_correctly(retrieve_mock, save_yaml_mock, load_yaml_mock):
 
     retrieve_mock.side_effect = [asset]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.import_element(
         "asset", "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08"
     )
@@ -43,9 +41,7 @@ def test_already_imported_asset(retrieve_mock, save_yaml_mock, load_yaml_mock):
 
     retrieve_mock.side_effect = [asset]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.import_element(
         "asset", "f1aefe25-ac8d-490e-8ad1-21d3a3de0c08"
     )
@@ -68,9 +64,7 @@ def test_asset_not_in_db(retrieve_mock, save_yaml_mock, load_yaml_mock):
     )
 
     with pytest.raises(InstanceNotFound):
-        solution_manager = SolutionManager(
-            "./dummy_path", "./dummy_path", apply=True
-        )
+        solution_manager = SolutionManager("./dummy_path", "./dummy_path")
         solution_manager.import_element(
             "asset", "g1aefe25-ac8d-490e-8ad1-21d3a3de0c08"
         )
@@ -97,9 +91,7 @@ def test_import_component_correctly(
     retrieve_mock.side_effect = [component.copy()]
     list_mock.side_effect = [[routine.copy()]]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.import_element(
         "component", "5fcca841-8e80-4f5f-b941-763353c30e9b"
     )
@@ -128,9 +120,7 @@ def test_already_imported_component(
     retrieve_mock.side_effect = [component.copy()]
     list_mock.side_effect = [[routine.copy()]]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.import_element(
         "component", "5fcca841-8e80-4f5f-b941-763353c30e9b"
     )
@@ -154,9 +144,7 @@ def test_component_not_in_db(retrieve_mock, save_yaml_mock, load_yaml_mock):
     )
 
     with pytest.raises(InstanceNotFound):
-        solution_manager = SolutionManager(
-            "./dummy_path", "./dummy_path", apply=True
-        )
+        solution_manager = SolutionManager("./dummy_path", "./dummy_path")
         solution_manager.import_element(
             "component", "g1aefe25-ac8d-490e-8ad1-21d3a3de0c08"
         )
