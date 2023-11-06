@@ -98,7 +98,7 @@ class SolutionChecker:
         unseen_state_assets = [
             k for k, v in seen_state_assets.items() if v == 0
         ]
-        for idx in range(len(state_assets) - 1, 0, -1):
+        for idx in range(len(state_assets) - 1, -1, -1):
             state_asset_name = state_assets[idx].name
             if state_asset_name in unseen_state_assets:
                 assets_to_delete.append(state_assets.pop(idx))
@@ -151,7 +151,7 @@ class SolutionChecker:
         unseen_state_attributes = [
             k for k, v in seen_state_attributes.items() if v == 0
         ]
-        for i in range(len(state_asset.attributes) - 1, 0, -1):
+        for i in range(len(state_asset.attributes) - 1, -1, -1):
             if state_asset.attributes[i].name in unseen_state_attributes:
                 state_asset.attributes.pop(i)
 
@@ -228,7 +228,7 @@ class SolutionChecker:
         unseen_state_components = [
             k for k, v in seen_state_components.items() if v == 0
         ]
-        for idx in range(len(state_components) - 1, 0, -1):
+        for idx in range(len(state_components) - 1, -1, -1):
             state_component_name = state_components[idx].name
             if state_component_name in unseen_state_components:
                 components_to_delete.append(state_components.pop(idx))
@@ -285,7 +285,7 @@ class SolutionChecker:
         unseen_state_routines = [
             k for k, v in seen_state_routines.items() if v == 0
         ]
-        for i in range(len(state_component.routines) - 1, 0, -1):
+        for i in range(len(state_component.routines) - 1, -1, -1):
             if state_component.routines[i].name in unseen_state_routines:
                 state_component.routines.pop(i)
 
