@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Type
 
 from deepdiff import DeepDiff
 from splight_lib.models.component import (
@@ -10,7 +10,12 @@ from splight_lib.models.component import (
 
 from cli.solution.models import StateSolution
 from cli.solution.solution_checker import CheckResult
-from cli.solution.utils import bprint, parse_str_data_addr, to_dict
+from cli.solution.utils import (
+    SplightTypes,
+    bprint,
+    parse_str_data_addr,
+    to_dict,
+)
 
 
 class MissingDataAddress(Exception):
@@ -20,7 +25,6 @@ class MissingDataAddress(Exception):
 class PlanExecutor:
     def __init__(self, state: StateSolution, regex_to_exclude: Dict[str, Any]):
         self._state = state
-
         self._model_to_regex = regex_to_exclude
         self._possible_asset_attr = set()
         for asset in self._state.assets:
@@ -30,6 +34,14 @@ class PlanExecutor:
                 self._possible_asset_attr.add(f"{asset_name}-{attr_name}")
 
     def plan_elements_to_delete(self, check_results: CheckResult):
+        """Shows which elements (assets or component) are going to be removed
+        if the plan were to be applied.
+
+        Parameters
+        ----------
+        check_results : CheckResult
+            The result solution checker.
+        """
         for asset in check_results.assets_to_delete:
             bprint(
                 "If the plan is applied the following Asset will be deleted:"
@@ -43,11 +55,13 @@ class PlanExecutor:
             bprint(component)
 
     def plan_asset_state(self, state_asset: Asset):
-        """Finds and compares an asset from the plan with the analogous in the
-        state file printing the plan in case it's executed.
+        """Shows what is going to happen to a certain Asset if the plan is
+        applied.
 
         Parameters
         ----------
+        state_asset : Asset
+            The state asset to analyze.
         """
         instance_id = state_asset.id
 
@@ -57,15 +71,14 @@ class PlanExecutor:
         bprint(state_asset)
 
     def plan_component_state(self, state_component: Component):
-        """Finds and compares a Component from the plan with the analogous in
-        the state file printing the plan in case it's executed.
+        """Shows what is going to happen to a certain Component if the plan is
+        applied.
 
         Parameters
         ----------
-        plan_commponent : Component
-            A Component instance.
+        state_component : Component
+            The state component to analyze.
         """
-
         self._check_assets_are_defined(state_component)
         instance_id = state_component.id
         if instance_id is not None:
@@ -73,14 +86,14 @@ class PlanExecutor:
         bprint(f"The following Component will be created:")
         bprint(state_component)
 
-    def plan_routine_state(self, state_routine: Component):
-        """Finds and compares a Component from the plan with the analogous in
-        the state file printing the plan in case it's executed.
+    def plan_routine_state(self, state_routine: RoutineObject):
+        """Shows what is going to happen to a certain Routine if the plan is
+        applied.
 
         Parameters
         ----------
-        plan_commponent : Component
-            A Component instance.
+        state_routine : RoutineObject
+            The state routine of a given component to analyze.
         """
         instance_id = state_routine.id
         if instance_id is not None:
@@ -88,7 +101,18 @@ class PlanExecutor:
         bprint(f"The following Component will be created:")
         bprint(state_routine)
 
-    def _compare_with_remote(self, model, local_instance):
+    def _compare_with_remote(
+        self, model: Type[SplightTypes], local_instance: SplightTypes
+    ):
+        """Compares the given local_instance to the remote analogous.
+
+        Parameters
+        ----------
+        model : Type[SplightTypes]
+            A Splight type.
+        local_instance : SplightTypes
+            The instance to analyze.
+        """
         model_name = model.__name__
         instance_id = local_instance.id
         instance_name = local_instance.name

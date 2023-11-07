@@ -10,7 +10,7 @@ from cli.solution.apply_exec import ApplyExecutor
 from cli.solution.importer import ImporterExecutor
 from cli.solution.models import ElementType, PlanSolution, StateSolution
 from cli.solution.plan_exec import PlanExecutor
-from cli.solution.solution_checker import SolutionChecker
+from cli.solution.solution_checker import CheckResult, SolutionChecker
 from cli.solution.utils import (
     DEFAULT_STATE_PATH,
     PRINT_STYLE,
@@ -112,13 +112,13 @@ class SolutionManager:
         return state
 
     def _plan_assets_state(self):
-        """Compares assets in the state file."""
+        """Shows the assets state if the plan were to be applied."""
         assets_list = self._state.assets + self._state.imported_assets
         for state_asset in assets_list:
             self._plan_exec.plan_asset_state(state_asset)
 
     def _plan_components_state(self):
-        """Compares components in the state file."""
+        """Shows the components state if the plan were to be applied."""
         self._apply_exec.replace_data_addr()
         components_list = (
             self._state.components + self._state.imported_components
@@ -128,11 +128,19 @@ class SolutionManager:
             self._plan_routines_state(state_component)
 
     def _plan_routines_state(self, component: Component):
-        """Applies RoutineObject states to the engine."""
+        """Shows the routines state if the plan were to be applied."""
         for routine in component.routines:
             self._plan_exec.plan_routine_state(routine)
 
-    def _delete_assets_and_components(self, check_result):
+    def _delete_assets_and_components(self, check_result: CheckResult):
+        """Deletes assets and/or components that have been removed from the
+        plan.
+
+        Parameters
+        ----------
+        check_result : CheckResult
+            The solution checker results.
+        """
         for asset in check_result.assets_to_delete:
             self._apply_exec.delete(asset)
 
