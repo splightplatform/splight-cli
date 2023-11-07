@@ -5,6 +5,7 @@ from deepdiff import DeepDiff
 from rich import print as rprint
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 
+from cli.solution.exceptions import UndefinedID
 from cli.solution.models import StateSolution
 from cli.solution.utils import (
     SplightTypes,
@@ -15,10 +16,6 @@ from cli.solution.utils import (
 )
 
 ApplyResult = namedtuple("ApplyResult", ("update", "updated_dict"))
-
-
-class UndefinedID(Exception):
-    ...
 
 
 class ApplyExecutor:

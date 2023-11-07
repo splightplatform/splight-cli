@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Type, Union
 
 from deepdiff import DeepDiff
 from splight_lib.models.component import (
@@ -8,9 +8,11 @@ from splight_lib.models.component import (
     RoutineObject,
 )
 
+from cli.solution.exceptions import UndefinedID
 from cli.solution.models import StateSolution
 from cli.solution.solution_checker import CheckResult
 from cli.solution.utils import (
+    MatchResult,
     SplightTypes,
     bprint,
     parse_str_data_addr,
@@ -79,7 +81,6 @@ class PlanExecutor:
         state_component : Component
             The state component to analyze.
         """
-        self._check_assets_are_defined(state_component)
         instance_id = state_component.id
         if instance_id is not None:
             return self._compare_with_remote(Component, state_component)
@@ -98,8 +99,17 @@ class PlanExecutor:
         instance_id = state_routine.id
         if instance_id is not None:
             return self._compare_with_remote(RoutineObject, state_routine)
-        bprint(f"The following Component will be created:")
+        bprint(f"The following Routine will be created:")
         bprint(state_routine)
+
+    def replace_data_addr(self):
+        """Replaces assets data addresses in component's routines if possible."""
+        state_components = self._state.components
+        for i in range(len(state_components)):
+            routines = state_components[i].routines
+            component_name = state_components[i].name
+            for routine in routines:
+                self._replace_routine_data_addr(routine, component_name)
 
     def _compare_with_remote(
         self, model: Type[SplightTypes], local_instance: SplightTypes
@@ -145,44 +155,128 @@ class PlanExecutor:
         )
         bprint(local_instance)
 
-    def _check_assets_are_defined(self, state_component_found: Component):
-        """Checks if the assets of a component routine are defined or not in
-        the state file.
+    def _replace_routine_data_addr(
+        self, routine: RoutineObject, component_name: str
+    ):
+        """Replaces assets data addresses in a routine.
 
         Parameters
         ----------
-        state_component_found : Component
-            The state component.
+        routine : RoutineObject
+            The routine where we will replace the data addresses.
+        component_name : str
+            The component name.
         """
-        routines = state_component_found.routines
-        for routine in routines:
-            for io_elem in routine.input + routine.output:
-                if io_elem.value is not None:
-                    self._is_state_asset_attr(io_elem)
+        for io_elem in routine.input + routine.output:
+            if io_elem.value is not None:
+                io_elem.value = self._get_new_value(
+                    io_elem, component_name, routine.name
+                )
 
-    def _is_state_asset_attr(self, io_elem: InputDataAddress):
-        """Raises an exception if an asset is not defined in the state file.
+    def _get_new_value(
+        self, io_elem: InputDataAddress, component_name: str, routine_name: str
+    ) -> Union[List[Dict], Dict]:
+        """Gets the new data address value.
 
         Parameters
         ----------
         io_elem : InputDataAddress
-            Input or output element.
+            Input or output element to replace with the corresponding data
+            addresses.
+        component_name : str
+            The component name.
+        routine_name : str
+            The routine name.
+
+        Returns
+        -------
+        Union[List[Dict], Dict]
+            Input or output element where data addresses were replaced.
 
         Raises
         ------
-        MissingDataAddress
-            Raised when an asset is not defined in the state file.
+        ValueError
+            Raised if passed a multiple: false element and a list value.
         """
         multiple = io_elem.multiple
-        io_values = io_elem.value if multiple else [io_elem.value]
-        for data_addr in io_values:
-            result = parse_str_data_addr(data_addr)
-            if result.is_id:
-                continue
-            ids_str = f"{result.asset}-{result.attribute}"
-            if ids_str not in self._possible_asset_attr:
-                raise MissingDataAddress(
-                    f"The asset id: {data_addr['asset']} "
-                    f"attribute id: {data_addr['attribute']} is "
-                    "not defined in the state file. Aborted."
-                )
+        if not multiple and isinstance(io_elem.value, list):
+            raise ValueError(
+                f"Passed 'multiple: False' but value of {io_elem.name} is "
+                "a list. Aborted."
+            )
+        if multiple:
+            return [
+                self._parse_data_addr(da, component_name, routine_name)
+                for da in io_elem.value
+            ]
+        else:
+            return self._parse_data_addr(
+                io_elem.value, component_name, routine_name
+            )
+
+    def _parse_data_addr(
+        self, data_addr: Dict[str, str], component_name: str, routine_name: str
+    ) -> Dict[str, str]:
+        """Parses a data address ids.
+
+        Parameters
+        ----------
+        data_addr : Dict[str, str]
+            The data address to be parsed.
+        component_name : str
+            The component name.
+        routine_name : str
+            The routine name.
+
+        Returns
+        -------
+        Dict[str, str]
+            A dictionary containing the asset and attribute ids.
+        """
+        result = parse_str_data_addr(data_addr)
+        if result.is_id:
+            self._check_ids_are_defined(result, component_name, routine_name)
+            return {"asset": result.asset, "attribute": result.attribute}
+        state_assets = self._state.assets
+        for asset in state_assets:
+            if asset.name == result.asset:
+                asset_id = asset.id
+                for attr in asset.attributes:
+                    if attr.name == result.attribute:
+                        attribute_id = attr.id
+                        return {"asset": asset_id, "attribute": attribute_id}
+        raise UndefinedID(
+            f"The asset: '{result.asset}' attribute: '{result.attribute}' "
+            f"used in the routine named '{routine_name}' of the "
+            f"component '{component_name}' is not defined in the plan."
+        )
+
+    def _check_ids_are_defined(
+        self, result: MatchResult, component_name: str, routine_name: str
+    ):
+        """Checks if an asset id is defined in the state file.
+
+        Parameters
+        ----------
+        result : ApplyResult
+            The result from parsing the asset string.
+        component_name : str
+            The component name.
+        routine_name : str
+            The routine name.
+
+        Raises
+        ------
+        UndefinedID
+            raised when the asset is not found in the state file.
+        """
+        for asset in self._state.assets + self._state.imported_assets:
+            if result.asset == asset.id:
+                for attr in asset.attributes:
+                    if result.attribute == attr.id:
+                        return
+        raise UndefinedID(
+            f"The asset: '{result.asset}' attribute: '{result.attribute}' "
+            f"used in the routine named '{routine_name}' of the "
+            f"component '{component_name}' is not defined in the plan."
+        )

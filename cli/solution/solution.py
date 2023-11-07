@@ -119,7 +119,7 @@ class SolutionManager:
 
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
-        self._apply_exec.replace_data_addr()
+        self._plan_exec.replace_data_addr()
         components_list = (
             self._state.components + self._state.imported_components
         )
