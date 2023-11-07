@@ -1,15 +1,15 @@
 from collections import namedtuple
 from typing import Any, Dict, List, Union
 
-import typer
 from deepdiff import DeepDiff
-from rich import rprint as rprint
+from rich import print as rprint
 from splight_lib.models.component import Asset, InputDataAddress, RoutineObject
 
 from cli.solution.models import Solution
 from cli.solution.utils import (
     SplightTypes,
     bprint,
+    confirm_or_yes,
     parse_str_data_addr,
     to_dict,
 )
@@ -22,12 +22,21 @@ class UndefinedID(Exception):
 
 
 class ApplyExecutor:
-    def __init__(self, state: Solution, regex_to_exclude: Dict[str, Any]):
+    def __init__(
+        self,
+        state: Solution,
+        yes_to_all: bool,
+        regex_to_exclude: Dict[str, Any],
+    ):
         self._state = state
+        self._yes_to_all = yes_to_all
         self._model_to_regex = regex_to_exclude
 
     def apply(
-        self, model: SplightTypes, local_instance: SplightTypes
+        self,
+        model: SplightTypes,
+        local_instance: SplightTypes,
+        not_found_is_exception: bool = False,
     ) -> ApplyResult:
         """Applies changes to the remote engine if needed.
 
@@ -37,6 +46,9 @@ class ApplyExecutor:
             A Splight model.
         local_instance : SplightTypes
             Instance to be saved (or not).
+        not_found_is_exception : bool
+            Raises an exception if the local instance (with an id) is not found
+            remotely.
 
         Returns
         -------
@@ -47,10 +59,12 @@ class ApplyExecutor:
         instance_id = local_instance.id
 
         if instance_id is not None:
-            return self._compare_with_remote(model, local_instance)
+            return self._compare_with_remote(
+                model, local_instance, not_found_is_exception
+            )
         bprint(f"You are about to create the following {model_name}:")
         rprint(local_instance)
-        create = typer.confirm("Are you sure?")
+        create = confirm_or_yes(self._yes_to_all, "Are you sure?")
         if create:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
@@ -150,7 +164,7 @@ class ApplyExecutor:
         UndefinedID
             raised when the asset is not found in the state file.
         """
-        for asset in self._state.assets:
+        for asset in self._state.assets + self._state.imported_assets:
             if result.asset == asset.id:
                 for attr in asset.attributes:
                     if result.attribute == attr.id:
@@ -161,7 +175,10 @@ class ApplyExecutor:
         )
 
     def _compare_with_remote(
-        self, model: SplightTypes, local_instance: SplightTypes
+        self,
+        model: SplightTypes,
+        local_instance: SplightTypes,
+        not_found_is_exception: bool = False,
     ) -> ApplyResult:
         """Compares the local instance with the remote instances if any.
 
@@ -171,6 +188,9 @@ class ApplyExecutor:
             A Splight model.
         local_dict : SplightTypes
             Instance to be saved (or not).
+        not_found_is_exception : bool
+            Raises an exception if the local instance (with an id) is not found
+            remotely.
 
         Returns
         -------
@@ -195,8 +215,9 @@ class ApplyExecutor:
                     " following differences with the local item:"
                 )
                 rprint(diff)
-                update = typer.confirm(
-                    "Do you want to update the local instance?"
+                update = confirm_or_yes(
+                    self._yes_to_all,
+                    "Do you want to update the local instance?",
                 )
                 if update:
                     return ApplyResult(True, to_dict(remote_instance))
@@ -205,7 +226,7 @@ class ApplyExecutor:
                     f"with your local {model_name}:"
                 )
                 rprint(local_instance)
-                update = typer.confirm("Are you sure?")
+                update = confirm_or_yes(self._yes_to_all, "Are you sure?")
                 if update:
                     local_instance.save()
                     return ApplyResult(True, to_dict(local_instance))
@@ -215,12 +236,18 @@ class ApplyExecutor:
                 "remotely"
             )
             return ApplyResult(False, to_dict(local_instance))
+        if not_found_is_exception:
+            raise UndefinedID(
+                f"The {model_name} with id {instance_id} "
+                f"(named: {local_instance.name}) was not found "
+                "remotely, a valid remote id must be specified."
+            )
         bprint(f"\nThe following {model_name} was not found remotely")
         rprint(local_instance)
         self._remove_ids(model_name, local_instance)
         bprint(f"\nYou are about to create the following {model_name}:")
         rprint(local_instance)
-        create = typer.confirm("Are you sure?")
+        create = confirm_or_yes(self._yes_to_all, "Are you sure?")
         if create:
             local_instance.save()
             remote_instance = model.retrieve(resource_id=local_instance.id)
