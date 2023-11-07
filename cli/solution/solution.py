@@ -41,24 +41,25 @@ class SolutionManager:
             if self._state_path is not None
             else self._generate_state_from_plan()
         )
+        self._regex_map = {
+            Component.__name__: [
+                r"root\['routines'\]",
+                r"root\['deployment_capacity'\]",
+                r"root\['deployment_type'\]",
+            ],
+            RoutineObject.__name__: [
+                r"root\['config'\]\[\d+\]\['description'\]",
+                r"root\['input'\]\[\d+\]\['description'\]",
+                r"root\['output'\]\[\d+\]\['description'\]",
+            ],
+        }
         self._solution_checker = SolutionChecker(self._plan, self._state)
         self._import_exec = ImporterExecutor(self._plan, self._state)
-        self._plan_exec = PlanExecutor(self._state)
+        self._plan_exec = PlanExecutor(
+            self._state, regex_to_exclude=self._regex_map
+        )
         self._apply_exec = ApplyExecutor(
-            self._state,
-            self._yes_to_all,
-            regex_to_exclude={
-                Component.__name__: [
-                    r"root\['routines'\]",
-                    r"root\['deployment_capacity'\]",
-                    r"root\['deployment_type'\]",
-                ],
-                RoutineObject.__name__: [
-                    r"root\['config'\]\[\d+\]\['description'\]",
-                    r"root\['input'\]\[\d+\]\['description'\]",
-                    r"root\['output'\]\[\d+\]\['description'\]",
-                ],
-            },
+            self._state, self._yes_to_all, regex_to_exclude=self._regex_map
         )
 
     def apply(self):
@@ -71,8 +72,11 @@ class SolutionManager:
 
     def plan(self):
         console.print("\nStarting plan step...", style=PRINT_STYLE)
-        self._generate_assets_state()
-        self._generate_components_state()
+        check_result = self._solution_checker.check()
+        self._plan, self._state = check_result.plan, check_result.state
+        self._plan_exec.plan_elements_to_delete(check_result)
+        self._plan_assets_state()
+        self._plan_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
         """Imports an element and saves it to both the plan and state file.
@@ -107,17 +111,26 @@ class SolutionManager:
             raise typer.Abort("Cannot continue without a state file.")
         return state
 
-    def _generate_assets_state(self):
+    def _plan_assets_state(self):
         """Compares assets in the state file."""
-        assets_list = self._plan.assets
-        for asset_plan in assets_list:
-            self._plan_exec.compare_state_asset(asset_plan)
+        assets_list = self._state.assets + self._state.imported_assets
+        for state_asset in assets_list:
+            self._plan_exec.plan_asset_state(state_asset)
 
-    def _generate_components_state(self):
+    def _plan_components_state(self):
         """Compares components in the state file."""
-        components_list = self._plan.components
-        for component_plan in components_list:
-            self._plan_exec.compare_state_component(component_plan)
+        self._apply_exec.replace_data_addr()
+        components_list = (
+            self._state.components + self._state.imported_components
+        )
+        for state_component in components_list:
+            self._plan_exec.plan_component_state(state_component)
+            self._plan_routines_state(state_component)
+
+    def _plan_routines_state(self, component: Component):
+        """Applies RoutineObject states to the engine."""
+        for routine in component.routines:
+            self._plan_exec.plan_routine_state(routine)
 
     def _delete_assets_and_components(self, check_result):
         for asset in check_result.assets_to_delete:

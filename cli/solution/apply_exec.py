@@ -76,8 +76,9 @@ class ApplyExecutor:
         state_components = self._state.components
         for i in range(len(state_components)):
             routines = state_components[i].routines
+            component_name = state_components[i].name
             for routine in routines:
-                self._replace_routine_data_addr(routine)
+                self._replace_routine_data_addr(routine, component_name)
 
     def delete(self, model: SplightTypes, local_instance: SplightTypes):
         model_name = model.__name__
@@ -90,20 +91,26 @@ class ApplyExecutor:
             return ApplyResult(True, None)
         return ApplyResult(False, None)
 
-    def _replace_routine_data_addr(self, routine: RoutineObject):
+    def _replace_routine_data_addr(
+        self, routine: RoutineObject, component_name: str
+    ):
         """Replaces assets data addresses in a routine.
 
         Parameters
         ----------
         routine : RoutineObject
             The routine where we will replace the data addresses.
+        component_name : str
+            The component name.
         """
         for io_elem in routine.input + routine.output:
             if io_elem.value is not None:
-                io_elem.value = self._get_new_value(io_elem)
+                io_elem.value = self._get_new_value(
+                    io_elem, component_name, routine.name
+                )
 
     def _get_new_value(
-        self, io_elem: InputDataAddress
+        self, io_elem: InputDataAddress, component_name: str, routine_name: str
     ) -> Union[List[Dict], Dict]:
         """Gets the new data address value.
 
@@ -112,6 +119,10 @@ class ApplyExecutor:
         io_elem : InputDataAddress
             Input or output element to replace with the corresponding data
             addresses.
+        component_name : str
+            The component name.
+        routine_name : str
+            The routine name.
 
         Returns
         -------
@@ -130,17 +141,28 @@ class ApplyExecutor:
                 "a list. Aborted."
             )
         if multiple:
-            return [self._parse_data_addr(da) for da in io_elem.value]
+            return [
+                self._parse_data_addr(da, component_name, routine_name)
+                for da in io_elem.value
+            ]
         else:
-            return self._parse_data_addr(io_elem.value)
+            return self._parse_data_addr(
+                io_elem.value, component_name, routine_name
+            )
 
-    def _parse_data_addr(self, data_addr: Dict[str, str]) -> Dict[str, str]:
+    def _parse_data_addr(
+        self, data_addr: Dict[str, str], component_name: str, routine_name: str
+    ) -> Dict[str, str]:
         """Parses a data address ids.
 
         Parameters
         ----------
         data_addr : Dict[str, str]
             The data address to be parsed.
+        component_name : str
+            The component name.
+        routine_name : str
+            The routine name.
 
         Returns
         -------
@@ -164,7 +186,8 @@ class ApplyExecutor:
         if asset_id is None or attr_id is None:
             raise UndefinedID(
                 f"The asset: '{result.asset}' attribute: '{result.attribute}' "
-                "is not defined."
+                f"used in the routine named '{routine_name}' of the "
+                f"component '{component_name}' is not defined in the plan."
             )
         return {"asset": asset_id, "attribute": attr_id}
 
