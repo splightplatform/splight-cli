@@ -3,7 +3,6 @@ from mock import patch
 from splight_lib.models import Asset, RoutineObject
 from splight_lib.models.base import SplightDatabaseBaseModel
 
-from cli.solution.exceptions import UndefinedID
 from cli.solution.models import Component
 from cli.solution.solution import SolutionManager
 from cli.solution.tests.constants import get_plan, get_state

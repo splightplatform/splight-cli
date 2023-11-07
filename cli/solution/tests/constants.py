@@ -546,20 +546,6 @@ TEST_STATE_FILLED = {
     "imported_components": [],
 }
 
-TEST_STATE_MISSING_ADDRESS = StateSolution.parse_obj(TEST_PLAN.copy())
-TEST_STATE_MISSING_ADDRESS.components[0].routines[0].output[0].value = {
-    "asset": "local.{{test_asset}}",
-    "attribute": "attr_5",
-}
-TEST_STATE_MISSING_ADDRESS = to_dict(TEST_STATE_MISSING_ADDRESS)
-
-TEST_STATE_MISSING_ADDRESS_2 = StateSolution.parse_obj(TEST_PLAN.copy())
-TEST_STATE_MISSING_ADDRESS_2.components[0].routines[0].input[2].value[0] = {
-    "asset": "local.{{test_asset2}}",
-    "attribute": "attr_4",
-}
-TEST_STATE_MISSING_ADDRESS_2 = to_dict(TEST_STATE_MISSING_ADDRESS_2)
-
 
 def get_plan():
     return deepcopy(TEST_PLAN)
