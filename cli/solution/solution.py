@@ -7,6 +7,7 @@ from rich.console import Console
 from splight_lib.models import Asset, Component, RoutineObject
 
 from cli.solution.apply_exec import ApplyExecutor
+from cli.solution.destroyer import Destroyer
 from cli.solution.importer import ImporterExecutor
 from cli.solution.models import ElementType, PlanSolution, StateSolution
 from cli.solution.plan_exec import PlanExecutor
@@ -61,9 +62,10 @@ class SolutionManager:
         self._apply_exec = ApplyExecutor(
             self._state, self._yes_to_all, regex_to_exclude=self._regex_map
         )
+        self._destroyer = Destroyer(self._state, self._yes_to_all)
 
     def apply(self):
-        console.print("\nStarting apply step...", style=PRINT_STYLE)
+        console.print("\nStarting apply...", style=PRINT_STYLE)
         check_result = self._solution_checker.check()
         self._plan, self._state = check_result.plan, check_result.state
         self._delete_assets_and_components(check_result)
@@ -71,7 +73,7 @@ class SolutionManager:
         self._apply_components_state()
 
     def plan(self):
-        console.print("\nStarting plan step...", style=PRINT_STYLE)
+        console.print("\nStarting plan...", style=PRINT_STYLE)
         check_result = self._solution_checker.check()
         self._plan, self._state = check_result.plan, check_result.state
         self._plan_exec.plan_elements_to_delete(check_result)
@@ -93,6 +95,30 @@ class SolutionManager:
             self._plan, self._state = result.plan, result.state
             save_yaml(self._plan_path, self._plan)
             save_yaml(self._state_path, self._state)
+
+    def destroy(self):
+        console.print("\nStarting destroy...", style=PRINT_STYLE)
+        console.print(
+            "WARNING: You are about to destroy every asset and component "
+            "defined in the plan. Imported assets and components won't be "
+            "destroyed.",
+            style="bold red",
+        )
+        state_assets = self._state.assets
+        for idx in range(len(state_assets) - 1, -1, -1):
+            asset_to_delete = state_assets[idx]
+            destroyed = self._destroyer.destroy(Asset, asset_to_delete)
+            if destroyed:
+                state_assets.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_components = self._state.components
+        for idx in range(len(state_components) - 1, -1, -1):
+            component_to_delete = state_components[idx]
+            destroyed = self._destroyer.destroy(Component, component_to_delete)
+            if destroyed:
+                state_components.pop(idx)
+                save_yaml(self._state_path, self._state)
 
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
