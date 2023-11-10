@@ -142,10 +142,12 @@ class SolutionManager:
             The solution checker results.
         """
         for asset in check_result.assets_to_delete:
-            self._apply_exec.delete(asset)
+            self._apply_exec.delete(Asset, asset)
+            save_yaml(self._state_path, self._state)
 
         for component in check_result.components_to_delete:
-            self._apply_exec.delete(component)
+            self._apply_exec.delete(Component, component)
+            save_yaml(self._state_path, self._state)
 
     def _apply_assets_state(self):
         """Applies Assets states to the engine."""
