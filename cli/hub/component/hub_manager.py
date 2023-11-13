@@ -40,7 +40,7 @@ class HubComponentManager:
 
         # Validate spec fields before pushing the model
         try:
-            HubComponent(**spec)
+            HubComponent.model_validate(spec)
         except ValidationError as exc:
             raise SpecValidationError(exc)
 
