@@ -4,7 +4,7 @@ from uuid import UUID
 
 import typer
 from rich.console import Console
-from splight_lib.models import Asset, Component, RoutineObject
+from splight_lib.models import Asset, Component, File, RoutineObject
 
 from cli.solution.apply_exec import ApplyExecutor
 from cli.solution.destroyer import Destroyer
@@ -71,6 +71,7 @@ class SolutionManager:
         self._delete_assets_and_components(check_result)
         self._apply_assets_state()
         self._apply_components_state()
+        # self._apply_files_state()
 
     def plan(self):
         console.print("\nStarting plan...", style=PRINT_STYLE)
@@ -79,6 +80,7 @@ class SolutionManager:
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
         self._plan_components_state()
+        self._plan_files_state()
 
     def import_element(self, element: ElementType, id: UUID):
         """Imports an element and saves it to both the plan and state file.
@@ -141,7 +143,7 @@ class SolutionManager:
         """Shows the assets state if the plan were to be applied."""
         assets_list = self._state.assets + self._state.imported_assets
         for state_asset in assets_list:
-            self._plan_exec.plan_asset_state(state_asset)
+            self._plan_exec.plan_elem_state(Asset, state_asset)
 
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
@@ -150,13 +152,18 @@ class SolutionManager:
             self._state.components + self._state.imported_components
         )
         for state_component in components_list:
-            self._plan_exec.plan_component_state(state_component)
+            self._plan_exec.plan_elem_state(Component, state_component)
             self._plan_routines_state(state_component)
 
     def _plan_routines_state(self, component: Component):
         """Shows the routines state if the plan were to be applied."""
         for routine in component.routines:
-            self._plan_exec.plan_routine_state(routine)
+            self._plan_exec.plan_elem_state(RoutineObject, routine)
+
+    def _plan_files_state(self):
+        files_list = self._state.files
+        for state_file in files_list:
+            self._plan_exec.plan_elem_state(File, state_file)
 
     def _delete_assets_and_components(self, check_result: CheckResult):
         """Deletes assets and/or components that have been removed from the

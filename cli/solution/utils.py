@@ -10,13 +10,13 @@ import yaml
 from pydantic import BaseModel
 from rich.console import Console
 from rich.style import Style
-from splight_lib.models import Asset, Component, RoutineObject
+from splight_lib.models import Asset, Component, File, RoutineObject
 
 from cli.solution.models import PlanSolution, StateSolution
 
 console = Console()
 
-SplightTypes = Union[Asset, Component, RoutineObject]
+SplightTypes = Union[Asset, Component, RoutineObject, File]
 
 MatchResult = namedtuple(
     "MatchResult", ["is_id", "type", "asset", "attribute"]
