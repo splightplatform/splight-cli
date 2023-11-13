@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 from uuid import UUID
 
 import typer
+from pydantic import ValidationError
 from rich.console import Console
 from splight_lib.models import Asset, Component, File, RoutineObject
 
@@ -37,11 +38,8 @@ class SolutionManager:
         self._state_path = Path(state_path) if state_path else None
 
         self._plan = PlanSolution.parse_obj(load_yaml(plan_path))
-        self._state = (
-            StateSolution.parse_obj(load_yaml(self._state_path))
-            if self._state_path is not None
-            else self._generate_state_from_plan()
-        )
+        self._state = self._get_state()
+
         self._regex_map = {
             Component.__name__: [
                 r"root\['routines'\]",
@@ -70,8 +68,8 @@ class SolutionManager:
         self._plan, self._state = check_result.plan, check_result.state
         self._delete_assets_and_components(check_result)
         self._apply_assets_state()
+        self._apply_files_state()
         self._apply_components_state()
-        # self._apply_files_state()
 
     def plan(self):
         console.print("\nStarting plan...", style=PRINT_STYLE)
@@ -79,8 +77,8 @@ class SolutionManager:
         self._plan, self._state = check_result.plan, check_result.state
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
-        self._plan_components_state()
         self._plan_files_state()
+        self._plan_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
         """Imports an element and saves it to both the plan and state file.
@@ -122,15 +120,30 @@ class SolutionManager:
                 state_components.pop(idx)
                 save_yaml(self._state_path, self._state)
 
-    def _generate_state_from_plan(self):
-        """Generates the state file if not passed."""
+        state_files = self._state.files
+        for idx in range(len(state_files) - 1, -1, -1):
+            file_to_delete = state_files[idx]
+            destroyed = self._destroyer.destroy(File, file_to_delete)
+            if destroyed:
+                state_files.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+    def _get_state(self):
+        """Returns the state file."""
+        if self._state_path is not None:
+            try:
+                return StateSolution.parse_obj(load_yaml(self._state_path))
+            except ValidationError:
+                pass
+        else:
+            self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
+
         state = StateSolution.parse_obj(to_dict(self._plan))
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
         )
         bprint(state)
-        self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
         bprint(f"The state file will be saved to {self._state_path}")
         confirm = confirm_or_yes(self._yes_to_all, "Do you want to save it?")
         if confirm:
@@ -161,6 +174,7 @@ class SolutionManager:
             self._plan_exec.plan_elem_state(RoutineObject, routine)
 
     def _plan_files_state(self):
+        """Shows the files state if the plan were to be applied."""
         files_list = self._state.files
         for state_file in files_list:
             self._plan_exec.plan_elem_state(File, state_file)
@@ -266,3 +280,14 @@ class SolutionManager:
                 update_results = True
                 routine_list[i] = RoutineObject.parse_obj(result.updated_dict)
         return routine_list, update_results
+
+    def _apply_files_state(self):
+        """Applies Files states to the engine."""
+        files_list = self._state.files
+        for i in range(len(files_list)):
+            result = self._apply_exec.apply(
+                model=File, local_instance=files_list[i]
+            )
+            if result.update:
+                files_list[i] = File.parse_obj(result.updated_dict)
+                save_yaml(self._state_path, self._state)
