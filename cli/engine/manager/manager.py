@@ -89,7 +89,7 @@ class ResourceManager:
         )
         _ = [
             table.add_row(key, str(value))
-            for key, value in instance.dict().items()
+            for key, value in instance.model_dump().items()
             if key not in exclude_fields
         ]
         self._console.print(table)
@@ -111,7 +111,7 @@ class ResourceManager:
         self._console.print(table)
 
     def create(self, data: Dict[str, Any]):
-        instance = self._model.parse_obj(data)
+        instance = self._model.model_validate(data)
         instance.save()
 
         table = Table(
@@ -120,7 +120,7 @@ class ResourceManager:
         )
         _ = [
             table.add_row(key, str(value))
-            for key, value in instance.dict().items()
+            for key, value in instance.model_dump().items()
         ]
         self._console.print(table)
 
@@ -141,7 +141,7 @@ class ResourceManager:
                 path, f"{instance.__class__.__name__}-{instance.id}.json"
             )
             with open(file_path, "w") as fid:
-                json.dump(instance.dict(), fid, indent=2)
+                json.dump(instance.model_dump(), fid, indent=2)
 
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
@@ -418,10 +418,11 @@ class ComponentUpgradeManager:
         hub: List[Union[InputDataAddress, DataAddress]],
     ):
         hub_parameters = {
-            (x.name, x.type): {k: v for k, v in x.dict().items()} for x in hub
+            (x.name, x.type): {k: v for k, v in x.model_dump().items()}
+            for x in hub
         }
         prev_parameters = {
-            (x.name, x.type): {k: v for k, v in x.dict().items()}
+            (x.name, x.type): {k: v for k, v in x.model_dump().items()}
             for x in previous
         }
         result = []
@@ -448,11 +449,15 @@ class ComponentUpgradeManager:
         input is used.
         """
         hub_parameters = {
-            (x.name, x.type, x.multiple): {k: v for k, v in x.dict().items()}
+            (x.name, x.type, x.multiple): {
+                k: v for k, v in x.model_dump().items()
+            }
             for x in hub
         }
         prev_parameters = {
-            (x.name, x.type, x.multiple): {k: v for k, v in x.dict().items()}
+            (x.name, x.type, x.multiple): {
+                k: v for k, v in x.model_dump().items()
+            }
             for x in previous
         }
         result = []

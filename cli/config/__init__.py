@@ -25,7 +25,7 @@ def config(
     try:
         if from_json:
             from_json = json.loads(from_json)
-            new_settings = SplightCLISettings.parse_obj(from_json)
+            new_settings = SplightCLISettings.model_validate(from_json)
         else:
             new_settings_data = {}
             for config_var in CONFIG_VARS:
@@ -39,7 +39,7 @@ def config(
                     show_default=True,
                 )
                 new_settings_data.update({config_var: value})
-            new_settings = SplightCLISettings.parse_obj(new_settings_data)
+            new_settings = SplightCLISettings.model_validate(new_settings_data)
         cli_context.workspace.update_workspace(new_settings)
         typer.echo("Configuration saved successfully", color="green")
     except Exception as e:
