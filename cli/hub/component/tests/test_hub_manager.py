@@ -16,9 +16,8 @@ from cli.hub.component.hub_manager import HubComponentManager
 
 BASE_PATH = os.getcwd()
 TEST_COMPONENT_PATH = os.path.join(BASE_PATH, "cli/tests/test_component/")
-HUB_COMPONENT = HubComponent.parse_file(
-    os.path.join(TEST_COMPONENT_PATH, "spec.json")
-)
+with open(os.path.join(TEST_COMPONENT_PATH, "spec.json"), "r") as fid:
+    HUB_COMPONENT = HubComponent.model_validate_json(fid.read())
 HUB_COMPONENT.id = str(uuid4())
 
 
