@@ -20,7 +20,7 @@ class SplightCLIConfig(BaseModel):
     workspaces: Dict[str, SplightCLISettings]
 
 
-ALL_CONFIG_VARS = SplightCLISettings.__fields__
+ALL_CONFIG_VARS = set(SplightCLISettings.model_fields.keys())
 CONFIG_VARS = [
     "SPLIGHT_ACCESS_ID",
     "SPLIGHT_SECRET_KEY",
