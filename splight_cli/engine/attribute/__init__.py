@@ -6,7 +6,10 @@ from rich.console import Console
 from splight_lib.models import Attribute
 
 from splight_cli.constants import error_style
-from splight_cli.engine.manager import ResourceManager, ResourceManagerException
+from splight_cli.engine.manager import (
+    ResourceManager,
+    ResourceManagerException,
+)
 
 attribute_app = typer.Typer(
     name="Splight Engine Attribute",

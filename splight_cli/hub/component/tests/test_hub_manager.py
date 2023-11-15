@@ -38,7 +38,9 @@ def test_push(mock_exists, mock_component_manager):
 
 
 @patch.object(ComponentManager, "test", return_value=None)
-@patch("splight_cli.hub.component.hub_manager.json.load", side_effect=Exception)
+@patch(
+    "splight_cli.hub.component.hub_manager.json.load", side_effect=Exception
+)
 def test_push_spec_format_error(mock_exists, mock_json_load):
     manager = HubComponentManager()
     test_component_path = os.path.join(

@@ -3,7 +3,10 @@ from unittest.mock import patch
 import pytest
 from splight_lib.models import Asset, Attribute
 
-from splight_cli.engine.manager import ResourceManager, ResourceManagerException
+from splight_cli.engine.manager import (
+    ResourceManager,
+    ResourceManagerException,
+)
 
 
 @pytest.mark.parametrize(

@@ -19,7 +19,11 @@ from splight_cli.component.exceptions import (
     ReadmeExists,
 )
 from splight_cli.component.loaders import InitLoader
-from splight_cli.component.utils import db_from_spec, fake_asset, fake_attribute
+from splight_cli.component.utils import (
+    db_from_spec,
+    fake_asset,
+    fake_attribute,
+)
 from splight_cli.constants import (
     INIT_FILE,
     PYTHON_CMD,
