@@ -12,6 +12,7 @@ from cli.solution.destroyer import Destroyer
 from cli.solution.importer import ImporterExecutor
 from cli.solution.models import ElementType, PlanSolution, StateSolution
 from cli.solution.plan_exec import PlanExecutor
+from cli.solution.replacer import Replacer
 from cli.solution.solution_checker import CheckResult, SolutionChecker
 from cli.solution.utils import (
     DEFAULT_STATE_PATH,
@@ -52,6 +53,7 @@ class SolutionManager:
                 r"root\['output'\]\[\d+\]\['description'\]",
             ],
         }
+        self._replacer = Replacer(self._state)
         self._solution_checker = SolutionChecker(self._plan, self._state)
         self._import_exec = ImporterExecutor(self._plan, self._state)
         self._plan_exec = PlanExecutor(
@@ -160,7 +162,7 @@ class SolutionManager:
 
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
-        self._plan_exec.replace_data_addr()
+        self._replacer.replace_data_addr(is_planning=True)
         components_list = (
             self._state.components + self._state.imported_components
         )
@@ -220,7 +222,7 @@ class SolutionManager:
 
     def _apply_components_state(self):
         """Applies Components states to the engine."""
-        self._apply_exec.replace_data_addr()
+        self._replacer.replace_data_addr(is_planning=False)
         components_list = self._state.components
         for i in range(len(components_list)):
             component = components_list[i]
