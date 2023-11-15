@@ -89,4 +89,7 @@ jobs:
         run: python .github/workflows/scripts/check_pypi_version.py ${{ env.CURRENT_VERSION }} $LIBRARY_NAME
 
       - name: Verify version is greater than master version
-        run: python .github/workflows/scripts/check_master_version.py ${{ env.MASTER_VERSION }} ${{ env.CURRENT_VERSION }}
+        run: |
+          echo ${{ env.MASTER_VERSION }} 
+          echo ${{ env.CURRENT_VERSION }}
+          python .github/workflows/scripts/check_master_version.py ${{ env.MASTER_VERSION }} ${{ env.CURRENT_VERSION }}
