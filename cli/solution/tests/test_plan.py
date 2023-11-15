@@ -1,31 +1,52 @@
 import pytest
 from mock import patch
+from splight_lib.models import Asset, RoutineObject
+from splight_lib.models.base import SplightDatabaseBaseModel
 
-from cli.solution.plan_exec import MissingDataAddress
+from cli.solution.exceptions import UndefinedID
+from cli.solution.models import Component
 from cli.solution.solution import SolutionManager
-from cli.solution.tests.constants import (
-    TEST_PLAN,
-    TEST_STATE_MISSING_ADDRESS,
-    TEST_STATE_MISSING_ADDRESS_2,
-)
+from cli.solution.tests.constants import get_plan, get_state
 
 
 @patch("cli.solution.solution.save_yaml")
 @patch("cli.solution.solution.load_yaml")
-def test_plan_print(load_patch, save_patch):
-    state = TEST_PLAN.copy()
-    load_patch.side_effect = [TEST_PLAN, state]
+def test_plan_print(load_yaml_mock, save_yaml_mock):
+    load_yaml_mock.side_effect = [get_plan(), get_plan()]
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
-    solution_manager.execute()
+    solution_manager.plan()
 
 
-@pytest.mark.parametrize(
-    "state_dict", [TEST_STATE_MISSING_ADDRESS, TEST_STATE_MISSING_ADDRESS_2]
-)
 @patch("cli.solution.solution.save_yaml")
 @patch("cli.solution.solution.load_yaml")
-def test_plan_fails(load_patch, save_patch, state_dict):
-    load_patch.side_effect = [TEST_PLAN, state_dict]
+def test_plan_raise_undefined_asset_name(load_yaml_mock, save_yaml_mock):
+    plan = get_plan()
+    plan["components"][0]["routines"][0]["output"][0]["value"] = {
+        "asset": "local.{{test_asset}}",
+        "attribute": "attr_5",
+    }
+    load_yaml_mock.side_effect = [plan, plan]
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
-    with pytest.raises(MissingDataAddress):
-        solution_manager.execute()
+    with pytest.raises(UndefinedID):
+        solution_manager.plan()
+
+
+@patch("cli.solution.solution.save_yaml")
+@patch("cli.solution.solution.load_yaml")
+@patch.object(SplightDatabaseBaseModel, "list")
+def test_plan_diff_with_remote(list_mock, load_yaml_mock, save_yaml_mock):
+    plan = get_plan()
+    state = get_state()
+    load_yaml_mock.side_effect = [plan, state]
+    asset = Asset.parse_obj(get_state()["assets"][0])
+    asset.id = "9dfbd40c-1a4d-491b-a59a-0a70aae1895e"
+    component = Component.parse_obj(get_state()["components"][0])
+    routine = RoutineObject.parse_obj(
+        get_state()["components"][0]["routines"][0]
+    )
+    list_mock.side_effect = [[asset], [component], [routine]]
+
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.plan()
+
+    assert list_mock.call_count == 3

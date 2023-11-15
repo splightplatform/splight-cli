@@ -1,11 +1,10 @@
 from collections import namedtuple
-from typing import Tuple
 from uuid import UUID
 
 from rich.console import Console
 from splight_lib.models import Asset, Component, RoutineObject
 
-from cli.solution.models import ElementType, Solution
+from cli.solution.models import ElementType, PlanSolution, StateSolution
 from cli.solution.utils import IMPORT_PREFIX
 
 ImportResult = namedtuple("ImportResult", ("was_imported", "plan", "state"))
@@ -14,14 +13,12 @@ console = Console()
 
 
 class ImporterExecutor:
-    def __init__(self, plan: Solution, state: Solution):
+    def __init__(self, plan: PlanSolution, state: StateSolution):
         self._plan = plan
         self._state = state
         self._map_element_to_model = {"asset": Asset, "component": Component}
 
-    def import_element(
-        self, element: ElementType, id: UUID
-    ) -> Tuple[Solution, Solution]:
+    def import_element(self, element: ElementType, id: UUID) -> ImportResult:
         """Imports an element and saves it to both the plan and state file.
 
         Parameters

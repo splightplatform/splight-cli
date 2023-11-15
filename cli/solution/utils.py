@@ -12,7 +12,7 @@ from rich.console import Console
 from rich.style import Style
 from splight_lib.models import Asset, Component, RoutineObject
 
-from cli.solution.models import Solution
+from cli.solution.models import PlanSolution, StateSolution
 
 console = Console()
 
@@ -63,54 +63,6 @@ def save_yaml(yaml_path: Path, elem_to_save: Union[BaseModel, Dict]):
     )
     with open(yaml_path, "w") as f:
         yaml.dump(dict_to_save, f, indent=2)
-
-
-def check_files(plan: Solution, state: Solution):
-    plan_assets = plan.assets
-    state_assets = state.assets
-    if len(plan_assets) != len(state_assets):
-        raise ValueError(
-            "The number of assets defined in the plan is different from the "
-            "ones defined in the state file."
-        )
-
-    seen_state_assets = {a.name: 0 for a in state_assets}
-    for asset in plan_assets:
-        plan_asset_name = asset.name
-        if plan_asset_name not in seen_state_assets.keys():
-            raise MissingElement(
-                f"Plan asset {plan_asset_name} was not found in the state "
-                "assets."
-            )
-        seen_state_assets[plan_asset_name] += 1
-        if seen_state_assets[plan_asset_name] > 1:
-            raise ElemnentAlreadyDefined(
-                f"The asset {plan_asset_name} is already defined. Asset names"
-                " must be unique."
-            )
-
-    plan_components = plan.components
-    state_components = state.components
-    if len(plan_components) != len(state_components):
-        raise ValueError(
-            "The number of components defined in the plan is different from "
-            "the ones defined in the state file."
-        )
-
-    seen_state_comps = {c.name: 0 for c in state_components}
-    for comp in plan_components:
-        plan_comp_name = comp.name
-        if plan_comp_name not in seen_state_comps.keys():
-            raise MissingElement(
-                f"Plan component {plan_comp_name} was not found in the state "
-                "components."
-            )
-        seen_state_comps[plan_comp_name] += 1
-        if seen_state_comps[plan_comp_name] > 1:
-            raise ElemnentAlreadyDefined(
-                f"The component {plan_comp_name} is already defined. "
-                "Component names must be unique."
-            )
 
 
 def is_valid_uuid(possible_uuid: str) -> bool:

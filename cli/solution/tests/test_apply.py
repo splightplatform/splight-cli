@@ -3,7 +3,6 @@ from mock import patch
 from splight_lib.models import Asset, RoutineObject
 from splight_lib.models.base import SplightDatabaseBaseModel
 
-from cli.solution.apply_exec import UndefinedID
 from cli.solution.models import Component
 from cli.solution.solution import SolutionManager
 from cli.solution.tests.constants import get_plan, get_state
@@ -34,10 +33,8 @@ def test_apply_everything(
     )
     retrieve_mock.side_effect = [asset, component, routine]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
-    solution_manager.execute()
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.apply()
 
     save_yaml_mock.assert_called()
     assert retrieve_mock.call_count == 3
@@ -76,10 +73,8 @@ def test_apply_remote_asset_create_component(
     retrieve_mock.side_effect = [component, routine]
     list_mock.side_effect = [[asset]]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
-    solution_manager.execute()
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.apply()
 
     save_yaml_mock.assert_called()
     list_mock.assert_called_once()
@@ -119,10 +114,8 @@ def test_apply_remote_asset_create_routine(
     retrieve_mock.side_effect = [routine]
     list_mock.side_effect = [[asset], [component]]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
-    solution_manager.execute()
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.apply()
 
     save_yaml_mock.assert_called()
     assert list_mock.call_count == 2
@@ -161,10 +154,8 @@ def test_asset_modification_saves_remote(
     )
     list_mock.side_effect = [[asset], [component], [routine]]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
-    solution_manager.execute()
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.apply()
 
     save_yaml_mock.assert_called_once()
     assert list_mock.call_count == 3
@@ -178,7 +169,7 @@ def test_asset_modification_saves_remote(
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
-def test_asset_modification_saves_local(
+def test_routine_modification_saves_local(
     save_mock,
     retrieve_mock,
     list_mock,
@@ -187,9 +178,9 @@ def test_asset_modification_saves_local(
     confirm_mock,
 ):
     state = get_state()
-    state["assets"][0]["name"] = "some_other_name"
     plan = get_plan()
-    plan["assets"][0]["name"] = "some_other_name"
+    routine = plan["components"][0]["routines"][0]
+    routine["config"][0]["value"] = 22
 
     confirm_mock.side_effect = [False, True]
     load_yaml_mock.side_effect = [plan, state]
@@ -200,11 +191,10 @@ def test_asset_modification_saves_local(
         get_state()["components"][0]["routines"][0]
     )
     list_mock.side_effect = [[asset], [component], [routine]]
+    retrieve_mock.side_effect = [RoutineObject.parse_obj(routine)]
 
-    solution_manager = SolutionManager(
-        "./dummy_path", "./dummy_path", apply=True
-    )
-    solution_manager.execute()
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.apply()
 
     save_yaml_mock.assert_called_once()
     assert list_mock.call_count == 3
@@ -229,7 +219,7 @@ def test_remote_asset_was_deleted(
 ):
     state = get_state()
 
-    confirm_mock.return_value = True
+    confirm_mock.side_effect = [True, True, False]
     load_yaml_mock.side_effect = [get_plan(), state]
 
     asset = Asset.parse_obj(get_state()["assets"][0])
@@ -241,14 +231,11 @@ def test_remote_asset_was_deleted(
     list_mock.side_effect = [[], [component], [routine]]
     retrieve_mock.side_effect = [asset]
 
-    with pytest.raises(UndefinedID):
-        solution_manager = SolutionManager(
-            "./dummy_path", "./dummy_path", apply=True
-        )
-        solution_manager.execute()
+    solution_manager = SolutionManager("./dummy_path", "./dummy_path")
+    solution_manager.apply()
 
-    save_yaml_mock.assert_called_once()
-    list_mock.assert_called_once()
+    assert save_yaml_mock.call_count == 2
+    assert list_mock.call_count == 3
     retrieve_mock.assert_called_once()
     save_mock.assert_called_once()
     assert solution_manager._state.assets[0] == asset

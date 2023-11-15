@@ -35,10 +35,8 @@ def plan(
     yes_to_all: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
     try:
-        manager = SolutionManager(
-            plan_file, state_file, apply=False, yes_to_all=yes_to_all
-        )
-        manager.execute()
+        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
+        manager.plan()
     except Exception as e:
         console.print(f"Error planning solution: {str(e)}", style=error_style)
         raise typer.Exit(code=1)
@@ -54,10 +52,8 @@ def apply(
     yes_to_all: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
     try:
-        manager = SolutionManager(
-            plan_file, state_file, apply=True, yes_to_all=yes_to_all
-        )
-        manager.execute()
+        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
+        manager.apply()
     except Exception as e:
         console.print(f"Error applying solution: {str(e)}", style=error_style)
         raise typer.Exit(code=1)
