@@ -28,7 +28,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 
 test: ## run tests with pytest
-	pytest cli
+	pytest splight_cli
 
 coverage: ## run coverage
 	coverage run --source=. -m pytest; coverage report -m
