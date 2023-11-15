@@ -56,7 +56,7 @@ class WorkspaceManager:
             )
         config["current_workspace"] = workspace_name
         save_yaml_to_file(config, self.config_file)
-        config = SplightCLIConfig.parse_obj(config)
+        config = SplightCLIConfig.model_validate(config)
         return config
 
     @property
@@ -69,13 +69,13 @@ class WorkspaceManager:
 
     def update_workspace(self, new_settings: SplightCLISettings):
         self._workspaces[self._current_workspace] = new_settings
-        save_yaml_to_file(self._config.dict(), self.config_file)
+        save_yaml_to_file(self._config.model_dump(), self.config_file)
 
     def select_workspace(self, workspace_name: str):
         if workspace_name not in self._workspaces:
             raise NotExistingWorkspace(workspace_name)
         self._config.current_workspace = workspace_name
-        save_yaml_to_file(self._config.dict(), self.config_file)
+        save_yaml_to_file(self._config.model_dump(), self.config_file)
 
     def list_workspaces(self) -> List[str]:
         return [
@@ -90,7 +90,7 @@ class WorkspaceManager:
         if workspace_name == self._current_workspace:
             raise WorkspaceDeleteError(workspace_name)
         del self._config.workspaces[workspace_name]
-        save_yaml_to_file(self._config.dict(), self.config_file)
+        save_yaml_to_file(self._config.model_dump(), self.config_file)
 
     def create_workspace(self, workspace_name: str):
         if workspace_name in self._config.workspaces:
@@ -98,7 +98,7 @@ class WorkspaceManager:
         self._config.workspaces.update({workspace_name: DEFAULT_WORKSPACE})
         self._config.current_workspace = workspace_name
         self._current_workspace = workspace_name
-        save_yaml_to_file(self._config.dict(), self.config_file)
+        save_yaml_to_file(self._config.model_dump(), self.config_file)
 
     def list_workspace_contents(self, workspace_name: str):
         if workspace_name not in self._config.workspaces:

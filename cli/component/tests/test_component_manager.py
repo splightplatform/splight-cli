@@ -15,7 +15,7 @@ COMPONENT_FILES = [
     "tests.py",
 ]
 
-SPEC = Spec.parse_obj(
+SPEC = Spec.model_validate(
     {
         "name": "TestComponent",
         "version": "0.1.0",

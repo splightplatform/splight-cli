@@ -206,7 +206,7 @@ class ComponentManager:
 
     def create_local_db(self, path: str):
         spec = Spec.from_file(os.path.join(path, SPEC_FILE))
-        json_spec = spec.dict()
+        json_spec = spec.model_dump()
 
         splight_db = db_from_spec(json_spec)
 

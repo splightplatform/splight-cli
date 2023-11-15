@@ -51,8 +51,8 @@ def test_get_not_found(model, id, result):
 @pytest.mark.parametrize(
     "model,data",
     [
-        (Asset, Asset(name="my-asset").dict()),
-        (Attribute, Attribute(name="my-attr", asset="some_id").dict()),
+        (Asset, Asset(name="my-asset").model_dump()),
+        (Attribute, Attribute(name="my-attr", asset="some_id").model_dump()),
     ],
 )
 def test_create(model, data):

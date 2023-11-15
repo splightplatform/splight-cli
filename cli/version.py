@@ -1,1 +1,3 @@
-__version__ = "4.3.3"
+from importlib import metadata
+
+__version__ = metadata.version("cli")
