@@ -1,0 +1,73 @@
+import typer
+from rich.console import Console
+from splight_lib.models import Component
+
+from splight_cli.constants import error_style
+from splight_cli.hub.component.hub_manager import HubComponentManager
+
+component_app = typer.Typer(
+    name="Splight Engine Component",
+    add_completion=True,
+    rich_markup_mode="rich",
+    no_args_is_help=True,
+)
+
+console = Console()
+MODEL = Component
+
+
+@component_app.command()
+def push(
+    ctx: typer.Context,
+    path: str = typer.Argument(..., help="Path to component source code"),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        "-f",
+        help="Overwrite existing component in Splight HUB",
+    ),
+):
+    try:
+        manager = HubComponentManager()
+        manager.push(path, force=force)
+    except Exception as exc:
+        console.print(f"Error pushing component: {exc}", style=error_style)
+        raise typer.Exit(code=1)
+
+
+@component_app.command()
+def pull(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The component's name"),
+    version: str = typer.Argument(..., help="The component's version"),
+):
+    try:
+        manager = HubComponentManager()
+        manager.pull(name=name, version=version)
+    except Exception as exc:
+        console.print(f"Error pulling component: {exc}", style=error_style)
+        raise typer.Exit(code=1)
+
+
+@component_app.command()
+def list(ctx: typer.Context):
+    try:
+        manager = HubComponentManager()
+        manager.list_components()
+    except Exception as exc:
+        console.print(f"Error listing components: {exc}", style=error_style)
+        raise typer.Exit(code=1)
+
+
+@component_app.command()
+def versions(
+    ctx: typer.Context, name: str = typer.Argument(..., help="Componet's name")
+):
+    try:
+        manager = HubComponentManager()
+        manager.versions(name=name)
+    except Exception as exc:
+        console.print(
+            f"Error getting component versions: {exc}", style=error_style
+        )
+        raise typer.Exit(code=1)
