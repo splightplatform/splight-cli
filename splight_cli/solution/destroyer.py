@@ -1,6 +1,6 @@
 from typing import Type
 
-from cli.solution.utils import SplightTypes, bprint, confirm_or_yes
+from splight_cli.solution.utils import SplightTypes, bprint, confirm_or_yes
 
 
 class Destroyer:

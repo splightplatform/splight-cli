@@ -7,6 +7,7 @@ from rich.console import Console
 from splight_lib.models import Asset, Component, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
+from splight_cli.solution.destroyer import Destroyer
 from splight_cli.solution.importer import ImporterExecutor
 from splight_cli.solution.models import (
     ElementType,
@@ -67,6 +68,7 @@ class SolutionManager:
         self._apply_exec = ApplyExecutor(
             self._state, self._yes_to_all, regex_to_exclude=self._regex_map
         )
+        self._destroyer = Destroyer(self._state, self._yes_to_all)
 
     def apply(self):
         console.print("\nStarting apply step...", style=PRINT_STYLE)
@@ -99,6 +101,30 @@ class SolutionManager:
             self._plan, self._state = result.plan, result.state
             save_yaml(self._plan_path, self._plan)
             save_yaml(self._state_path, self._state)
+
+    def destroy(self):
+        console.print("\nStarting destroy...", style=PRINT_STYLE)
+        console.print(
+            "WARNING: You are about to destroy every asset and component "
+            "defined in the plan. Imported assets and components won't be "
+            "destroyed.",
+            style="bold red",
+        )
+        state_assets = self._state.assets
+        for idx in range(len(state_assets) - 1, -1, -1):
+            asset_to_delete = state_assets[idx]
+            destroyed = self._destroyer.destroy(Asset, asset_to_delete)
+            if destroyed:
+                state_assets.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_components = self._state.components
+        for idx in range(len(state_components) - 1, -1, -1):
+            component_to_delete = state_components[idx]
+            destroyed = self._destroyer.destroy(Component, component_to_delete)
+            if destroyed:
+                state_components.pop(idx)
+                save_yaml(self._state_path, self._state)
 
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
