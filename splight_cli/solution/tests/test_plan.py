@@ -9,16 +9,16 @@ from splight_cli.solution.solution import SolutionManager
 from splight_cli.solution.tests.constants import get_plan, get_state
 
 
-@patch("cli.solution.solution.save_yaml")
-@patch("cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
 def test_plan_print(load_yaml_mock, save_yaml_mock):
     load_yaml_mock.side_effect = [get_plan(), get_plan()]
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.plan()
 
 
-@patch("cli.solution.solution.save_yaml")
-@patch("cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
 def test_plan_raise_undefined_asset_name(load_yaml_mock, save_yaml_mock):
     plan = get_plan()
     plan["components"][0]["routines"][0]["output"][0]["value"] = {
@@ -31,17 +31,17 @@ def test_plan_raise_undefined_asset_name(load_yaml_mock, save_yaml_mock):
         solution_manager.plan()
 
 
-@patch("cli.solution.solution.save_yaml")
-@patch("cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 def test_plan_diff_with_remote(list_mock, load_yaml_mock, save_yaml_mock):
     plan = get_plan()
     state = get_state()
     load_yaml_mock.side_effect = [plan, state]
-    asset = Asset.parse_obj(get_state()["assets"][0])
+    asset = Asset.model_validate(get_state()["assets"][0])
     asset.id = "9dfbd40c-1a4d-491b-a59a-0a70aae1895e"
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     list_mock.side_effect = [[asset], [component], [routine]]

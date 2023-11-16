@@ -36,8 +36,8 @@ class ElemnentAlreadyDefined(Exception):
     ...
 
 
-def to_dict(instance):
-    return json.loads(instance.json())
+def to_dict(instance: SplightTypes):
+    return json.loads(instance.model_dump_json())
 
 
 def bprint(string: str):

@@ -4,12 +4,13 @@ from uuid import UUID
 
 import typer
 from rich.console import Console
-from splight_lib.models import Asset, Component, RoutineObject
+from splight_lib.models import Asset, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
 from splight_cli.solution.destroyer import Destroyer
 from splight_cli.solution.importer import ImporterExecutor
 from splight_cli.solution.models import (
+    Component,
     ElementType,
     PlanSolution,
     StateSolution,
@@ -41,9 +42,9 @@ class SolutionManager:
         self._plan_path = Path(plan_path)
         self._state_path = Path(state_path) if state_path else None
 
-        self._plan = PlanSolution.parse_obj(load_yaml(plan_path))
+        self._plan = PlanSolution.model_validate(load_yaml(plan_path))
         self._state = (
-            StateSolution.parse_obj(load_yaml(self._state_path))
+            StateSolution.model_validate(load_yaml(self._state_path))
             if self._state_path is not None
             else self._generate_state_from_plan()
         )
@@ -128,7 +129,7 @@ class SolutionManager:
 
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
-        state = StateSolution.parse_obj(to_dict(self._plan))
+        state = StateSolution.model_validate(to_dict(self._plan))
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
@@ -189,7 +190,7 @@ class SolutionManager:
                 model=Asset, local_instance=assets_list[i]
             )
             if result.update:
-                assets_list[i] = Asset.parse_obj(result.updated_dict)
+                assets_list[i] = Asset.model_validate(result.updated_dict)
                 save_yaml(self._state_path, self._state)
 
         imported_assets_list = self._state.imported_assets
@@ -200,7 +201,9 @@ class SolutionManager:
                 not_found_is_exception=True,
             )
             if result.update:
-                imported_assets_list[i] = Asset.parse_obj(result.updated_dict)
+                imported_assets_list[i] = Asset.model_validate(
+                    result.updated_dict
+                )
                 save_yaml(self._state_path, self._state)
 
     def _apply_components_state(self):
@@ -213,10 +216,12 @@ class SolutionManager:
                 model=Component, local_instance=component
             )
             if result.update:
-                components_list[i] = Component.parse_obj(result.updated_dict)
+                components_list[i] = Component.model_validate(
+                    result.updated_dict
+                )
                 save_yaml(self._state_path, self._state)
             updated_routines, was_updated = self._apply_routines_state(
-                component, Component.parse_obj(result.updated_dict)
+                component, Component.model_validate(result.updated_dict)
             )
             components_list[i].routines = updated_routines
             if was_updated:
@@ -231,13 +236,13 @@ class SolutionManager:
                 not_found_is_exception=True,
             )
             if result.update:
-                imported_comp_list[i] = Component.parse_obj(
+                imported_comp_list[i] = Component.model_validate(
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)
             updated_routines, was_updated = self._apply_routines_state(
                 component,
-                Component.parse_obj(result.updated_dict),
+                Component.model_validate(result.updated_dict),
                 not_found_is_exception=True,
             )
             imported_comp_list[i].routines = updated_routines
@@ -263,5 +268,7 @@ class SolutionManager:
             )
             if result.update:
                 update_results = True
-                routine_list[i] = RoutineObject.parse_obj(result.updated_dict)
+                routine_list[i] = RoutineObject.model_validate(
+                    result.updated_dict
+                )
         return routine_list, update_results

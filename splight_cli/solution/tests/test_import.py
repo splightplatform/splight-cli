@@ -9,14 +9,14 @@ from splight_cli.solution.solution import SolutionManager
 from splight_cli.solution.tests.constants import get_plan, get_state
 
 
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 def test_import_asset_correctly(retrieve_mock, save_yaml_mock, load_yaml_mock):
     state = get_plan()
     plan = get_plan()
     load_yaml_mock.side_effect = [plan, state]
-    asset = Asset.parse_obj(get_state()["assets"][0])
+    asset = Asset.model_validate(get_state()["assets"][0])
 
     retrieve_mock.side_effect = [asset]
 
@@ -30,14 +30,14 @@ def test_import_asset_correctly(retrieve_mock, save_yaml_mock, load_yaml_mock):
     assert solution_manager._state.imported_assets[0] == asset
 
 
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 def test_already_imported_asset(retrieve_mock, save_yaml_mock, load_yaml_mock):
     state = get_state()
     plan = get_plan()
     load_yaml_mock.side_effect = [plan, state]
-    asset = Asset.parse_obj(get_state()["assets"][0])
+    asset = Asset.model_validate(get_state()["assets"][0])
 
     retrieve_mock.side_effect = [asset]
 
@@ -51,8 +51,8 @@ def test_already_imported_asset(retrieve_mock, save_yaml_mock, load_yaml_mock):
     assert not solution_manager._state.imported_assets
 
 
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 def test_asset_not_in_db(retrieve_mock, save_yaml_mock, load_yaml_mock):
     state = get_state()
@@ -74,8 +74,8 @@ def test_asset_not_in_db(retrieve_mock, save_yaml_mock, load_yaml_mock):
     assert not solution_manager._state.imported_assets
 
 
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "list")
 def test_import_component_correctly(
@@ -84,12 +84,12 @@ def test_import_component_correctly(
     state = get_plan()
     plan = get_plan()
     load_yaml_mock.side_effect = [plan, state]
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
-    retrieve_mock.side_effect = [component.copy()]
-    list_mock.side_effect = [[routine.copy()]]
+    retrieve_mock.side_effect = [component.model_copy()]
+    list_mock.side_effect = [[routine.model_copy()]]
 
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.import_element(
@@ -99,11 +99,11 @@ def test_import_component_correctly(
     assert save_yaml_mock.call_count == 2
     retrieve_mock.assert_called_once()
     list_mock.assert_called_once()
-    assert solution_manager._state.imported_components[0] == component
+    assert solution_manager._state.imported_components[0].id == component.id
 
 
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "list")
 def test_already_imported_component(
@@ -112,13 +112,13 @@ def test_already_imported_component(
     state = get_state()
     plan = get_plan()
     load_yaml_mock.side_effect = [plan, state]
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
 
-    retrieve_mock.side_effect = [component.copy()]
-    list_mock.side_effect = [[routine.copy()]]
+    retrieve_mock.side_effect = [component.model_copy()]
+    list_mock.side_effect = [[routine.model_copy()]]
 
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.import_element(
@@ -131,8 +131,8 @@ def test_already_imported_component(
     assert not solution_manager._state.imported_components
 
 
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 def test_component_not_in_db(retrieve_mock, save_yaml_mock, load_yaml_mock):
     state = get_state()

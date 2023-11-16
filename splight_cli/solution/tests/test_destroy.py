@@ -9,8 +9,8 @@ from splight_cli.solution.tests.constants import get_plan, get_state
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "delete")
 def test_no_id_no_destroy(
     delete_mock,
@@ -34,8 +34,8 @@ def test_no_id_no_destroy(
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "delete")
 def test_destroy_everything(
     delete_mock,
@@ -58,8 +58,8 @@ def test_destroy_everything(
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "delete")
 def test_destroy_only_the_asset(
     delete_mock,
@@ -84,8 +84,8 @@ def test_destroy_only_the_asset(
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "delete")
 def test_destroy_only_the_component(
     delete_mock,
