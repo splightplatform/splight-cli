@@ -1,15 +1,15 @@
 from typing import Optional
 
 import typer
-from cli.component import component_app
-from cli.config import config_app
-from cli.context import Context
-from cli.engine import engine_app
-from cli.hub import hub_app
-from cli.version import __version__
-from cli.workspace import workspace_app
 
-from cli.solution import solution_app
+from splight_cli.component import component_app
+from splight_cli.config import config_app
+from splight_cli.context import Context
+from splight_cli.engine import engine_app
+from splight_cli.hub import hub_app
+from splight_cli.solution import solution_app
+from splight_cli.version import __version__
+from splight_cli.workspace import workspace_app
 
 app = typer.Typer(
     name="Splight Command Line",
