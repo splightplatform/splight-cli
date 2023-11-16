@@ -1,51 +1,28 @@
-from typing import List, Optional
+from enum import Enum
+from typing import Dict, List, Optional
 
-from pydantic import BaseModel
-from splight_lib.models.base import SplightDatabaseBaseModel
-from splight_lib.models.component import (
-    Asset,
-    Binding,
-    Command,
-    ComponentType,
-    CustomType,
-    Endpoint,
-    InputDataAddress,
-    InputParameter,
-    Output,
-    RoutineStatus,
-)
+from pydantic import BaseModel, Field
+from splight_lib.models import Asset, RoutineObject
+from splight_lib.models.component import Component as LibComponent
 
 
-class SplightObject(SplightDatabaseBaseModel):
-    id: Optional[str]
-    name: str
-    component_id: Optional[str]
-    description: Optional[str] = ""
-    type: str
+class ElementType(str, Enum):
+    asset = "asset"
+    component = "component"
 
 
-class RoutineObject(SplightObject):
-    status: Optional[RoutineStatus] = RoutineStatus.RUNNING
-
-    config: Optional[List[InputParameter]] = []
-    input: List[InputDataAddress] = []
-    output: List[InputDataAddress] = []
-
-
-class Component(SplightDatabaseBaseModel):
-    id: Optional[str]
-    name: Optional[str]
-    version: str
-    custom_types: List[CustomType] = []
-    component_type: ComponentType = ComponentType.CONNECTOR
-    input: List[InputParameter] = []
-    output: List[Output] = []
-    commands: List[Command] = []
-    endpoints: List[Endpoint] = []
-    bindings: List[Binding] = []
+class Component(LibComponent):
     routines: List[RoutineObject] = []
 
 
-class Solution(BaseModel):
+class PlanSolution(BaseModel):
     assets: List[Asset]
     components: List[Component]
+    imported_assets: Optional[List[Asset]] = Field(default_factory=list)
+    imported_components: Optional[List[Component]] = Field(
+        default_factory=list
+    )
+
+
+class StateSolution(PlanSolution):
+    ...

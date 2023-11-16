@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from cli.solution.solution import Solution
+from cli.solution.solution import StateSolution
 from cli.solution.utils import to_dict
 
 TEST_PLAN = {
@@ -271,6 +271,8 @@ TEST_PLAN = {
             "version": "LightSplightForecaster-1.0.3",
         }
     ],
+    "imported_assets": [],
+    "imported_components": [],
 }
 TEST_STATE_FILLED = {
     "assets": [
@@ -540,21 +542,9 @@ TEST_STATE_FILLED = {
             "version": "LightSplightForecaster-1.0.3",
         }
     ],
+    "imported_assets": [],
+    "imported_components": [],
 }
-
-TEST_STATE_MISSING_ADDRESS = Solution.parse_obj(TEST_PLAN.copy())
-TEST_STATE_MISSING_ADDRESS.components[0].routines[0].output[0].value = {
-    "asset": "local.{{test_asset}}",
-    "attribute": "attr_5",
-}
-TEST_STATE_MISSING_ADDRESS = to_dict(TEST_STATE_MISSING_ADDRESS)
-
-TEST_STATE_MISSING_ADDRESS_2 = Solution.parse_obj(TEST_PLAN.copy())
-TEST_STATE_MISSING_ADDRESS_2.components[0].routines[0].input[2].value[0] = {
-    "asset": "local.{{test_asset2}}",
-    "attribute": "attr_4",
-}
-TEST_STATE_MISSING_ADDRESS_2 = to_dict(TEST_STATE_MISSING_ADDRESS_2)
 
 
 def get_plan():
