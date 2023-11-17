@@ -1,23 +1,20 @@
 from typing import Any, Dict, Type
 
 from deepdiff import DeepDiff
-from splight_lib.models.component import Asset, Component, RoutineObject
 
 from splight_cli.solution.models import StateSolution
 from splight_cli.solution.solution_checker import CheckResult
 from splight_cli.solution.utils import SplightTypes, bprint, to_dict
 
 
+class MissingDataAddress(Exception):
+    ...
+
+
 class PlanExecutor:
     def __init__(self, state: StateSolution, regex_to_exclude: Dict[str, Any]):
         self._state = state
         self._model_to_regex = regex_to_exclude
-        self._possible_asset_attr = set()
-        for asset in self._state.assets:
-            asset_name = asset.name
-            for attr in asset.attributes:
-                attr_name = attr.name
-                self._possible_asset_attr.add(f"{asset_name}-{attr_name}")
 
     def plan_elements_to_delete(self, check_results: CheckResult):
         """Shows which elements (assets or component) are going to be removed
@@ -40,51 +37,23 @@ class PlanExecutor:
             )
             bprint(component)
 
-    def plan_asset_state(self, state_asset: Asset):
-        """Shows what is going to happen to a certain Asset if the plan is
-        applied.
+    def plan_elem_state(
+        self, elem_type: Type[SplightTypes], state_elem: SplightTypes
+    ):
+        """Shows what is going to happen to a certain Asset, Component,
+        RoutineObject or File if the plan is applied.
 
         Parameters
         ----------
-        state_asset : Asset
-            The state asset to analyze.
+        state_elem : SplightTypes
+            The state asset, component, routine or file to analyze.
         """
-        instance_id = state_asset.id
+        instance_id = state_elem.id
 
         if instance_id is not None:
-            return self._compare_with_remote(Asset, state_asset)
-        bprint(f"The following Asset will be created:")
-        bprint(state_asset)
-
-    def plan_component_state(self, state_component: Component):
-        """Shows what is going to happen to a certain Component if the plan is
-        applied.
-
-        Parameters
-        ----------
-        state_component : Component
-            The state component to analyze.
-        """
-        instance_id = state_component.id
-        if instance_id is not None:
-            return self._compare_with_remote(Component, state_component)
-        bprint(f"The following Component will be created:")
-        bprint(state_component)
-
-    def plan_routine_state(self, state_routine: RoutineObject):
-        """Shows what is going to happen to a certain Routine if the plan is
-        applied.
-
-        Parameters
-        ----------
-        state_routine : RoutineObject
-            The state routine of a given component to analyze.
-        """
-        instance_id = state_routine.id
-        if instance_id is not None:
-            return self._compare_with_remote(RoutineObject, state_routine)
-        bprint(f"The following Routine will be created:")
-        bprint(state_routine)
+            return self._compare_with_remote(elem_type, state_elem)
+        bprint(f"The following {elem_type.__name__} will be created:")
+        bprint(state_elem)
 
     def _compare_with_remote(
         self, model: Type[SplightTypes], local_instance: SplightTypes
