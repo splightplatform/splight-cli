@@ -4,13 +4,12 @@ from uuid import UUID
 
 import typer
 from rich.console import Console
-from splight_lib.models import Asset, RoutineObject
+from splight_lib.models import Asset, Component, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
 from splight_cli.solution.destroyer import Destroyer
 from splight_cli.solution.importer import ImporterExecutor
 from splight_cli.solution.models import (
-    Component,
     ElementType,
     PlanSolution,
     StateSolution,
@@ -220,12 +219,11 @@ class SolutionManager:
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)
-            updated_routines, was_updated = self._apply_routines_state(
+            updated_routines = self._apply_routines_state(
                 component, Component.model_validate(result.updated_dict)
             )
             components_list[i].routines = updated_routines
-            if was_updated:
-                save_yaml(self._state_path, self._state)
+            save_yaml(self._state_path, self._state)
 
         imported_comp_list = self._state.imported_components
         for i in range(len(imported_comp_list)):
@@ -240,25 +238,23 @@ class SolutionManager:
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)
-            updated_routines, was_updated = self._apply_routines_state(
+            updated_routines = self._apply_routines_state(
                 component,
                 Component.model_validate(result.updated_dict),
                 not_found_is_exception=True,
             )
             imported_comp_list[i].routines = updated_routines
-            if was_updated:
-                save_yaml(self._state_path, self._state)
+            save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(
         self,
         component: Component,
         updated_component: Component,
         not_found_is_exception: bool = False,
-    ) -> Tuple[List[RoutineObject], bool]:
+    ) -> List[RoutineObject]:
         """Applies RoutineObject states to the engine."""
         routine_list = component.routines
         component_id = updated_component.id
-        update_results = False
         for i in range(len(routine_list)):
             routine_list[i].component_id = component_id
             result = self._apply_exec.apply(
@@ -267,8 +263,7 @@ class SolutionManager:
                 not_found_is_exception=not_found_is_exception,
             )
             if result.update:
-                update_results = True
                 routine_list[i] = RoutineObject.model_validate(
                     result.updated_dict
                 )
-        return routine_list, update_results
+        return routine_list

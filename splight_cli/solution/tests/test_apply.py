@@ -157,7 +157,7 @@ def test_asset_modification_saves_remote(
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.apply()
 
-    save_yaml_mock.assert_called_once()
+    assert save_yaml_mock.call_count == 2
     assert list_mock.call_count == 3
     assert save_mock.call_count == 0
     assert solution_manager._state.assets[0].name == asset.name
