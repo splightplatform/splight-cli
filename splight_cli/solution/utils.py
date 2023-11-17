@@ -36,7 +36,7 @@ class ElemnentAlreadyDefined(Exception):
     ...
 
 
-def to_dict(instance: SplightTypes):
+def to_dict(instance: SplightTypes) -> Dict:
     return json.loads(instance.model_dump_json())
 
 
