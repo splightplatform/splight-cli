@@ -12,13 +12,6 @@ from splight_cli.solution.models import StateSolution
 from splight_cli.solution.utils import get_ref_str, is_valid_uuid
 
 
-def is_attr_from_asset(asset, attr):
-    for asset_attr in asset.attributes:
-        if asset_attr.name == attr.name:
-            return True
-    return False
-
-
 class Replacer:
     _REF_TYPES = ["File", "Asset", "Attribute"]
 
@@ -53,9 +46,9 @@ class Replacer:
             for j in range(len(inputs)):
                 self._replace_io_ref(inputs[j], component_name)
 
-            output = state_components[i].output
-            for j in range(len(output)):
-                self._replace_io_ref(inputs[j], component_name)
+            outputs = state_components[i].output
+            for j in range(len(outputs)):
+                self._replace_io_ref(outputs[j], component_name)
 
             for routine in routines:
                 self._replace_routine_ref(routine, component_name)
