@@ -125,10 +125,10 @@ class SolutionChecker:
         ElemnentAlreadyDefined
             Raised when an attribute was defined twice.
         """
-        plan_asset_dict = plan_asset.dict(
+        plan_asset_dict = plan_asset.model_dump(
             exclude={"attributes"}, exclude_none=True, exclude_unset=True
         )
-        state_asset = state_asset.copy(update=plan_asset_dict)
+        state_asset = state_asset.model_copy(update=plan_asset_dict)
 
         seen_state_attributes = {a.name: 0 for a in state_asset.attributes}
         for idx, attr in enumerate(plan_asset.attributes):
@@ -174,11 +174,11 @@ class SolutionChecker:
         Attribute
             Returns the updated state attribute.
         """
-        plan_attribute_dict = plan_attribute.dict(
+        plan_attribute_dict = plan_attribute.model_dump(
             exclude_none=True,
             exclude_unset=True,
         )
-        return state_attribute.copy(update=plan_attribute_dict)
+        return state_attribute.model_copy(update=plan_attribute_dict)
 
     def _check_components(
         self,
@@ -257,12 +257,14 @@ class SolutionChecker:
         ElemnentAlreadyDefined
             Raised when a routine was defined twice.
         """
-        plan_component_dict = plan_component.dict(
+        plan_component_dict = plan_component.model_dump(
             exclude={"routines"},
             exclude_none=True,
             exclude_unset=True,
         )
-        state_component = state_component.copy(update=plan_component_dict)
+        state_component = state_component.model_copy(
+            update=plan_component_dict
+        )
 
         seen_state_routines = {r.name: 0 for r in state_component.routines}
         for idx, routine in enumerate(plan_component.routines):
@@ -308,11 +310,11 @@ class SolutionChecker:
         RoutineObject
             The state routine updated.
         """
-        plan_routine_dict = plan_routine.dict(
+        plan_routine_dict = plan_routine.model_dump(
             exclude_none=True,
             exclude_unset=True,
         )
-        state_routine_dict = state_routine.dict()
+        state_routine_dict = state_routine.model_dump()
         state_routine_dict.update(plan_routine_dict)
 
-        return state_routine.parse_obj(state_routine_dict)
+        return state_routine.model_validate(state_routine_dict)

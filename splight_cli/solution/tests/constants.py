@@ -1,7 +1,7 @@
 from copy import deepcopy
 
-from cli.solution.solution import StateSolution
-from cli.solution.utils import to_dict
+from splight_cli.solution.solution import StateSolution
+from splight_cli.solution.utils import to_dict
 
 TEST_PLAN = {
     "assets": [

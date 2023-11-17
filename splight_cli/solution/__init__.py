@@ -84,3 +84,22 @@ def _import(
             f"Error importing {element}: {str(e)}", style=error_style
         )
         raise typer.Exit(code=1)
+
+
+@solution_app.command()
+def destroy(
+    ctx: typer.Context,
+    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
+    state_file: str = typer.Option(
+        None, "--state", "-s", help="Path to state yaml file."
+    ),
+    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
+) -> None:
+    try:
+        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
+        manager.destroy()
+    except Exception as e:
+        console.print(
+            f"Error destroying solution: {str(e)}", style=error_style
+        )
+        raise typer.Exit(code=1)

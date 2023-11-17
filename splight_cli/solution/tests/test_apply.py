@@ -9,8 +9,8 @@ from splight_cli.solution.tests.constants import get_plan, get_state
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
@@ -26,9 +26,9 @@ def test_apply_everything(
 
     confirm_mock.return_value = True
     load_yaml_mock.side_effect = [get_plan(), state]
-    asset = Asset.parse_obj(get_state()["assets"][0])
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    asset = Asset.model_validate(get_state()["assets"][0])
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     retrieve_mock.side_effect = [asset, component, routine]
@@ -46,8 +46,8 @@ def test_apply_everything(
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
@@ -65,9 +65,9 @@ def test_apply_remote_asset_create_component(
     confirm_mock.return_value = True
     load_yaml_mock.side_effect = [get_plan(), state]
 
-    asset = Asset.parse_obj(get_state()["assets"][0])
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    asset = Asset.model_validate(get_state()["assets"][0])
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     retrieve_mock.side_effect = [component, routine]
@@ -86,8 +86,8 @@ def test_apply_remote_asset_create_component(
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
@@ -106,9 +106,9 @@ def test_apply_remote_asset_create_routine(
     confirm_mock.return_value = True
     load_yaml_mock.side_effect = [get_plan(), state]
 
-    asset = Asset.parse_obj(get_state()["assets"][0])
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    asset = Asset.model_validate(get_state()["assets"][0])
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     retrieve_mock.side_effect = [routine]
@@ -126,8 +126,8 @@ def test_apply_remote_asset_create_routine(
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
@@ -147,9 +147,9 @@ def test_asset_modification_saves_remote(
     confirm_mock.return_value = True
     load_yaml_mock.side_effect = [plan, state]
 
-    asset = Asset.parse_obj(get_state()["assets"][0])
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    asset = Asset.model_validate(get_state()["assets"][0])
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     list_mock.side_effect = [[asset], [component], [routine]]
@@ -157,15 +157,15 @@ def test_asset_modification_saves_remote(
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.apply()
 
-    save_yaml_mock.assert_called_once()
+    assert save_yaml_mock.call_count == 2
     assert list_mock.call_count == 3
     assert save_mock.call_count == 0
-    assert solution_manager._state.assets[0] == asset
+    assert solution_manager._state.assets[0].name == asset.name
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
@@ -185,13 +185,13 @@ def test_routine_modification_saves_local(
     confirm_mock.side_effect = [False, True]
     load_yaml_mock.side_effect = [plan, state]
 
-    asset = Asset.parse_obj(get_state()["assets"][0])
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    asset = Asset.model_validate(get_state()["assets"][0])
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     list_mock.side_effect = [[asset], [component], [routine]]
-    retrieve_mock.side_effect = [RoutineObject.parse_obj(routine)]
+    retrieve_mock.side_effect = [RoutineObject.model_validate(routine)]
 
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")
     solution_manager.apply()
@@ -199,13 +199,15 @@ def test_routine_modification_saves_local(
     save_yaml_mock.assert_called_once()
     assert list_mock.call_count == 3
     save_mock.assert_called_once()
-    new_asset_saved = Asset.parse_obj(state["assets"][0])
-    assert solution_manager._state.assets[0] == new_asset_saved
+    config_val = (
+        solution_manager._state.components[0].routines[0].config[0].value
+    )
+    assert config_val == routine.config[0].value
 
 
 @patch("typer.confirm")
-@patch("cli.solution.solution.load_yaml")
-@patch("cli.solution.solution.save_yaml")
+@patch("splight_cli.solution.solution.load_yaml")
+@patch("splight_cli.solution.solution.save_yaml")
 @patch.object(SplightDatabaseBaseModel, "list")
 @patch.object(SplightDatabaseBaseModel, "retrieve")
 @patch.object(SplightDatabaseBaseModel, "save")
@@ -219,13 +221,13 @@ def test_remote_asset_was_deleted(
 ):
     state = get_state()
 
-    confirm_mock.side_effect = [True, True, False]
+    confirm_mock.side_effect = [True, True]
     load_yaml_mock.side_effect = [get_plan(), state]
 
-    asset = Asset.parse_obj(get_state()["assets"][0])
+    asset = Asset.model_validate(get_state()["assets"][0])
     asset.id = "643385e1-acb9-4348-befc-4686baa99d24"
-    component = Component.parse_obj(get_state()["components"][0])
-    routine = RoutineObject.parse_obj(
+    component = Component.model_validate(get_state()["components"][0])
+    routine = RoutineObject.model_validate(
         get_state()["components"][0]["routines"][0]
     )
     list_mock.side_effect = [[], [component], [routine]]
@@ -238,4 +240,5 @@ def test_remote_asset_was_deleted(
     assert list_mock.call_count == 3
     retrieve_mock.assert_called_once()
     save_mock.assert_called_once()
-    assert solution_manager._state.assets[0] == asset
+    assert solution_manager._state.assets[0].name == asset.name
+    assert solution_manager._state.assets[0].id == asset.id

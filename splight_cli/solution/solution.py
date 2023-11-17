@@ -7,6 +7,7 @@ from rich.console import Console
 from splight_lib.models import Asset, Component, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
+from splight_cli.solution.destroyer import Destroyer
 from splight_cli.solution.importer import ImporterExecutor
 from splight_cli.solution.models import (
     ElementType,
@@ -40,9 +41,9 @@ class SolutionManager:
         self._plan_path = Path(plan_path)
         self._state_path = Path(state_path) if state_path else None
 
-        self._plan = PlanSolution.parse_obj(load_yaml(plan_path))
+        self._plan = PlanSolution.model_validate(load_yaml(plan_path))
         self._state = (
-            StateSolution.parse_obj(load_yaml(self._state_path))
+            StateSolution.model_validate(load_yaml(self._state_path))
             if self._state_path is not None
             else self._generate_state_from_plan()
         )
@@ -67,6 +68,7 @@ class SolutionManager:
         self._apply_exec = ApplyExecutor(
             self._state, self._yes_to_all, regex_to_exclude=self._regex_map
         )
+        self._destroyer = Destroyer(self._state, self._yes_to_all)
 
     def apply(self):
         console.print("\nStarting apply step...", style=PRINT_STYLE)
@@ -100,9 +102,33 @@ class SolutionManager:
             save_yaml(self._plan_path, self._plan)
             save_yaml(self._state_path, self._state)
 
+    def destroy(self):
+        console.print("\nStarting destroy...", style=PRINT_STYLE)
+        console.print(
+            "WARNING: You are about to destroy every asset and component "
+            "defined in the plan. Imported assets and components won't be "
+            "destroyed.",
+            style="bold red",
+        )
+        state_assets = self._state.assets
+        for idx in range(len(state_assets) - 1, -1, -1):
+            asset_to_delete = state_assets[idx]
+            destroyed = self._destroyer.destroy(Asset, asset_to_delete)
+            if destroyed:
+                state_assets.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_components = self._state.components
+        for idx in range(len(state_components) - 1, -1, -1):
+            component_to_delete = state_components[idx]
+            destroyed = self._destroyer.destroy(Component, component_to_delete)
+            if destroyed:
+                state_components.pop(idx)
+                save_yaml(self._state_path, self._state)
+
     def _generate_state_from_plan(self):
         """Generates the state file if not passed."""
-        state = StateSolution.parse_obj(to_dict(self._plan))
+        state = StateSolution.model_validate(to_dict(self._plan))
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
@@ -163,7 +189,7 @@ class SolutionManager:
                 model=Asset, local_instance=assets_list[i]
             )
             if result.update:
-                assets_list[i] = Asset.parse_obj(result.updated_dict)
+                assets_list[i] = Asset.model_validate(result.updated_dict)
                 save_yaml(self._state_path, self._state)
 
         imported_assets_list = self._state.imported_assets
@@ -174,7 +200,9 @@ class SolutionManager:
                 not_found_is_exception=True,
             )
             if result.update:
-                imported_assets_list[i] = Asset.parse_obj(result.updated_dict)
+                imported_assets_list[i] = Asset.model_validate(
+                    result.updated_dict
+                )
                 save_yaml(self._state_path, self._state)
 
     def _apply_components_state(self):
@@ -187,14 +215,15 @@ class SolutionManager:
                 model=Component, local_instance=component
             )
             if result.update:
-                components_list[i] = Component.parse_obj(result.updated_dict)
+                components_list[i] = Component.model_validate(
+                    result.updated_dict
+                )
                 save_yaml(self._state_path, self._state)
-            updated_routines, was_updated = self._apply_routines_state(
-                component, Component.parse_obj(result.updated_dict)
+            updated_routines = self._apply_routines_state(
+                component, Component.model_validate(result.updated_dict)
             )
             components_list[i].routines = updated_routines
-            if was_updated:
-                save_yaml(self._state_path, self._state)
+            save_yaml(self._state_path, self._state)
 
         imported_comp_list = self._state.imported_components
         for i in range(len(imported_comp_list)):
@@ -205,29 +234,27 @@ class SolutionManager:
                 not_found_is_exception=True,
             )
             if result.update:
-                imported_comp_list[i] = Component.parse_obj(
+                imported_comp_list[i] = Component.model_validate(
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)
-            updated_routines, was_updated = self._apply_routines_state(
+            updated_routines = self._apply_routines_state(
                 component,
-                Component.parse_obj(result.updated_dict),
+                Component.model_validate(result.updated_dict),
                 not_found_is_exception=True,
             )
             imported_comp_list[i].routines = updated_routines
-            if was_updated:
-                save_yaml(self._state_path, self._state)
+            save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(
         self,
         component: Component,
         updated_component: Component,
         not_found_is_exception: bool = False,
-    ) -> Tuple[List[RoutineObject], bool]:
+    ) -> List[RoutineObject]:
         """Applies RoutineObject states to the engine."""
         routine_list = component.routines
         component_id = updated_component.id
-        update_results = False
         for i in range(len(routine_list)):
             routine_list[i].component_id = component_id
             result = self._apply_exec.apply(
@@ -236,6 +263,7 @@ class SolutionManager:
                 not_found_is_exception=not_found_is_exception,
             )
             if result.update:
-                update_results = True
-                routine_list[i] = RoutineObject.parse_obj(result.updated_dict)
-        return routine_list, update_results
+                routine_list[i] = RoutineObject.model_validate(
+                    result.updated_dict
+                )
+        return routine_list
