@@ -203,6 +203,7 @@ class SolutionChecker:
             exclude_none=True,
             exclude_unset=True,
         )
+        plan_file_dict.pop("file", None)
         return state_file.model_copy(update=plan_file_dict)
 
     def _update_component(

@@ -56,6 +56,10 @@ class SolutionManager:
                 r"root\['input'\]\[\d+\]\['description'\]",
                 r"root\['output'\]\[\d+\]\['description'\]",
             ],
+            File.__name__: [
+                r"root\['metadata'\]",
+                r"root\['url'\]",
+            ],
         }
         self._replacer = Replacer(self._state)
         self._solution_checker = SolutionChecker(self._plan, self._state)
@@ -75,6 +79,7 @@ class SolutionManager:
         self._delete_assets_and_components(check_result)
         self._apply_assets_state()
         self._apply_files_state()
+        self._replacer.build_reference_map()
         self._apply_components_state()
 
     def plan(self):
@@ -231,7 +236,7 @@ class SolutionManager:
 
     def _apply_components_state(self):
         """Applies Components states to the engine."""
-        self._replacer.replace_data_addr(is_planning=False)
+        self._replacer.replace_references()
         components_list = self._state.components
         for i in range(len(components_list)):
             component = components_list[i]
