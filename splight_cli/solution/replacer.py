@@ -31,7 +31,7 @@ class Replacer:
                 self._attr_to_asset_map[attr_ref] = asset_ref
 
         for file in self._state.files:
-            file_ref = get_ref_str("file", file.file)
+            file_ref = get_ref_str("file", file.name)
             self._reference_map[file_ref] = file.id
 
     def replace_references(self):
