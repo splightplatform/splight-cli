@@ -2,7 +2,7 @@ from collections import namedtuple
 from typing import Callable, List, Type
 
 from rich.console import Console
-from splight_lib.models import Asset, Attribute, File, RoutineObject
+from splight_lib.models import Asset, Attribute, File, Function, RoutineObject
 
 from splight_cli.solution.exceptions import ElemnentAlreadyDefined
 from splight_cli.solution.models import Component
@@ -52,6 +52,12 @@ class SolutionChecker:
             self._state.files,
             File.__name__,
             self._update_file,
+        )
+        functions_to_delete = self._check_elements(
+            self._plan.functions,
+            self._state.functions,
+            Function.__name__,
+            self._update_function,
         )
 
         components_to_delete = self._check_elements(
@@ -266,3 +272,12 @@ class SolutionChecker:
         state_routine_dict.update(plan_routine_dict)
 
         return state_routine.model_validate(state_routine_dict)
+
+    def _update_function(
+        self, plan_function: Function, state_function: Function
+    ):
+        plan_function_dict = plan_function.model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+        )
+        return state_function.model_copy(update=plan_function_dict)

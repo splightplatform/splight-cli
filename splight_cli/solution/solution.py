@@ -5,7 +5,7 @@ from uuid import UUID
 import typer
 from pydantic import ValidationError
 from rich.console import Console
-from splight_lib.models import Asset, Component, File, RoutineObject
+from splight_lib.models import Asset, Component, File, Function, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
 from splight_cli.solution.destroyer import Destroyer
@@ -89,7 +89,12 @@ class SolutionManager:
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
         self._plan_files_state()
+        import ipdb
+
+        ipdb.set_trace()
         self._replacer.build_reference_map()
+        self._replacer.replace_references()
+        self._plan_functions_state()
         self._plan_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
@@ -174,7 +179,6 @@ class SolutionManager:
 
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
-        self._replacer.replace_references()
         components_list = (
             self._state.components + self._state.imported_components
         )
@@ -192,6 +196,11 @@ class SolutionManager:
         files_list = self._state.files
         for state_file in files_list:
             self._plan_exec.plan_elem_state(File, state_file)
+
+    def _plan_functions_state(self):
+        function_list = self._state.functions
+        for state_function in function_list:
+            self._plan_exec.plan_elem_state(Function, state_function)
 
     def _delete_assets_and_components(self, check_result: CheckResult):
         """Deletes assets and/or components that have been removed from the

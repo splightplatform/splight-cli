@@ -69,3 +69,10 @@ def get_ref_str(prefix: str, name: str) -> str:
 
 def confirm_or_yes(yes_to_all: bool, string: str) -> bool:
     return True if yes_to_all else typer.confirm(string)
+
+
+def parse_str_name(string: str):
+    _, name_str = string.split(".")
+    regex = re.compile(r"{{(.*)}}")
+    result = regex.search(name_str)
+    return result.group(1)

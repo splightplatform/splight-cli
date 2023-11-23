@@ -6,10 +6,15 @@ from splight_lib.models.component import (
     Output,
     RoutineObject,
 )
+from splight_lib.models.function import FunctionItem
 
 from splight_cli.solution.exceptions import UndefinedID
 from splight_cli.solution.models import StateSolution
-from splight_cli.solution.utils import get_ref_str, is_valid_uuid
+from splight_cli.solution.utils import (
+    get_ref_str,
+    is_valid_uuid,
+    parse_str_name,
+)
 
 
 class Replacer:
@@ -52,6 +57,14 @@ class Replacer:
 
             for routine in routines:
                 self._replace_routine_ref(routine, component_name)
+
+        state_functions = self._state.functions
+        for i in range(len(state_functions)):
+            function_name = state_functions[i].name
+            func_items = state_functions[i].function_items
+            for j in range(len(func_items)):
+                self._replace_fn_ref(func_items[j], function_name)
+            # replace target asset and attribute
 
     def _replace_io_ref(self, io_elem, component_name):
         """Replaces references in any component input or output, the same
@@ -98,6 +111,31 @@ class Replacer:
                     self._parse_data_addr,
                     routine.name,
                 )
+
+    def _replace_fn_ref(self, func_item, func_name):
+        asset = func_item.query_filter_asset
+        # attribute = func_item.query_filter_atttribute
+        if asset is None:  # or attribute is None:
+            return
+
+        if asset not in self._reference_map:
+            raise UndefinedID(
+                f"The reference '{asset}' used in the function named "
+                f"'{func_name}' is not a valid reference."
+            )
+        # if attribute not in self._reference_map:
+        #     raise UndefinedID(
+        #         f"The reference '{attribute}' used in the function named "
+        #         f"'{func_name}' is not a valid reference."
+        #     )
+
+        func_item.query_filter_asset = FunctionItem(
+            id=self._reference_map[asset], name=parse_str_name(asset)
+        )
+        # func_item.query_filter_attribute = FunctionItem(
+        #     id=self._reference_map[attribute],
+        #     name=parse_str_name(attribute)
+        # )
 
     def _get_new_value(
         self,
