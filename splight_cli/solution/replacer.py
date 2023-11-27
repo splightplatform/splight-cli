@@ -205,8 +205,8 @@ class Replacer:
         UndefinedID
             Raised if the value reference passed is not a valid reference.
         """
-        asset_ref = data_addr["asset"]
-        attr_ref = data_addr["attribute"]
+        asset_ref = data_addr.asset
+        attr_ref = data_addr.attribute
 
         asset_is_id = is_valid_uuid(asset_ref)
         attr_is_id = is_valid_uuid(attr_ref)
