@@ -3,8 +3,9 @@ from typing import List, Optional, Tuple
 from uuid import UUID
 
 import typer
+from pydantic import ValidationError
 from rich.console import Console
-from splight_lib.models import Asset, Component, RoutineObject
+from splight_lib.models import Asset, Component, File, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
 from splight_cli.solution.destroyer import Destroyer
@@ -42,11 +43,8 @@ class SolutionManager:
         self._state_path = Path(state_path) if state_path else None
 
         self._plan = PlanSolution.model_validate(load_yaml(plan_path))
-        self._state = (
-            StateSolution.model_validate(load_yaml(self._state_path))
-            if self._state_path is not None
-            else self._generate_state_from_plan()
-        )
+        self._state = self._get_state()
+
         self._regex_map = {
             Component.__name__: [
                 r"root\['routines'\]",
@@ -57,6 +55,10 @@ class SolutionManager:
                 r"root\['config'\]\[\d+\]\['description'\]",
                 r"root\['input'\]\[\d+\]\['description'\]",
                 r"root\['output'\]\[\d+\]\['description'\]",
+            ],
+            File.__name__: [
+                r"root\['metadata'\]",
+                r"root\['url'\]",
             ],
         }
         self._replacer = Replacer(self._state)
@@ -71,19 +73,23 @@ class SolutionManager:
         self._destroyer = Destroyer(self._state, self._yes_to_all)
 
     def apply(self):
-        console.print("\nStarting apply step...", style=PRINT_STYLE)
+        console.print("\nStarting apply...", style=PRINT_STYLE)
         check_result = self._solution_checker.check()
         self._plan, self._state = check_result.plan, check_result.state
         self._delete_assets_and_components(check_result)
         self._apply_assets_state()
+        self._apply_files_state()
+        self._replacer.build_reference_map()
         self._apply_components_state()
 
     def plan(self):
-        console.print("\nStarting plan step...", style=PRINT_STYLE)
+        console.print("\nStarting plan...", style=PRINT_STYLE)
         check_result = self._solution_checker.check()
         self._plan, self._state = check_result.plan, check_result.state
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
+        self._plan_files_state()
+        self._replacer.build_reference_map()
         self._plan_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
@@ -126,15 +132,32 @@ class SolutionManager:
                 state_components.pop(idx)
                 save_yaml(self._state_path, self._state)
 
-    def _generate_state_from_plan(self):
-        """Generates the state file if not passed."""
+        state_files = self._state.files
+        for idx in range(len(state_files) - 1, -1, -1):
+            file_to_delete = state_files[idx]
+            destroyed = self._destroyer.destroy(File, file_to_delete)
+            if destroyed:
+                state_files.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+    def _get_state(self):
+        """Returns the state file."""
+        if self._state_path is not None:
+            try:
+                return StateSolution.model_validate(
+                    load_yaml(self._state_path)
+                )
+            except ValidationError:
+                pass
+        else:
+            self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
+
         state = StateSolution.model_validate(to_dict(self._plan))
         bprint(
             "No state file was passed hence the following state file was "
             "generated from the plan."
         )
         bprint(state)
-        self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
         bprint(f"The state file will be saved to {self._state_path}")
         confirm = confirm_or_yes(self._yes_to_all, "Do you want to save it?")
         if confirm:
@@ -147,22 +170,28 @@ class SolutionManager:
         """Shows the assets state if the plan were to be applied."""
         assets_list = self._state.assets + self._state.imported_assets
         for state_asset in assets_list:
-            self._plan_exec.plan_asset_state(state_asset)
+            self._plan_exec.plan_elem_state(Asset, state_asset)
 
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
-        self._replacer.replace_data_addr(is_planning=True)
+        self._replacer.replace_references()
         components_list = (
             self._state.components + self._state.imported_components
         )
         for state_component in components_list:
-            self._plan_exec.plan_component_state(state_component)
+            self._plan_exec.plan_elem_state(Component, state_component)
             self._plan_routines_state(state_component)
 
     def _plan_routines_state(self, component: Component):
         """Shows the routines state if the plan were to be applied."""
         for routine in component.routines:
-            self._plan_exec.plan_routine_state(routine)
+            self._plan_exec.plan_elem_state(RoutineObject, routine)
+
+    def _plan_files_state(self):
+        """Shows the files state if the plan were to be applied."""
+        files_list = self._state.files
+        for state_file in files_list:
+            self._plan_exec.plan_elem_state(File, state_file)
 
     def _delete_assets_and_components(self, check_result: CheckResult):
         """Deletes assets and/or components that have been removed from the
@@ -207,7 +236,7 @@ class SolutionManager:
 
     def _apply_components_state(self):
         """Applies Components states to the engine."""
-        self._replacer.replace_data_addr(is_planning=False)
+        self._replacer.replace_references()
         components_list = self._state.components
         for i in range(len(components_list)):
             component = components_list[i]
@@ -267,3 +296,14 @@ class SolutionManager:
                     result.updated_dict
                 )
         return routine_list
+
+    def _apply_files_state(self):
+        """Applies Files states to the engine."""
+        files_list = self._state.files
+        for i in range(len(files_list)):
+            result = self._apply_exec.apply(
+                model=File, local_instance=files_list[i]
+            )
+            if result.update:
+                files_list[i] = File.model_validate(result.updated_dict)
+                save_yaml(self._state_path, self._state)

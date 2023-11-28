@@ -10,13 +10,11 @@ import yaml
 from pydantic import BaseModel
 from rich.console import Console
 from rich.style import Style
-from splight_lib.models import Asset, Component, RoutineObject
-
-from splight_cli.solution.models import PlanSolution, StateSolution
+from splight_lib.models import Asset, Component, File, RoutineObject
 
 console = Console()
 
-SplightTypes = Union[Asset, Component, RoutineObject]
+SplightTypes = Union[Asset, Component, RoutineObject, File]
 
 MatchResult = namedtuple(
     "MatchResult", ["is_id", "type", "asset", "attribute"]
@@ -26,14 +24,6 @@ MatchResult = namedtuple(
 DEFAULT_STATE_PATH = "state.yml"
 PRINT_STYLE = "bold black on white"
 IMPORT_PREFIX = "imported_"
-
-
-class MissingElement(Exception):
-    ...
-
-
-class ElemnentAlreadyDefined(Exception):
-    ...
 
 
 def to_dict(instance: SplightTypes) -> Dict:
@@ -73,40 +63,8 @@ def is_valid_uuid(possible_uuid: str) -> bool:
         return False
 
 
-def parse_str_data_addr(data_addr_val: Dict[str, str]) -> MatchResult:
-    """Parses a dictionary where the key 'asset' has a string of the form
-    <local/engine>.{{<asset-name>}} and returns just the <asset-name>.
-
-    Parameters
-    ----------
-    data_addr_val : Dict[str, str]
-        Data address to process.
-
-    Returns
-    -------
-    MatchResult
-        Returns a named tuple with the asset, attribute, a type which can be
-        either 'local' or 'engine' and a boolean which says if the asset and
-        attribute names are ids or not.
-    """
-    asset = data_addr_val["asset"]
-    attribute = data_addr_val["attribute"]
-    if is_valid_uuid(asset) and is_valid_uuid(attribute):
-        return MatchResult(
-            is_id=True,
-            type="engine",
-            asset=asset,
-            attribute=attribute,
-        )
-    local_or_engine, name_str = asset.split(".")
-    regex = re.compile(r"{{(.*)}}")
-    result = regex.search(name_str)
-    return MatchResult(
-        is_id=False,
-        type=local_or_engine,
-        asset=result.group(1),
-        attribute=attribute,
-    )
+def get_ref_str(prefix: str, name: str) -> str:
+    return f"{prefix}.{{{{{name}}}}}"
 
 
 def confirm_or_yes(yes_to_all: bool, string: str) -> bool:

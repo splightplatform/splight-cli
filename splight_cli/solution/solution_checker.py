@@ -1,21 +1,25 @@
 from collections import namedtuple
-from typing import List
+from typing import Callable, List, Type
 
 from rich.console import Console
-from splight_lib.models import Asset, Attribute, RoutineObject
+from splight_lib.models import Asset, Attribute, File, RoutineObject
 
+from splight_cli.solution.exceptions import ElemnentAlreadyDefined
 from splight_cli.solution.models import Component
+from splight_cli.solution.utils import SplightTypes
 
 CheckResult = namedtuple(
     "CheckResult",
-    ("assets_to_delete", "components_to_delete", "plan", "state"),
+    (
+        "assets_to_delete",
+        "files_to_delete",
+        "components_to_delete",
+        "plan",
+        "state",
+    ),
 )
 
 console = Console()
-
-
-class ElemnentAlreadyDefined(Exception):
-    ...
 
 
 class SolutionChecker:
@@ -31,130 +35,130 @@ class SolutionChecker:
         CheckResult
             The result after checking the assets and components.
         """
-        assets_to_delete = self._check_assets(
-            self._plan.assets, self._state.assets
+        assets_to_delete = self._check_elements(
+            self._plan.assets,
+            self._state.assets,
+            Asset.__name__,
+            self._update_asset,
         )
-        assets_to_delete += self._check_assets(
-            self._plan.imported_assets, self._state.imported_assets
+        assets_to_delete += self._check_elements(
+            self._plan.imported_assets,
+            self._state.imported_assets,
+            Asset.__name__,
+            self._update_asset,
+        )
+        files_to_delete = self._check_elements(
+            self._plan.files,
+            self._state.files,
+            File.__name__,
+            self._update_file,
         )
 
-        components_to_delete = self._check_components(
-            self._plan.components, self._state.components
+        components_to_delete = self._check_elements(
+            self._plan.components,
+            self._state.components,
+            Component.__name__,
+            self._update_component,
         )
-        components_to_delete += self._check_components(
-            self._plan.imported_components, self._state.imported_components
+        components_to_delete += self._check_elements(
+            self._plan.imported_components,
+            self._state.imported_components,
+            Component.__name__,
+            self._update_component,
         )
 
         return CheckResult(
             assets_to_delete=assets_to_delete,
+            files_to_delete=files_to_delete,
             components_to_delete=components_to_delete,
             plan=self._plan,
             state=self._state,
         )
 
-    def _check_assets(
-        self, plan_assets: List[Asset], state_assets: List[Asset]
-    ) -> List[Asset]:
-        """Checks plan assets against state assets.
+    def _check_elements(
+        self,
+        plan_elements: List[SplightTypes],
+        state_elements: List[SplightTypes],
+        elem_type: Type[SplightTypes],
+        update_fn: Callable,
+    ) -> List[SplightTypes]:
+        """Checks if the element is already defined and/or if it was removed.
 
         Parameters
         ----------
-        plan_assets : List[Asset]
-            List of plan assets.
-        state_assets : List[Asset]
-            List of state assets.
+        plan_elements : List[SplightTypes]
+            Plan elements to analyze.
+        state_elements : List[SplightTypes]
+            State elements to analyze.
+        elem_type : Type[SplightTypes]
+            Type of the elements to analyze.
+        update_fn : Callable
+            Function to be used to update an element.
 
         Returns
         -------
-        List[Asset]
-            List of state assets to delete.
+        List[SplightTypes]
+            A list of elements to be deleted, if any.
 
         Raises
         ------
         ElemnentAlreadyDefined
-            Raised when a plan asset is already defined.
+            Raised when the element was already defined.
         """
-        seen_state_assets = {a.name: 0 for a in state_assets}
-        for idx, asset in enumerate(plan_assets):
-            plan_asset_name = asset.name
-            if plan_asset_name not in seen_state_assets.keys():
-                state_assets.insert(idx, asset)
-                seen_state_assets[plan_asset_name] = 1
+        seen_state_elems = {e.name: 0 for e in state_elements}
+        for idx, elem in enumerate(plan_elements):
+            plan_elem_name = elem.name
+            if plan_elem_name not in seen_state_elems.keys():
+                state_elements.insert(idx, elem)
+                seen_state_elems[plan_elem_name] = 1
                 continue
-            seen_state_assets[plan_asset_name] += 1
-            if seen_state_assets[plan_asset_name] > 2:
+            seen_state_elems[plan_elem_name] += 1
+            if seen_state_elems[plan_elem_name] > 2:
                 raise ElemnentAlreadyDefined(
-                    f"The asset {plan_asset_name} is already defined."
-                    f"Asset names must be unique."
+                    f"The {elem_type} {plan_elem_name} is already defined."
+                    f"{elem_type} names must be unique."
                 )
-            for i in range(len(state_assets)):
-                if state_assets[i].name == plan_asset_name:
-                    state_assets[i] = self._update_asset(
-                        asset, state_assets[i]
-                    )
+            for i in range(len(state_elements)):
+                if state_elements[i].name == plan_elem_name:
+                    state_elements[i] = update_fn(elem, state_elements[i])
                     break
 
-        assets_to_delete = []
-        unseen_state_assets = [
-            k for k, v in seen_state_assets.items() if v == 0
-        ]
-        for idx in range(len(state_assets) - 1, -1, -1):
-            state_asset_name = state_assets[idx].name
-            if state_asset_name in unseen_state_assets:
-                assets_to_delete.append(state_assets.pop(idx))
+        elems_to_delete = []
+        unseen_state_elements = {
+            k for k, v in seen_state_elems.items() if v == 0
+        }
+        for idx in range(len(state_elements) - 1, -1, -1):
+            state_elem_name = state_elements[idx].name
+            if state_elem_name in unseen_state_elements:
+                elems_to_delete.append(state_elements.pop(idx))
 
-        return assets_to_delete
+        return elems_to_delete
 
     def _update_asset(self, plan_asset: Asset, state_asset: Asset) -> Asset:
-        """Updates a state asset based on the analogous plan asset.
+        """Function to update an Asset.
 
         Parameters
         ----------
         plan_asset : Asset
             Plan asset.
         state_asset : Asset
-            State Asset to update.
+            State asset to be updated based on the plan asset.
 
         Returns
         -------
         Asset
-            The updated state asset.
-
-        Raises
-        ------
-        ElemnentAlreadyDefined
-            Raised when an attribute was defined twice.
+            Updated asset.
         """
         plan_asset_dict = plan_asset.model_dump(
             exclude={"attributes"}, exclude_none=True, exclude_unset=True
         )
         state_asset = state_asset.model_copy(update=plan_asset_dict)
-
-        seen_state_attributes = {a.name: 0 for a in state_asset.attributes}
-        for idx, attr in enumerate(plan_asset.attributes):
-            plan_attr_name = attr.name
-            if plan_attr_name not in seen_state_attributes:
-                state_asset.attributes.insert(idx, attr)
-                seen_state_attributes[plan_attr_name] = 1
-            seen_state_attributes[plan_attr_name] += 1
-            if seen_state_attributes[plan_attr_name] > 2:
-                raise ElemnentAlreadyDefined(
-                    f"The attribute {plan_attr_name} is already defined."
-                    f"Attribute names must be unique."
-                )
-            for i in range(len(state_asset.attributes)):
-                if state_asset.attributes[i].name == plan_attr_name:
-                    state_asset.attributes[i] = self._update_attribute(
-                        attr, state_asset.attributes[i]
-                    )
-                    break
-        unseen_state_attributes = [
-            k for k, v in seen_state_attributes.items() if v == 0
-        ]
-        for i in range(len(state_asset.attributes) - 1, -1, -1):
-            if state_asset.attributes[i].name in unseen_state_attributes:
-                state_asset.attributes.pop(i)
-
+        self._check_elements(
+            plan_asset.attributes,
+            state_asset.attributes,
+            Attribute.__name__,
+            self._update_attribute,
+        )
         return state_asset
 
     def _update_attribute(
@@ -167,7 +171,7 @@ class SolutionChecker:
         plan_attribute : Attribute
             The plan attribute from which we will update the state attribute.
         state_attribute : Attribute
-            The state attribute to update.
+            The state attribute to updated.
 
         Returns
         -------
@@ -180,60 +184,27 @@ class SolutionChecker:
         )
         return state_attribute.model_copy(update=plan_attribute_dict)
 
-    def _check_components(
-        self,
-        plan_components: List[Component],
-        state_components: List[Component],
-    ) -> List[Component]:
-        """Checks plan components against state components.
+    def _update_file(self, plan_file: File, state_file: File) -> File:
+        """Updates the given state file.
 
         Parameters
         ----------
-        plan_component : List[Component]
-            List of plan components.
-        state_component : List[Component]
-            List of state components.
+        plan_file : File
+            Plan file.
+        state_file : File
+            State file to be updated based on the plan file.
 
         Returns
         -------
-        List[Component]
-            List of state components to delete.
-
-        Raises
-        ------
-        ElemnentAlreadyDefined
-            Raised when a plan component is already defined.
+        File
+            Updated file.
         """
-        seen_state_components = {a.name: 0 for a in state_components}
-        for idx, component in enumerate(plan_components):
-            plan_component_name = component.name
-            if plan_component_name not in seen_state_components.keys():
-                state_components.insert(idx, component)
-                seen_state_components[plan_component_name] = 1
-                continue
-            seen_state_components[plan_component_name] += 1
-            if seen_state_components[plan_component_name] > 2:
-                raise ElemnentAlreadyDefined(
-                    f"The component {plan_component_name} is already defined."
-                    f"Component names must be unique."
-                )
-            for i in range(len(state_components)):
-                if state_components[i].name == plan_component_name:
-                    state_components[i] = self._update_component(
-                        component, state_components[i]
-                    )
-                    break
-
-        components_to_delete = []
-        unseen_state_components = [
-            k for k, v in seen_state_components.items() if v == 0
-        ]
-        for idx in range(len(state_components) - 1, -1, -1):
-            state_component_name = state_components[idx].name
-            if state_component_name in unseen_state_components:
-                components_to_delete.append(state_components.pop(idx))
-
-        return components_to_delete
+        plan_file_dict = plan_file.model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+        )
+        plan_file_dict.pop("file", None)
+        return state_file.model_copy(update=plan_file_dict)
 
     def _update_component(
         self, plan_component: Component, state_component: Component
@@ -251,45 +222,22 @@ class SolutionChecker:
         -------
         Component
             The updated state Component.
-
-        Raises
-        ------
-        ElemnentAlreadyDefined
-            Raised when a routine was defined twice.
         """
         plan_component_dict = plan_component.model_dump(
             exclude={"routines"},
             exclude_none=True,
             exclude_unset=True,
         )
-        state_component = state_component.model_copy(
-            update=plan_component_dict
-        )
+        state_component_dict = state_component.model_dump()
+        state_component_dict.update(plan_component_dict)
+        state_component = state_component.model_validate(state_component_dict)
 
-        seen_state_routines = {r.name: 0 for r in state_component.routines}
-        for idx, routine in enumerate(plan_component.routines):
-            plan_routine_name = routine.name
-            if plan_routine_name not in seen_state_routines:
-                state_component.routines.insert(idx, routine)
-                seen_state_routines[plan_routine_name] = 1
-            seen_state_routines[plan_routine_name] += 1
-            if seen_state_routines[plan_routine_name] > 2:
-                raise ElemnentAlreadyDefined(
-                    f"The attribute {plan_routine_name} is already defined."
-                    f"Attribute names must be unique."
-                )
-            for i in range(len(state_component.routines)):
-                if state_component.routines[i].name == plan_routine_name:
-                    state_component.routines[i] = self._update_routine(
-                        routine, state_component.routines[i]
-                    )
-                    break
-        unseen_state_routines = [
-            k for k, v in seen_state_routines.items() if v == 0
-        ]
-        for i in range(len(state_component.routines) - 1, -1, -1):
-            if state_component.routines[i].name in unseen_state_routines:
-                state_component.routines.pop(i)
+        self._check_elements(
+            plan_component.routines,
+            state_component.routines,
+            RoutineObject.__name__,
+            self._update_routine,
+        )
 
         return state_component
 
@@ -303,12 +251,12 @@ class SolutionChecker:
         plan_routine : RoutineObject
             A plan routine.
         state_routine : RoutineObject
-            A state routine.
+            A state routine to update.
 
         Returns
         -------
         RoutineObject
-            The state routine updated.
+            The updated state routine.
         """
         plan_routine_dict = plan_routine.model_dump(
             exclude_none=True,
