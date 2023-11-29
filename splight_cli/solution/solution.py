@@ -80,6 +80,8 @@ class SolutionManager:
         self._apply_assets_state()
         self._apply_files_state()
         self._replacer.build_reference_map()
+        self._replacer.replace_references()
+        # TODO: _apply_functions_state
         self._apply_components_state()
 
     def plan(self):
@@ -89,9 +91,6 @@ class SolutionManager:
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
         self._plan_files_state()
-        import ipdb
-
-        ipdb.set_trace()
         self._replacer.build_reference_map()
         self._replacer.replace_references()
         self._plan_functions_state()
@@ -245,7 +244,6 @@ class SolutionManager:
 
     def _apply_components_state(self):
         """Applies Components states to the engine."""
-        self._replacer.replace_references()
         components_list = self._state.components
         for i in range(len(components_list)):
             component = components_list[i]

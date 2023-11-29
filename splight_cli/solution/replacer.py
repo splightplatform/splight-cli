@@ -64,7 +64,7 @@ class Replacer:
             func_items = state_functions[i].function_items
             for j in range(len(func_items)):
                 self._replace_fn_ref(func_items[j], function_name)
-            # replace target asset and attribute
+            # TODO: replace target asset and attribute
 
     def _replace_io_ref(self, io_elem, component_name):
         """Replaces references in any component input or output, the same
@@ -113,6 +113,7 @@ class Replacer:
                 )
 
     def _replace_fn_ref(self, func_item, func_name):
+        # TODO: continue function and check it's working
         asset = func_item.query_filter_asset
         # attribute = func_item.query_filter_atttribute
         if asset is None:  # or attribute is None:
