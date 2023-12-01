@@ -27,6 +27,7 @@ class Replacer:
             self._reference_map[asset_ref] = asset.id
             for attr in asset.attributes:
                 attr_ref = get_ref_str("attribute", attr.name)
+                attr_ref = f"{asset_ref}.{attr_ref}"
                 self._reference_map[attr_ref] = attr.id
                 self._attr_to_asset_map[attr_ref] = asset_ref
 
