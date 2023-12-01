@@ -487,6 +487,24 @@ files = [
 ]
 
 [[package]]
+name = "deepdiff"
+version = "6.3.1"
+description = "Deep Difference and Search of any Python object/data. Recreate objects by adding adding deltas to each other."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "deepdiff-6.3.1-py3-none-any.whl", hash = "sha256:eae2825b2e1ea83df5fc32683d9aec5a56e38b756eb2b280e00863ce4def9d33"},
+    {file = "deepdiff-6.3.1.tar.gz", hash = "sha256:e8c1bb409a2caf1d757799add53b3a490f707dd792ada0eca7cac1328055097a"},
+]
+
+[package.dependencies]
+ordered-set = ">=4.0.2,<4.2.0"
+
+[package.extras]
+cli = ["click (==8.1.3)", "pyyaml (==6.0)"]
+optimize = ["orjson"]
+
+[[package]]
 name = "distlib"
 version = "0.3.7"
 description = "Distribution utilities"
@@ -1068,6 +1086,20 @@ files = [
     {file = "numpy-1.26.2-pp39-pypy39_pp73-win_amd64.whl", hash = "sha256:fe6b44fb8fcdf7eda4ef4461b97b3f63c466b27ab151bec2366db8b197387841"},
     {file = "numpy-1.26.2.tar.gz", hash = "sha256:f65738447676ab5777f11e6bbbdb8ce11b785e105f690bc45966574816b6d3ea"},
 ]
+
+[[package]]
+name = "ordered-set"
+version = "4.1.0"
+description = "An OrderedSet is a custom MutableSet that remembers its order, so that every"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "ordered-set-4.1.0.tar.gz", hash = "sha256:694a8e44c87657c59292ede72891eb91d34131f6531463aab3009191c77364a8"},
+    {file = "ordered_set-4.1.0-py3-none-any.whl", hash = "sha256:046e1132c71fcf3330438a539928932caf51ddbc582496833e23de611de14562"},
+]
+
+[package.extras]
+dev = ["black", "mypy", "pytest"]
 
 [[package]]
 name = "orderedmultidict"
@@ -2256,13 +2288,13 @@ files = [
 
 [[package]]
 name = "splight-lib"
-version = "4.3.0"
+version = "4.3.4"
 description = "Splight Library"
 optional = false
 python-versions = ">=3.8.1,<4"
 files = [
-    {file = "splight_lib-4.3.0-py3-none-any.whl", hash = "sha256:afa20d6a5078a18d2b747f6ced096ad4171a072f9f241b3b7c193162bdaf0e2b"},
-    {file = "splight_lib-4.3.0.tar.gz", hash = "sha256:9ec0b568401225a25a9a4b6c3eb27d45e36fb36c4237523c9f527db4fef50837"},
+    {file = "splight_lib-4.3.4-py3-none-any.whl", hash = "sha256:3b6fd8b93b3ef8b2536e7c8198d0e47ab1102269490d2d45920fd3d485ccf6ac"},
+    {file = "splight_lib-4.3.4.tar.gz", hash = "sha256:54cad3849ba8d73c0378230d77accb157cea2aad4c74888305784be992d23285"},
 ]
 
 [package.dependencies]
@@ -2496,4 +2528,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4"
-content-hash = "9d417ddcaea9d116656b3a81fb7481bb5e1d9cc2507733209889ee34b64402e9"
+content-hash = "e662f009ac61cd0db0bd187c437a07160d1a7c8499aed0126134719486209369"

@@ -32,6 +32,7 @@ class Replacer:
             self._reference_map[asset_ref] = asset.id
             for attr in asset.attributes:
                 attr_ref = get_ref_str("attribute", attr.name)
+                attr_ref = f"{asset_ref}.{attr_ref}"
                 self._reference_map[attr_ref] = attr.id
                 self._attr_to_asset_map[attr_ref] = asset_ref
 
@@ -48,12 +49,12 @@ class Replacer:
             routines = state_components[i].routines
             component_name = state_components[i].name
             inputs = state_components[i].input
-            for j in range(len(inputs)):
-                self._replace_io_ref(inputs[j], component_name)
+            for input_param in inputs:
+                self._replace_io_ref(input_param, component_name)
 
             outputs = state_components[i].output
-            for j in range(len(outputs)):
-                self._replace_io_ref(outputs[j], component_name)
+            for output_param in outputs:
+                self._replace_io_ref(output_param, component_name)
 
             for routine in routines:
                 self._replace_routine_ref(routine, component_name)
@@ -66,20 +67,28 @@ class Replacer:
                 self._replace_fn_ref(func_items[j], function_name)
             # TODO: replace target asset and attribute
 
-    def _replace_io_ref(self, io_elem, component_name):
+    def _replace_io_ref(
+        self,
+        io_elem: Union[InputDataAddress, InputParameter, Output],
+        component_name: str,
+        routine_name: Optional[str] = None,
+    ):
         """Replaces references in any component input or output, the same
         is applied to elements in the routine config.
 
         Parameters
         ----------
-        io_elem : _type_
-            An input or output element.
-        component_name : _type_
-            The name of the component in question.
+        io_elem : Union[InputDataAddress, InputParameter, Output]
+            Input or output element to replace with the corresponding
+            reference.
+        component_name : str
+            The component name.
+        routine_name : Optional[str]
+            The routine name. Default None.
         """
         if io_elem.value is not None and io_elem.type in self._REF_TYPES:
             io_elem.value = self._get_new_value(
-                io_elem, component_name, self._parse_input_output
+                io_elem, component_name, self._parse_input_output, routine_name
             )
 
     def _replace_routine_ref(
@@ -95,13 +104,7 @@ class Replacer:
             The component name.
         """
         for config in routine.config:
-            if config.value is not None and config.type in self._REF_TYPES:
-                config.value = self._get_new_value(
-                    config,
-                    component_name,
-                    self._parse_input_output,
-                    routine.name,
-                )
+            self._replace_io_ref(config, component_name, routine.name)
 
         for io_elem in routine.input + routine.output:
             if io_elem.value is not None:
@@ -242,8 +245,8 @@ class Replacer:
         UndefinedID
             Raised if the value reference passed is not a valid reference.
         """
-        asset_ref = data_addr["asset"]
-        attr_ref = data_addr["attribute"]
+        asset_ref = data_addr.asset
+        attr_ref = data_addr.attribute
 
         asset_is_id = is_valid_uuid(asset_ref)
         attr_is_id = is_valid_uuid(attr_ref)
