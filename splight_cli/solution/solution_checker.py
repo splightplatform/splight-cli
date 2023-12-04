@@ -282,6 +282,8 @@ class SolutionChecker:
             exclude_none=True,
             exclude_unset=True,
         )
+        # NOTE: this might cause a bug for a particular case according to @francozacco.
+        # Take it into account.
         state_function_dict = state_function.model_dump()
         state_function_dict.update(plan_function_dict)
         return state_function.model_validate(state_function_dict)
