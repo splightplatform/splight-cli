@@ -14,6 +14,7 @@ CheckResult = namedtuple(
         "assets_to_delete",
         "files_to_delete",
         "components_to_delete",
+        "functions_to_detele",
         "plan",
         "state",
     ),
@@ -77,6 +78,7 @@ class SolutionChecker:
             assets_to_delete=assets_to_delete,
             files_to_delete=files_to_delete,
             components_to_delete=components_to_delete,
+            functions_to_detele=functions_to_delete,
             plan=self._plan,
             state=self._state,
         )
@@ -280,4 +282,6 @@ class SolutionChecker:
             exclude_none=True,
             exclude_unset=True,
         )
-        return state_function.model_copy(update=plan_function_dict)
+        state_function_dict = state_function.model_dump()
+        state_function_dict.update(plan_function_dict)
+        return state_function.model_validate(state_function_dict)
