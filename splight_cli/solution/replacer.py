@@ -124,15 +124,13 @@ class Replacer:
 
             if asset:
                 value_ref = asset["id"]
-                func_item.query_filter_asset = self._parse_input_output(
-                    value_ref
-                )
+                asset["id"] = self._parse_input_output(value_ref)
+                func_item.query_filter_asset = asset
 
             if attribute:
                 value_ref = attribute["id"]
-                func_item.query_filter_attribute = self._parse_input_output(
-                    value_ref
-                )
+                attribute["id"] = self._parse_input_output(value_ref)
+                func_item.query_filter_attribute = attribute
 
             if query_plain:
                 query_dict = json.loads(query_plain)
