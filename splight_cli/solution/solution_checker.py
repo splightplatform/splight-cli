@@ -60,7 +60,6 @@ class SolutionChecker:
             Function.__name__,
             self._update_function,
         )
-
         components_to_delete = self._check_elements(
             self._plan.components,
             self._state.components,
