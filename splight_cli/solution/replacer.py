@@ -203,9 +203,7 @@ class Replacer:
         else:
             return parse_fn(elem.value, component_name, routine_name)
 
-    def _parse_input_output(
-        self, value_ref: str, component_name: str = "", routine_name: str = ""
-    ) -> str:
+    def _parse_input_output(self, value_ref: str, *args, **kwargs) -> str:
         """Parse function for component inputs or outputs.
 
         Parameters
