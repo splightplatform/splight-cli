@@ -81,7 +81,7 @@ class SolutionManager:
         self._apply_files_state()
         self._replacer.build_reference_map()
         self._replacer.replace_references()
-        # TODO: _apply_functions_state
+        self._apply_functions_state()
         self._apply_components_state()
 
     def plan(self):
@@ -303,6 +303,20 @@ class SolutionManager:
                     result.updated_dict
                 )
         return routine_list
+
+    def _apply_functions_state(self):
+        """Applies RoutineObject states to the engine."""
+        functions_list = self._state.functions
+        for i in range(len(functions_list)):
+            result = self._apply_exec.apply(
+                model=Function,
+                local_instance=functions_list[i],
+            )
+            if result.update:
+                functions_list[i] = Function.model_validate(
+                    result.updated_dict
+                )
+                save_yaml(self._state_path, self._state)
 
     def _apply_files_state(self):
         """Applies Files states to the engine."""
