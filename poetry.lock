@@ -2289,13 +2289,13 @@ files = [
 
 [[package]]
 name = "splight-lib"
-version = "4.3.6"
+version = "4.3.7"
 description = "Splight Library"
 optional = false
 python-versions = ">=3.8.1,<4"
 files = [
-    {file = "splight_lib-4.3.6-py3-none-any.whl", hash = "sha256:99b386e4a9ab6c68718c53df34c9dce26b93477920dc980d3a586e25426adae4"},
-    {file = "splight_lib-4.3.6.tar.gz", hash = "sha256:438b559d6a3d128301c3a99d760e185f6eb86a5dc6b5d2fa4f1b1157da0c573a"},
+    {file = "splight_lib-4.3.7-py3-none-any.whl", hash = "sha256:0c264ed6227299c24b82d0a5315c56ecf2a4623151245de0b5160ad58a79b0b0"},
+    {file = "splight_lib-4.3.7.tar.gz", hash = "sha256:f7b0034e4adaa28e21257c9009b6925d66b2f2ead8ead454be9c09acbff5d121"},
 ]
 
 [package.dependencies]
@@ -2529,4 +2529,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4"
-content-hash = "433be46258c7a87cb1507ddcf244de0812ba2368679e113a35619cfedb694994"
+content-hash = "13c5f7273697e9e7d0c579177f93265b16685f2aa874a29d057dc19ac95c579f"
