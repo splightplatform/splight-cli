@@ -2,7 +2,14 @@ from collections import namedtuple
 from typing import Callable, List, Type
 
 from rich.console import Console
-from splight_lib.models import Asset, Attribute, File, Function, RoutineObject
+from splight_lib.models import (
+    Asset,
+    Attribute,
+    File,
+    Function,
+    FunctionItem,
+    RoutineObject,
+)
 
 from splight_cli.solution.exceptions import ElemnentAlreadyDefined
 from splight_cli.solution.models import Component
@@ -88,6 +95,7 @@ class SolutionChecker:
         state_elements: List[SplightTypes],
         elem_type: Type[SplightTypes],
         update_fn: Callable,
+        accesor: str = "name",
     ) -> List[SplightTypes]:
         """Checks if the element is already defined and/or if it was removed.
 
@@ -112,9 +120,9 @@ class SolutionChecker:
         ElemnentAlreadyDefined
             Raised when the element was already defined.
         """
-        seen_state_elems = {e.name: 0 for e in state_elements}
+        seen_state_elems = {getattr(e, accesor): 0 for e in state_elements}
         for idx, elem in enumerate(plan_elements):
-            plan_elem_name = elem.name
+            plan_elem_name = getattr(elem, accesor)
             if plan_elem_name not in seen_state_elems.keys():
                 state_elements.insert(idx, elem)
                 seen_state_elems[plan_elem_name] = 1
@@ -126,7 +134,7 @@ class SolutionChecker:
                     f"{elem_type} names must be unique."
                 )
             for i in range(len(state_elements)):
-                if state_elements[i].name == plan_elem_name:
+                if getattr(state_elements[i], accesor) == plan_elem_name:
                     state_elements[i] = update_fn(elem, state_elements[i])
                     break
 
@@ -135,7 +143,7 @@ class SolutionChecker:
             k for k, v in seen_state_elems.items() if v == 0
         }
         for idx in range(len(state_elements) - 1, -1, -1):
-            state_elem_name = state_elements[idx].name
+            state_elem_name = getattr(state_elements[idx], accesor)
             if state_elem_name in unseen_state_elements:
                 elems_to_delete.append(state_elements.pop(idx))
 
@@ -278,11 +286,25 @@ class SolutionChecker:
         self, plan_function: Function, state_function: Function
     ):
         plan_function_dict = plan_function.model_dump(
+            exclude_none=True, exclude_unset=True, exclude={"function_items"}
+        )
+        state_function = state_function.model_copy(update=plan_function_dict)
+        self._check_elements(
+            plan_function.function_items,
+            state_function.function_items,
+            FunctionItem.__name__,
+            self._update_function_item,
+            accesor="ref_id",
+        )
+        return state_function
+
+    def _update_function_item(
+        self,
+        plan_function_item: FunctionItem,
+        state_function_item: FunctionItem,
+    ):
+        plan_function_item_dict = plan_function_item.model_dump(
             exclude_none=True,
             exclude_unset=True,
         )
-        # NOTE: this might cause a bug for a particular case according to @francozacco.
-        # Take it into account.
-        state_function_dict = state_function.model_dump()
-        state_function_dict.update(plan_function_dict)
-        return state_function.model_validate(state_function_dict)
+        return state_function_item.model_copy(update=plan_function_item_dict)
