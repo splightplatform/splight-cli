@@ -128,20 +128,28 @@ class SolutionManager:
                 state_assets.pop(idx)
                 save_yaml(self._state_path, self._state)
 
-        state_components = self._state.components
-        for idx in range(len(state_components) - 1, -1, -1):
-            component_to_delete = state_components[idx]
-            destroyed = self._destroyer.destroy(Component, component_to_delete)
-            if destroyed:
-                state_components.pop(idx)
-                save_yaml(self._state_path, self._state)
-
         state_files = self._state.files
         for idx in range(len(state_files) - 1, -1, -1):
             file_to_delete = state_files[idx]
             destroyed = self._destroyer.destroy(File, file_to_delete)
             if destroyed:
                 state_files.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_functions = self._state.functions
+        for idx in range(len(state_functions) - 1, -1, -1):
+            function_to_detele = state_functions[idx]
+            destroyed = self._destroyer.destroy(Function, function_to_detele)
+            if destroyed:
+                state_functions.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_components = self._state.components
+        for idx in range(len(state_components) - 1, -1, -1):
+            component_to_delete = state_components[idx]
+            destroyed = self._destroyer.destroy(Component, component_to_delete)
+            if destroyed:
+                state_components.pop(idx)
                 save_yaml(self._state_path, self._state)
 
     def _get_state(self):
