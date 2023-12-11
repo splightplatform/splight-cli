@@ -9,6 +9,7 @@ from splight_lib.models.component import Component as LibComponent
 class ElementType(str, Enum):
     asset = "asset"
     component = "component"
+    function = "function"
 
 
 class Component(LibComponent):
@@ -24,6 +25,7 @@ class PlanSolution(BaseModel):
     imported_components: Optional[List[Component]] = Field(
         default_factory=list
     )
+    imported_functions: Optional[List[Function]] = Field(default_factory=list)
 
 
 class StateSolution(PlanSolution):

@@ -2,7 +2,7 @@ from collections import namedtuple
 from uuid import UUID
 
 from rich.console import Console
-from splight_lib.models import Asset, Component, RoutineObject
+from splight_lib.models import Asset, Component, Function, RoutineObject
 
 from splight_cli.solution.models import (
     ElementType,
@@ -20,7 +20,11 @@ class ImporterExecutor:
     def __init__(self, plan: PlanSolution, state: StateSolution):
         self._plan = plan
         self._state = state
-        self._map_element_to_model = {"asset": Asset, "component": Component}
+        self._map_element_to_model = {
+            "asset": Asset,
+            "component": Component,
+            "function": Function,
+        }
 
     def import_element(self, element: ElementType, id: UUID) -> ImportResult:
         """Imports an element and saves it to both the plan and state file.
@@ -28,7 +32,7 @@ class ImporterExecutor:
         Parameters
         ----------
         element : ElementType
-            Either 'asset' or 'component'.
+            Either 'asset' ,'component' or 'function'.
         id : UUID
             The UUID of the element we want to import.
 
