@@ -65,11 +65,9 @@ def _import(
     element: ElementType = typer.Argument(
         ...,
         case_sensitive=False,
-        help="Either 'asset' or 'component'.",
+        help="Either 'asset', 'component' or 'function'.",
     ),
-    id: UUID = typer.Argument(
-        ..., help="The asset or component uuid to be fetched."
-    ),
+    id: UUID = typer.Argument(..., help="The element uuid to be fetched."),
     plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
     state_file: str = typer.Option(
         None, "--state", "-s", help="Path to state yaml file."
