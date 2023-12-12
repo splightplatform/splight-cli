@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from uuid import UUID
 
 import typer
 from pydantic import ValidationError
 from rich.console import Console
-from splight_lib.models import Asset, Component, File, RoutineObject
+from splight_lib.models import Asset, Component, File, Function, RoutineObject
 
 from splight_cli.solution.apply_exec import ApplyExecutor
 from splight_cli.solution.destroyer import Destroyer
@@ -80,6 +80,8 @@ class SolutionManager:
         self._apply_assets_state()
         self._apply_files_state()
         self._replacer.build_reference_map()
+        self._replacer.replace_references()
+        self._apply_functions_state()
         self._apply_components_state()
 
     def plan(self):
@@ -90,6 +92,8 @@ class SolutionManager:
         self._plan_assets_state()
         self._plan_files_state()
         self._replacer.build_reference_map()
+        self._replacer.replace_references()
+        self._plan_functions_state()
         self._plan_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
@@ -124,20 +128,28 @@ class SolutionManager:
                 state_assets.pop(idx)
                 save_yaml(self._state_path, self._state)
 
-        state_components = self._state.components
-        for idx in range(len(state_components) - 1, -1, -1):
-            component_to_delete = state_components[idx]
-            destroyed = self._destroyer.destroy(Component, component_to_delete)
-            if destroyed:
-                state_components.pop(idx)
-                save_yaml(self._state_path, self._state)
-
         state_files = self._state.files
         for idx in range(len(state_files) - 1, -1, -1):
             file_to_delete = state_files[idx]
             destroyed = self._destroyer.destroy(File, file_to_delete)
             if destroyed:
                 state_files.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_functions = self._state.functions
+        for idx in range(len(state_functions) - 1, -1, -1):
+            function_to_detele = state_functions[idx]
+            destroyed = self._destroyer.destroy(Function, function_to_detele)
+            if destroyed:
+                state_functions.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_components = self._state.components
+        for idx in range(len(state_components) - 1, -1, -1):
+            component_to_delete = state_components[idx]
+            destroyed = self._destroyer.destroy(Component, component_to_delete)
+            if destroyed:
+                state_components.pop(idx)
                 save_yaml(self._state_path, self._state)
 
     def _get_state(self):
@@ -174,7 +186,6 @@ class SolutionManager:
 
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
-        self._replacer.replace_references()
         components_list = (
             self._state.components + self._state.imported_components
         )
@@ -192,6 +203,11 @@ class SolutionManager:
         files_list = self._state.files
         for state_file in files_list:
             self._plan_exec.plan_elem_state(File, state_file)
+
+    def _plan_functions_state(self):
+        function_list = self._state.functions
+        for state_function in function_list:
+            self._plan_exec.plan_elem_state(Function, state_function)
 
     def _delete_assets_and_components(self, check_result: CheckResult):
         """Deletes assets and/or components that have been removed from the
@@ -236,7 +252,6 @@ class SolutionManager:
 
     def _apply_components_state(self):
         """Applies Components states to the engine."""
-        self._replacer.replace_references()
         components_list = self._state.components
         for i in range(len(components_list)):
             component = components_list[i]
@@ -296,6 +311,20 @@ class SolutionManager:
                     result.updated_dict
                 )
         return routine_list
+
+    def _apply_functions_state(self):
+        """Applies RoutineObject states to the engine."""
+        functions_list = self._state.functions
+        for i in range(len(functions_list)):
+            result = self._apply_exec.apply(
+                model=Function,
+                local_instance=functions_list[i],
+            )
+            if result.update:
+                functions_list[i] = Function.model_validate(
+                    result.updated_dict
+                )
+                save_yaml(self._state_path, self._state)
 
     def _apply_files_state(self):
         """Applies Files states to the engine."""

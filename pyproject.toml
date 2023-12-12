@@ -11,7 +11,7 @@ case-converter = "1.1.0"
 click = "8.0.4"
 click-default-group = "1.2.2"
 setuptools = "60.9.3"
-splight-lib = "4.3.4"
+splight-lib = "4.3.8"
 py7zr = "0.18.5"
 typer = "0.7.0"
 colorama = "0.4.4"
@@ -21,6 +21,7 @@ rich = "13.0.1"
 pathspec = "0.11.1"
 packaging = "23.0"
 deepdiff = "6.3.1"
+mock = "^5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.3.0"
@@ -30,6 +31,7 @@ ipython = "8.12.2"
 flake8 = "^6.1.0"
 pre-commit = "3.2.2"
 pytest = "^7.4.3"
+coverage = "^7.3.2"
 
 [tool.poetry.scripts]
 splight = "splight_cli.cli:app"
@@ -54,4 +56,9 @@ filterwarnings = [
     "ignore::pytest.PytestUnraisableExceptionWarning",
     "ignore::pytest.PytestUnhandledThreadExceptionWarning",
     "ignore::pytest.PytestAssertRewriteWarning",
+]
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
 ]

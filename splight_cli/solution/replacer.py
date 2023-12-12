@@ -1,3 +1,4 @@
+import json
 from typing import Callable, Dict, List, Optional, Union
 
 from splight_lib.models.component import (
@@ -54,6 +55,17 @@ class Replacer:
             for routine in routines:
                 self._replace_routine_ref(routine, component_name)
 
+        state_functions = self._state.functions
+        for i in range(len(state_functions)):
+            func_items = state_functions[i].function_items
+            for j in range(len(func_items)):
+                self._replace_fn_ref(func_item=func_items[j])
+
+            self._replace_fn_ref(target_asset=state_functions[i].target_asset)
+            self._replace_fn_ref(
+                target_attribute=state_functions[i].target_attribute
+            )
+
     def _replace_io_ref(
         self,
         io_elem: Union[InputDataAddress, InputParameter, Output],
@@ -102,6 +114,48 @@ class Replacer:
                     routine.name,
                 )
 
+    def _replace_fn_ref(
+        self, func_item=None, target_asset=None, target_attribute=None
+    ):
+        if func_item:
+            asset = func_item.query_filter_asset
+            attribute = func_item.query_filter_attribute
+            query_plain = func_item.query_plain
+
+            if asset:
+                value_ref = asset["id"]
+                asset["id"] = self._parse_input_output(value_ref)
+                func_item.query_filter_asset = asset
+
+            if attribute:
+                value_ref = attribute["id"]
+                attribute["id"] = self._parse_input_output(value_ref)
+                func_item.query_filter_attribute = attribute
+
+            if query_plain:
+                query_dict = json.loads(query_plain)
+
+                # NOTE: sadly this depends on the query.
+                # I'd rather do this than black magic to get the placeholders.
+                asset_ref = query_dict[0]["$match"]["asset"]
+                attribute_ref = query_dict[0]["$match"]["attribute"]
+
+                query_dict[0]["$match"]["asset"] = self._parse_input_output(
+                    asset_ref
+                )
+                query_dict[0]["$match"][
+                    "attribute"
+                ] = self._parse_input_output(attribute_ref)
+                func_item.query_plain = json.dumps(query_dict)
+
+        if target_asset:
+            value_ref = target_asset["id"]
+            target_asset["id"] = self._parse_input_output(value_ref)
+
+        if target_attribute:
+            value_ref = target_attribute["id"]
+            target_attribute["id"] = self._parse_input_output(value_ref)
+
     def _get_new_value(
         self,
         elem: Union[InputDataAddress, InputParameter, Output],
@@ -147,9 +201,7 @@ class Replacer:
         else:
             return parse_fn(elem.value, component_name, routine_name)
 
-    def _parse_input_output(
-        self, value_ref: str, component_name: str, routine_name: str
-    ) -> str:
+    def _parse_input_output(self, value_ref: str, *args, **kwargs) -> str:
         """Parse function for component inputs or outputs.
 
         Parameters
@@ -177,8 +229,7 @@ class Replacer:
             return value_ref
         if value_ref not in self._reference_map:
             raise UndefinedID(
-                f"The reference '{value_ref}' used in the component named "
-                f"'{component_name}' is not a valid reference."
+                f"The reference '{value_ref}' used is not a valid reference."
             )
         return self._reference_map[value_ref]
 
@@ -240,9 +291,6 @@ class Replacer:
             "attribute": self._reference_map[attr_ref],
         }
 
-    def _check_id_is_defined(self, value_ref: str, component_name: str):
+    def _check_id_is_defined(self, value_ref: str):
         if value_ref not in self._reference_map.values():
-            raise UndefinedID(
-                f"The id: {value_ref} used in the component named "
-                f"{component_name} is not defined."
-            )
+            raise UndefinedID(f"The id: {value_ref} is not defined")
