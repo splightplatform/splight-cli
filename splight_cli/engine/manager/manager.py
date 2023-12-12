@@ -329,7 +329,7 @@ class ComponentUpgradeManager:
                 " parameters if needed."
             )
 
-        # Ask for a missing InputDataAddress if .
+        # Ask for a missing InputDataAddress
         for name in hub_data_addresses.keys():
             if name not in engine_data_addresses.keys():
                 hub_data_address = hub_data_addresses[name]

@@ -1,3 +1,4 @@
+from ast import literal_eval
 from functools import partial
 from pydoc import locate
 from typing import Dict, List, Type, Union
@@ -60,10 +61,18 @@ def prompt_param(param: Dict[str, Primitive], prefix: str = "") -> Primitive:
     return new_value
 
 
-def list_of(input_value: Union[List, str], param_type: Type = str) -> List:
-    if isinstance(input_value, list):
-        return input_value
-    return [param_type(v.strip()) for v in input_value.split(",")]
+def list_of(input_value: str, param_type: Type = str) -> List:
+    try:
+        values = literal_eval(input_value)
+    except:
+        return None
+
+    if not isinstance(values, List):
+        return None
+    if not all([isinstance(elem, param_type) for elem in values]):
+        return None
+
+    return values
 
 
 def input_single(param: Dict[str, Primitive]) -> Primitive:
@@ -85,20 +94,24 @@ def input_single(param: Dict[str, Primitive]) -> Primitive:
     required = param.get("required", False)
     param_name = param.get("name", "")
     param_type = param.get("type")
-    name = f"{'*' if required else ' '}{param_name} ({param_type})"
+    multiple = param.get("multiple")
+    name = f"{'*' if required else ' '}{param_name} {f'List[{param_type}]' if multiple else f'({param_type})'}"
     param_type = locate(param["type"])
     if not param_type:
         param_type = str
     value_proc = None
-    if param.get("multiple"):
+    if multiple:
         value_proc = partial(list_of, param_type=param_type)
 
-    val = click.prompt(
-        text=name,
-        type=param_type,
-        default=default,
-        value_proc=value_proc,
-    )
+    val = None
+    while not val:
+        val = click.prompt(
+            text=name,
+            type=param_type,
+            default=default,
+            value_proc=value_proc,
+        )
+
     if isinstance(val, str):
         val = val.strip(" ")
         if not val:
