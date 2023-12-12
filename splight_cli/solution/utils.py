@@ -1,5 +1,4 @@
 import json
-import re
 import uuid
 from collections import namedtuple
 from pathlib import Path
@@ -10,11 +9,18 @@ import yaml
 from pydantic import BaseModel
 from rich.console import Console
 from rich.style import Style
-from splight_lib.models import Asset, Component, File, Function, RoutineObject
+from splight_lib.models import (
+    Asset,
+    Component,
+    File,
+    Function,
+    RoutineObject,
+    Secret,
+)
 
 console = Console()
 
-SplightTypes = Union[Asset, Component, RoutineObject, File, Function]
+SplightTypes = Union[Asset, Secret, Component, RoutineObject, File, Function]
 
 MatchResult = namedtuple(
     "MatchResult", ["is_id", "type", "asset", "attribute"]

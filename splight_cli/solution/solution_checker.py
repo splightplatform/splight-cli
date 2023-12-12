@@ -9,6 +9,7 @@ from splight_lib.models import (
     Function,
     FunctionItem,
     RoutineObject,
+    Secret,
 )
 
 from splight_cli.solution.exceptions import ElemnentAlreadyDefined
@@ -19,6 +20,7 @@ CheckResult = namedtuple(
     "CheckResult",
     (
         "assets_to_delete",
+        "secrets_to_delete",
         "files_to_delete",
         "components_to_delete",
         "functions_to_detele",
@@ -55,6 +57,18 @@ class SolutionChecker:
             Asset.__name__,
             self._update_asset,
         )
+        secrets_to_delete = self._check_elements(
+            self._plan.secrets,
+            self._state.secrets,
+            Secret.__name__,
+            self._update_secret,
+        )
+        secrets_to_delete += self._check_elements(
+            self._plan.imported_secrets,
+            self._state.imported_secrets,
+            Secret.__name__,
+            self._update_secret,
+        )
         files_to_delete = self._check_elements(
             self._plan.files,
             self._state.files,
@@ -64,6 +78,12 @@ class SolutionChecker:
         functions_to_delete = self._check_elements(
             self._plan.functions,
             self._state.functions,
+            Function.__name__,
+            self._update_function,
+        )
+        functions_to_delete += self._check_elements(
+            self._plan.imported_functions,
+            self._state.imported_functions,
             Function.__name__,
             self._update_function,
         )
@@ -82,6 +102,7 @@ class SolutionChecker:
 
         return CheckResult(
             assets_to_delete=assets_to_delete,
+            secrets_to_delete=secrets_to_delete,
             files_to_delete=files_to_delete,
             components_to_delete=components_to_delete,
             functions_to_detele=functions_to_delete,
@@ -198,6 +219,30 @@ class SolutionChecker:
             exclude_unset=True,
         )
         return state_attribute.model_copy(update=plan_attribute_dict)
+
+    def _update_secret(
+        self, plan_secret: Secret, state_secret: Secret
+    ) -> Secret:
+        """Updates the given state secret.
+
+        Parameters
+        ----------
+        plan_secret : secret
+            Plan secret.
+        state_secret : secret
+            State secret to be updated based on the plan secret.
+
+        Returns
+        -------
+        secret
+            Updated secret.
+        """
+        plan_secret_dict = plan_secret.model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+        )
+        plan_secret_dict.pop("secret", None)
+        return state_secret.model_copy(update=plan_secret_dict)
 
     def _update_file(self, plan_file: File, state_file: File) -> File:
         """Updates the given state file.

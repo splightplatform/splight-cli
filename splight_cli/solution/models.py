@@ -1,13 +1,14 @@
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
-from splight_lib.models import Asset, File, Function, RoutineObject
+from splight_lib.models import Asset, File, Function, RoutineObject, Secret
 from splight_lib.models.component import Component as LibComponent
 
 
 class ElementType(str, Enum):
     asset = "asset"
+    secret = "secret"
     component = "component"
     function = "function"
 
@@ -18,10 +19,12 @@ class Component(LibComponent):
 
 class PlanSolution(BaseModel):
     assets: List[Asset]
-    components: List[Component]
+    secrets: List[Secret]
     files: List[File]
+    components: List[Component]
     functions: List[Function]
     imported_assets: Optional[List[Asset]] = Field(default_factory=list)
+    imported_secrets: Optional[List[Secret]] = Field(default_factory=list)
     imported_components: Optional[List[Component]] = Field(
         default_factory=list
     )

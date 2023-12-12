@@ -65,7 +65,7 @@ def _import(
     element: ElementType = typer.Argument(
         ...,
         case_sensitive=False,
-        help="Either 'asset', 'component' or 'function'.",
+        help="One of: 'asset', 'secret', 'component', 'function'.",
     ),
     id: UUID = typer.Argument(..., help="The element uuid to be fetched."),
     plan_file: str = typer.Argument(..., help="Path to plan yaml file."),

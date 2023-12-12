@@ -2,7 +2,13 @@ from collections import namedtuple
 from uuid import UUID
 
 from rich.console import Console
-from splight_lib.models import Asset, Component, Function, RoutineObject
+from splight_lib.models import (
+    Asset,
+    Component,
+    Function,
+    RoutineObject,
+    Secret,
+)
 
 from splight_cli.solution.models import (
     ElementType,
@@ -22,6 +28,7 @@ class ImporterExecutor:
         self._state = state
         self._map_element_to_model = {
             "asset": Asset,
+            "secret": Secret,
             "component": Component,
             "function": Function,
         }
@@ -32,7 +39,7 @@ class ImporterExecutor:
         Parameters
         ----------
         element : ElementType
-            Either 'asset' ,'component' or 'function'.
+            One of: 'asset', 'secret', 'component', 'function'.
         id : UUID
             The UUID of the element we want to import.
 
@@ -55,6 +62,7 @@ class ImporterExecutor:
             )
         model = self._map_element_to_model[element]
         retrieved_elem = model.retrieve(resource_id=id)
+
         if element == ElementType.component:
             retrieved_elem.routines = RoutineObject.list(component_id=id)
 

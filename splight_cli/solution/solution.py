@@ -5,7 +5,14 @@ from uuid import UUID
 import typer
 from pydantic import ValidationError
 from rich.console import Console
-from splight_lib.models import Asset, Component, File, Function, RoutineObject
+from splight_lib.models import (
+    Asset,
+    Component,
+    File,
+    Function,
+    RoutineObject,
+    Secret,
+)
 
 from splight_cli.solution.apply_exec import ApplyExecutor
 from splight_cli.solution.destroyer import Destroyer
@@ -78,6 +85,7 @@ class SolutionManager:
         self._plan, self._state = check_result.plan, check_result.state
         self._delete_assets_and_components(check_result)
         self._apply_assets_state()
+        self._apply_secrets_state()
         self._apply_files_state()
         self._replacer.build_reference_map()
         self._replacer.replace_references()
@@ -90,6 +98,7 @@ class SolutionManager:
         self._plan, self._state = check_result.plan, check_result.state
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
+        self._plan_secrets_state()
         self._plan_files_state()
         self._replacer.build_reference_map()
         self._replacer.replace_references()
@@ -126,6 +135,14 @@ class SolutionManager:
             destroyed = self._destroyer.destroy(Asset, asset_to_delete)
             if destroyed:
                 state_assets.pop(idx)
+                save_yaml(self._state_path, self._state)
+
+        state_secrets = self._state.secrets
+        for idx in range(len(state_secrets) - 1, -1, -1):
+            secret_to_delete = state_secrets[idx]
+            destroyed = self._destroyer.destroy(Secret, secret_to_delete)
+            if destroyed:
+                state_secrets.pop(idx)
                 save_yaml(self._state_path, self._state)
 
         state_files = self._state.files
@@ -184,6 +201,13 @@ class SolutionManager:
         for state_asset in assets_list:
             self._plan_exec.plan_elem_state(Asset, state_asset)
 
+    def _plan_secrets_state(self):
+        """Shows the secrets state if the plan were to be applied."""
+        secrets_list = self._state.secrets + self._state.imported_secrets
+        for state_secret in secrets_list:
+            __import__("ipdb").set_trace()
+            self._plan_exec.plan_elem_state(Secret, state_secret)
+
     def _plan_components_state(self):
         """Shows the components state if the plan were to be applied."""
         components_list = (
@@ -205,7 +229,7 @@ class SolutionManager:
             self._plan_exec.plan_elem_state(File, state_file)
 
     def _plan_functions_state(self):
-        function_list = self._state.functions
+        function_list = self._state.functions + self._state.imported_functions
         for state_function in function_list:
             self._plan_exec.plan_elem_state(Function, state_function)
 
@@ -246,6 +270,32 @@ class SolutionManager:
             )
             if result.update:
                 imported_assets_list[i] = Asset.model_validate(
+                    result.updated_dict
+                )
+                save_yaml(self._state_path, self._state)
+
+    def _apply_secrets_state(self):
+        """Applies secrets states to the engine."""
+        secrets_list = (
+            self._state.secrets
+        )  # TODO: a chequear + self._state.imported_secrets
+        for i in range(len(secrets_list)):
+            result = self._apply_exec.apply(
+                model=Secret, local_instance=secrets_list[i]
+            )
+            if result.update:
+                secrets_list[i] = Secret.model_validate(result.updated_dict)
+                save_yaml(self._state_path, self._state)
+
+        imported_secrets_list = self._state.imported_secrets
+        for i in range(len(imported_secrets_list)):
+            result = self._apply_exec.apply(
+                model=Secret,
+                local_instance=imported_secrets_list[i],
+                not_found_is_exception=True,
+            )
+            if result.update:
+                imported_secrets_list[i] = Secret.model_validate(
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)
