@@ -205,7 +205,6 @@ class SolutionManager:
         """Shows the secrets state if the plan were to be applied."""
         secrets_list = self._state.secrets + self._state.imported_secrets
         for state_secret in secrets_list:
-            __import__("ipdb").set_trace()
             self._plan_exec.plan_elem_state(Secret, state_secret)
 
     def _plan_components_state(self):
