@@ -30,6 +30,23 @@ class PlanExecutor:
                 "If the plan is applied the following Asset will be deleted:"
             )
             bprint(asset)
+        for secret in check_results.secrets_to_delete:
+            bprint(
+                "If the plan is applied the following Secret will be "
+                "deleted:"
+            )
+            bprint(secret)
+        for file in check_results.files_to_delete:
+            bprint(
+                "If the plan is applied the following File will be " "deleted:"
+            )
+            bprint(file)
+        for function in check_results.functions_to_delete:
+            bprint(
+                "If the plan is applied the following Function will be "
+                "deleted:"
+            )
+            bprint(function)
         for component in check_results.components_to_delete:
             bprint(
                 "If the plan is applied the following Component will be "

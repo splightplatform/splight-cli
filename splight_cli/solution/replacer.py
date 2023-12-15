@@ -36,6 +36,10 @@ class Replacer:
             file_ref = get_ref_str("file", file.name)
             self._reference_map[file_ref] = file.id
 
+        for secret in self._state.secrets:
+            secret_ref = get_ref_str("secret", secret.name)
+            self._reference_map[secret_ref] = f"${{{{SECRET.{secret.name}}}}}"
+
     def replace_references(self):
         """Replaces any references in the inputs, outputs and routines of every
         component.
