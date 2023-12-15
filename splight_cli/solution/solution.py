@@ -257,6 +257,10 @@ class SolutionManager:
             self._apply_exec.delete(Secret, secret)
             save_yaml(self._state_path, self._state)
 
+        for file in check_result.files_to_delete:
+            self._apply_exec.delete(File, file)
+            save_yaml(self._state_path, self._state)
+
     def _apply_assets_state(self):
         """Applies Assets states to the engine."""
         assets_list = self._state.assets
