@@ -249,6 +249,14 @@ class SolutionManager:
             self._apply_exec.delete(Component, component)
             save_yaml(self._state_path, self._state)
 
+        for function in check_result.functions_to_delete:
+            self._apply_exec.delete(Function, function)
+            save_yaml(self._state_path, self._state)
+
+        for secret in check_result.secrets_to_delete:
+            self._apply_exec.delete(Secret, secret)
+            save_yaml(self._state_path, self._state)
+
     def _apply_assets_state(self):
         """Applies Assets states to the engine."""
         assets_list = self._state.assets
