@@ -36,6 +36,23 @@ class PlanExecutor:
                 "deleted:"
             )
             bprint(component)
+        for function in check_results.functions_to_delete:
+            bprint(
+                "If the plan is applied the following Function will be "
+                "deleted:"
+            )
+            bprint(function)
+        for secret in check_results.secrets_to_delete:
+            bprint(
+                "If the plan is applied the following secret will be "
+                "deleted:"
+            )
+            bprint(secret)
+        for file in check_results.files_to_delete:
+            bprint(
+                "If the plan is applied the following file will be " "deleted:"
+            )
+            bprint(file)
 
     def plan_elem_state(
         self, elem_type: Type[SplightTypes], state_elem: SplightTypes
