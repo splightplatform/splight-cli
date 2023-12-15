@@ -287,9 +287,7 @@ class SolutionManager:
 
     def _apply_secrets_state(self):
         """Applies secrets states to the engine."""
-        secrets_list = (
-            self._state.secrets
-        )  # TODO: a chequear + self._state.imported_secrets
+        secrets_list = self._state.secrets
         for i in range(len(secrets_list)):
             result = self._apply_exec.apply(
                 model=Secret, local_instance=secrets_list[i]
