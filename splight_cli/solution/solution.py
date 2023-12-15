@@ -83,7 +83,7 @@ class SolutionManager:
         console.print("\nStarting apply...", style=PRINT_STYLE)
         check_result = self._solution_checker.check()
         self._plan, self._state = check_result.plan, check_result.state
-        self._delete_assets_and_components(check_result)
+        self._delete_objects(check_result)
         self._apply_assets_state()
         self._apply_secrets_state()
         self._apply_files_state()
@@ -232,7 +232,7 @@ class SolutionManager:
         for state_function in function_list:
             self._plan_exec.plan_elem_state(Function, state_function)
 
-    def _delete_assets_and_components(self, check_result: CheckResult):
+    def _delete_objects(self, check_result: CheckResult):
         """Deletes assets and/or components that have been removed from the
         plan.
 
