@@ -44,13 +44,13 @@ class PlanExecutor:
             bprint(function)
         for secret in check_results.secrets_to_delete:
             bprint(
-                "If the plan is applied the following secret will be "
+                "If the plan is applied the following Secret will be "
                 "deleted:"
             )
             bprint(secret)
         for file in check_results.files_to_delete:
             bprint(
-                "If the plan is applied the following file will be " "deleted:"
+                "If the plan is applied the following File will be " "deleted:"
             )
             bprint(file)
 
