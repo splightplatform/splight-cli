@@ -23,7 +23,7 @@ CheckResult = namedtuple(
         "secrets_to_delete",
         "files_to_delete",
         "components_to_delete",
-        "functions_to_detele",
+        "functions_to_delete",
         "plan",
         "state",
     ),
@@ -105,7 +105,7 @@ class SolutionChecker:
             secrets_to_delete=secrets_to_delete,
             files_to_delete=files_to_delete,
             components_to_delete=components_to_delete,
-            functions_to_detele=functions_to_delete,
+            functions_to_delete=functions_to_delete,
             plan=self._plan,
             state=self._state,
         )
@@ -227,9 +227,9 @@ class SolutionChecker:
 
         Parameters
         ----------
-        plan_secret : secret
+        plan_secret : Secret
             Plan secret.
-        state_secret : secret
+        state_secret : Secret
             State secret to be updated based on the plan secret.
 
         Returns
