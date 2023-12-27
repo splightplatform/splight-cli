@@ -115,7 +115,7 @@ class ApplyExecutor:
             )
             if diff:
                 bprint(
-                    f"\nThe remote {model_name} with id {instance_id} has the "
+                    f"\nThe remote {model_name} with id {instance_id} has the"
                     " following differences with the local item:"
                 )
                 rprint(diff)

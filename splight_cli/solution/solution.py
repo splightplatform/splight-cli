@@ -62,6 +62,7 @@ class SolutionManager:
                 r"root\['config'\]\[\d+\]\['description'\]",
                 r"root\['input'\]\[\d+\]\['description'\]",
                 r"root\['output'\]\[\d+\]\['description'\]",
+                # NOTE: API returns the DataAddress type but we don't use it
                 r"root\['(?:input|output)'\]\[\d+\]\['value'\]\['type'\]",
             ],
             File.__name__: [
