@@ -62,6 +62,7 @@ class SolutionManager:
                 r"root\['config'\]\[\d+\]\['description'\]",
                 r"root\['input'\]\[\d+\]\['description'\]",
                 r"root\['output'\]\[\d+\]\['description'\]",
+                r"root\['(?:input|output)'\]\[\d+\]\['value'\]\['type'\]",
             ],
             File.__name__: [
                 r"root\['metadata'\]",
@@ -99,6 +100,7 @@ class SolutionManager:
         self._plan_exec.plan_elements_to_delete(check_result)
         self._plan_assets_state()
         self._plan_secrets_state()
+        # TODO: buscar los files en una carpeta fija
         self._plan_files_state()
         self._replacer.build_reference_map()
         self._replacer.replace_references()
@@ -155,8 +157,8 @@ class SolutionManager:
 
         state_functions = self._state.functions
         for idx in range(len(state_functions) - 1, -1, -1):
-            function_to_detele = state_functions[idx]
-            destroyed = self._destroyer.destroy(Function, function_to_detele)
+            function_to_delete = state_functions[idx]
+            destroyed = self._destroyer.destroy(Function, function_to_delete)
             if destroyed:
                 state_functions.pop(idx)
                 save_yaml(self._state_path, self._state)
@@ -170,14 +172,23 @@ class SolutionManager:
                 save_yaml(self._state_path, self._state)
 
     def _get_state(self):
+        # TODO: si faltan empty keys entonces no tires error, pisalas o crealas
         """Returns the state file."""
         if self._state_path is not None:
             try:
                 return StateSolution.model_validate(
                     load_yaml(self._state_path)
                 )
-            except ValidationError:
-                pass
+            except ValidationError as exc:
+                raise typer.Abort(
+                    f"Validation error while opening '{self._state_path}': {exc}"
+                )
+            except FileNotFoundError as exc:
+                raise typer.Abort(f"File '{self._state_path}' not found.")
+            except:
+                raise typer.Abort(
+                    f"Unkown error while opening file '{self._state_path}'"
+                )
         else:
             self._state_path = self._plan_path.parent / DEFAULT_STATE_PATH
 
