@@ -173,7 +173,6 @@ class SolutionManager:
                 save_yaml(self._state_path, self._state)
 
     def _get_state(self):
-        # TODO: si faltan empty keys entonces no tires error, pisalas o crealas
         """Returns the state file."""
         if self._state_path is not None:
             try:
@@ -393,6 +392,19 @@ class SolutionManager:
             )
             if result.update:
                 functions_list[i] = Function.model_validate(
+                    result.updated_dict
+                )
+                save_yaml(self._state_path, self._state)
+
+        imported_functions_list = self._state.imported_functions
+        for i in range(len(imported_functions_list)):
+            result = self._apply_exec.apply(
+                model=Function,
+                local_instance=imported_functions_list[i],
+                not_found_is_exception=True,
+            )
+            if result.update:
+                imported_functions_list[i] = Function.model_validate(
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)

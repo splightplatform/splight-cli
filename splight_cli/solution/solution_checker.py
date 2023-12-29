@@ -11,6 +11,7 @@ from splight_lib.models import (
     RoutineObject,
     Secret,
 )
+from splight_lib.models.asset import GeometryCollection
 
 from splight_cli.solution.exceptions import ElemnentAlreadyDefined
 from splight_cli.solution.models import Component
@@ -186,7 +187,9 @@ class SolutionChecker:
             Updated asset.
         """
         plan_asset_dict = plan_asset.model_dump(
-            exclude={"attributes"}, exclude_none=True, exclude_unset=True
+            exclude={"attributes", "geomtry"},
+            exclude_none=True,
+            exclude_unset=True,
         )
         state_asset = state_asset.model_copy(update=plan_asset_dict)
         self._check_elements(
@@ -195,6 +198,8 @@ class SolutionChecker:
             Attribute.__name__,
             self._update_attribute,
         )
+        if geometry := plan_asset_dict.get("geometry", {}):
+            state_asset.geometry = GeometryCollection.model_validate(geometry)
         return state_asset
 
     def _update_attribute(
