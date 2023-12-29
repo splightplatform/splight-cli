@@ -15,4 +15,4 @@ def get_template(name) -> Template:
         raise MissingTemplate(f"Unable to find template {template_path}")
     with open(template_path, "r+") as f:
         content = f.read()
-    return Template(content)
+    return Template(content, autoescape=True)
