@@ -167,6 +167,14 @@ class SolutionManager:
                 state_functions.pop(idx)
                 save_yaml(self._state_path, self._state)
 
+        state_alerts = self._state.alerts
+        for idx in range(len(state_alerts) - 1, -1, -1):
+            alert_to_delete = state_alerts[idx]
+            destroyed = self._destroyer.destroy(Alert, alert_to_delete)
+            if destroyed:
+                state_alerts.pop(idx)
+                save_yaml(self._state_path, self._state)
+
         state_components = self._state.components
         for idx in range(len(state_components) - 1, -1, -1):
             component_to_delete = state_components[idx]
@@ -274,6 +282,10 @@ class SolutionManager:
 
         for function in check_result.functions_to_delete:
             self._apply_exec.delete(Function, function)
+            save_yaml(self._state_path, self._state)
+
+        for alert in check_result.alerts_to_delete:
+            self._apply_exec.delete(Alert, alert)
             save_yaml(self._state_path, self._state)
 
         for component in check_result.components_to_delete:
