@@ -2472,13 +2472,13 @@ files = [
 
 [[package]]
 name = "splight-lib"
-version = "4.5.5"
+version = "4.5.6"
 description = "Splight Library"
 optional = false
 python-versions = ">=3.8.1,<4"
 files = [
-    {file = "splight_lib-4.5.5-py3-none-any.whl", hash = "sha256:60e562582b7b0062acbe67dd34d07ec5e8ee596f6fccb88daa22d51ccdf47ede"},
-    {file = "splight_lib-4.5.5.tar.gz", hash = "sha256:24c48e4d6d4b5d959fc5d8958e67d9f30b049537dce27a14054a718a46e26507"},
+    {file = "splight_lib-4.5.6-py3-none-any.whl", hash = "sha256:f81d0acae7e91c819f68c6cf42f442798cb172bff74a2439d5f55eb3019bd09a"},
+    {file = "splight_lib-4.5.6.tar.gz", hash = "sha256:0ba7e616a6b263076045c879b3cecfe79e065d7904e5a45cb39ea746612a6ddc"},
 ]
 
 [package.dependencies]
@@ -2717,4 +2717,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4"
-content-hash = "66d0fc1680595aa2274d002c6b2a3086ec3243f5bb336e56353229e0c6a9b839"
+content-hash = "0c4f49e442bda1a4305fb7b423146dcea1a7b4a1c69ff0380c5b176b0e3859ec"
