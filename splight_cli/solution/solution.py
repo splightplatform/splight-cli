@@ -6,6 +6,7 @@ import typer
 from pydantic import ValidationError
 from rich.console import Console
 from splight_lib.models import (
+    Alert,
     Asset,
     Component,
     File,
@@ -92,6 +93,7 @@ class SolutionManager:
         self._replacer.build_reference_map()
         self._replacer.replace_references()
         self._apply_functions_state()
+        self._apply_alerts_state()
         self._apply_components_state()
 
     def plan(self):
@@ -106,6 +108,7 @@ class SolutionManager:
         self._replacer.build_reference_map()
         self._replacer.replace_references()
         self._plan_functions_state()
+        self._plan_alerts_state()
         self._plan_components_state()
 
     def import_element(self, element: ElementType, id: UUID):
@@ -242,6 +245,11 @@ class SolutionManager:
         function_list = self._state.functions + self._state.imported_functions
         for state_function in function_list:
             self._plan_exec.plan_elem_state(Function, state_function)
+
+    def _plan_alerts_state(self):
+        alert_list = self._state.alerts + self._state.imported_alerts
+        for state_alert in alert_list:
+            self._plan_exec.plan_elem_state(Alert, state_alert)
 
     def _delete_objects(self, check_result: CheckResult):
         """Deletes assets and/or components that have been removed from the
@@ -383,7 +391,7 @@ class SolutionManager:
         return routine_list
 
     def _apply_functions_state(self):
-        """Applies RoutineObject states to the engine."""
+        """Applies Function states to the engine."""
         functions_list = self._state.functions
         for i in range(len(functions_list)):
             result = self._apply_exec.apply(
@@ -405,6 +413,31 @@ class SolutionManager:
             )
             if result.update:
                 imported_functions_list[i] = Function.model_validate(
+                    result.updated_dict
+                )
+                save_yaml(self._state_path, self._state)
+
+    def _apply_alerts_state(self):
+        """Applies Alert states to the engine."""
+        alerts_list = self._state.alerts
+        for i in range(len(alerts_list)):
+            result = self._apply_exec.apply(
+                model=Alert,
+                local_instance=alerts_list[i],
+            )
+            if result.update:
+                alerts_list[i] = Alert.model_validate(result.updated_dict)
+                save_yaml(self._state_path, self._state)
+
+        imported_alerts_list = self._state.imported_alerts
+        for i in range(len(imported_alerts_list)):
+            result = self._apply_exec.apply(
+                model=Alert,
+                local_instance=imported_alerts_list[i],
+                not_found_is_exception=True,
+            )
+            if result.update:
+                imported_alerts_list[i] = Alert.model_validate(
                     result.updated_dict
                 )
                 save_yaml(self._state_path, self._state)
