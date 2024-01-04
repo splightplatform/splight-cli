@@ -47,6 +47,12 @@ class PlanExecutor:
                 "deleted:"
             )
             bprint(function)
+        for alert in check_results.alerts_to_delete:
+            bprint(
+                "If the plan is applied the following alert will be "
+                "deleted:"
+            )
+            bprint(alert)
         for component in check_results.components_to_delete:
             bprint(
                 "If the plan is applied the following Component will be "
