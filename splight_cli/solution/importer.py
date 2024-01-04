@@ -3,6 +3,7 @@ from uuid import UUID
 
 from rich.console import Console
 from splight_lib.models import (
+    Alert,
     Asset,
     Component,
     Function,
@@ -31,6 +32,7 @@ class ImporterExecutor:
             "secret": Secret,
             "component": Component,
             "function": Function,
+            "alert": Alert,
         }
 
     def import_element(self, element: ElementType, id: UUID) -> ImportResult:
