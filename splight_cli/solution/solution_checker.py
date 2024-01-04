@@ -4,7 +4,7 @@ from typing import Callable, List, Type
 from rich.console import Console
 from splight_lib.models import (
     Alert,
-    AlertCondition,
+    AlertItem,
     Asset,
     Attribute,
     File,
@@ -13,6 +13,7 @@ from splight_lib.models import (
     RoutineObject,
     Secret,
 )
+from splight_lib.models.alert import AlertThreshold
 from splight_lib.models.asset import GeometryCollection
 
 from splight_cli.solution.exceptions import ElemnentAlreadyDefined
@@ -380,19 +381,26 @@ class SolutionChecker:
             exclude_none=True, exclude_unset=True, exclude={"alert_items"}
         )
         state_alert = state_alert.model_copy(update=plan_alert_dict)
+
+        state_alert.stmt_thresholds = []
+        for threshold in plan_alert_dict["stmt_thresholds"]:
+            state_alert.stmt_thresholds.append(
+                AlertThreshold.model_validate(threshold)
+            )
+
         self._check_elements(
             plan_alert.alert_items,
             state_alert.alert_items,
-            AlertCondition.__name__,
-            self._update_alert_condition,
+            AlertItem.__name__,
+            self._update_alert_item,
             accesor="ref_id",
         )
         return state_alert
 
-    def _update_alert_condition(
+    def _update_alert_item(
         self,
-        plan_alert_item: AlertCondition,
-        state_alert_item: AlertCondition,
+        plan_alert_item: AlertItem,
+        state_alert_item: AlertItem,
     ):
         plan_alert_item_dict = plan_alert_item.model_dump(
             exclude_none=True,

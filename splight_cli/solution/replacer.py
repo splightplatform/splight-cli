@@ -72,14 +72,11 @@ class Replacer:
 
         state_alerts = self._state.alerts
         for i in range(len(state_alerts)):
-            func_items = state_alerts[i].alert_items
-            for j in range(len(func_items)):
-                self._replace_alert_ref(func_item=func_items[j])
+            alert_items = state_alerts[i].alert_items
+            for j in range(len(alert_items)):
+                self._replace_alert_ref(alert_item=alert_items[j])
 
-            self._replace_alert_ref(target_asset=state_alerts[i].target_asset)
-            self._replace_alert_ref(
-                target_attribute=state_alerts[i].target_attribute
-            )
+            self._replace_alert_ref(assets=state_alerts[i].assets)
 
     def _replace_io_ref(
         self,
