@@ -1,6 +1,7 @@
 import json
 from typing import Callable, Dict, List, Optional, Union
 
+from splight_lib.models import AlertItem, QueryFilter
 from splight_lib.models.component import (
     InputDataAddress,
     InputParameter,
@@ -168,7 +169,18 @@ class Replacer:
             value_ref = target_attribute["id"]
             target_attribute["id"] = self._parse_input_output(value_ref)
 
-    def _replace_alert_ref(self, alert_item=None, assets=None):
+    def _replace_alert_ref(
+        self, alert_item: AlertItem = None, assets: QueryFilter = None
+    ):
+        """Replaces references in the alert_item and assets.
+
+        Parameters
+        ----------
+        alert_item : Optional[AlertItem]
+            The alert item to be processed. Default None.
+        assets : Optional[List[QueryFilter]]
+            List of assets to be processed. Default None.
+        """
         if alert_item:
             asset = alert_item.query_filter_asset
             attribute = alert_item.query_filter_attribute
