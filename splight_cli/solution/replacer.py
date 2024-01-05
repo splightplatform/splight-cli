@@ -1,6 +1,7 @@
 import json
 from typing import Callable, Dict, List, Optional, Union
 
+from splight_lib.models import AlertItem, QueryFilter
 from splight_lib.models.component import (
     InputDataAddress,
     InputParameter,
@@ -69,6 +70,14 @@ class Replacer:
             self._replace_fn_ref(
                 target_attribute=state_functions[i].target_attribute
             )
+
+        state_alerts = self._state.alerts
+        for i in range(len(state_alerts)):
+            alert_items = state_alerts[i].alert_items
+            for j in range(len(alert_items)):
+                self._replace_alert_ref(alert_item=alert_items[j])
+
+            self._replace_alert_ref(assets=state_alerts[i].assets)
 
     def _replace_io_ref(
         self,
@@ -159,6 +168,54 @@ class Replacer:
         if target_attribute:
             value_ref = target_attribute["id"]
             target_attribute["id"] = self._parse_input_output(value_ref)
+
+    def _replace_alert_ref(
+        self, alert_item: AlertItem = None, assets: QueryFilter = None
+    ):
+        """Replaces references in the alert_item and assets.
+
+        Parameters
+        ----------
+        alert_item : Optional[AlertItem]
+            The alert item to be processed. Default None.
+        assets : Optional[List[QueryFilter]]
+            List of assets to be processed. Default None.
+        """
+        if alert_item:
+            asset = alert_item.query_filter_asset
+            attribute = alert_item.query_filter_attribute
+            query_plain = alert_item.query_plain
+
+            if asset:
+                value_ref = asset["id"]
+                asset["id"] = self._parse_input_output(value_ref)
+                alert_item.query_filter_asset = asset
+
+            if attribute:
+                value_ref = attribute["id"]
+                attribute["id"] = self._parse_input_output(value_ref)
+                alert_item.query_filter_attribute = attribute
+
+            if query_plain:
+                query_dict = json.loads(query_plain)
+
+                # NOTE: sadly this depends on the query.
+                # I'd rather do this than black magic to get the placeholders.
+                asset_ref = query_dict[0]["$match"]["asset"]
+                attribute_ref = query_dict[0]["$match"]["attribute"]
+
+                query_dict[0]["$match"]["asset"] = self._parse_input_output(
+                    asset_ref
+                )
+                query_dict[0]["$match"][
+                    "attribute"
+                ] = self._parse_input_output(attribute_ref)
+                alert_item.query_plain = json.dumps(query_dict)
+
+        if assets:
+            for asset in assets:
+                value_ref = asset["id"]
+                asset["id"] = self._parse_input_output(value_ref)
 
     def _get_new_value(
         self,

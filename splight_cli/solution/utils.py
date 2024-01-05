@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from rich.console import Console
 from rich.style import Style
 from splight_lib.models import (
+    Alert,
     Asset,
     Component,
     File,
@@ -20,7 +21,9 @@ from splight_lib.models import (
 
 console = Console()
 
-SplightTypes = Union[Asset, Secret, Component, RoutineObject, File, Function]
+SplightTypes = Union[
+    Asset, Alert, Secret, Component, RoutineObject, File, Function
+]
 
 MatchResult = namedtuple(
     "MatchResult", ["is_id", "type", "asset", "attribute"]
