@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from splight_lib.models import (
     Alert,
     Asset,
+    ComponentObject,
     File,
     Function,
     RoutineObject,
@@ -23,6 +24,7 @@ class ElementType(str, Enum):
 
 class Component(LibComponent):
     routines: List[RoutineObject] = []
+    component_objects = List[ComponentObject] = []
 
 
 class PlanSolution(BaseModel):
