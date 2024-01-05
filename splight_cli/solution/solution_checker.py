@@ -7,6 +7,7 @@ from splight_lib.models import (
     AlertItem,
     Asset,
     Attribute,
+    ComponentObject,
     File,
     Function,
     FunctionItem,
@@ -321,6 +322,12 @@ class SolutionChecker:
             self._update_routine,
         )
 
+        self._check_elements(
+            plan_component.component_objects,
+            state_component.component_objects,
+            RoutineObject.__name__,
+            self._update_component_object,
+        )
         return state_component
 
     def _update_routine(
@@ -348,6 +355,36 @@ class SolutionChecker:
         state_routine_dict.update(plan_routine_dict)
 
         return state_routine.model_validate(state_routine_dict)
+
+    def _update_component_object(
+        self,
+        plan_component_object: ComponentObject,
+        state_component_object: ComponentObject,
+    ) -> ComponentObject:
+        """Updates a state component_object based on the plan component_object.
+
+        Parameters
+        ----------
+        plan_component_object : ComponentObject
+            A plan component object.
+        state_component_object : ComponentObject
+            A state component object to update.
+
+        Returns
+        -------
+        ComponentObject
+            The updated state component object.
+        """
+        plan_component_object_dict = plan_component_object.model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+        )
+        state_component_object_dict = state_component_object.model_dump()
+        state_component_object_dict.update(plan_component_object_dict)
+
+        return state_component_object.model_validate(
+            state_component_object_dict
+        )
 
     def _update_function(
         self, plan_function: Function, state_function: Function
