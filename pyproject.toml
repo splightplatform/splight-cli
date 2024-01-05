@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "splight-cli"
-version = "4.6.0.dev2"
+version = "4.6.0.dev3"
 description = "Splight Command Line Interface"
 authors = ["Splight Dev <dev@splight-ae.com>"]
 readme = "README.md"
