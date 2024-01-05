@@ -9,6 +9,7 @@ from splight_lib.models import (
     Alert,
     Asset,
     Component,
+    ComponentObject,
     File,
     Function,
     RoutineObject,
@@ -56,6 +57,7 @@ class SolutionManager:
         self._regex_map = {
             Component.__name__: [
                 r"root\['routines'\]",
+                r"root\['custom_types'\]",
                 r"root\['deployment_capacity'\]",
                 r"root\['deployment_type'\]",
             ],
@@ -65,6 +67,11 @@ class SolutionManager:
                 r"root\['output'\]\[\d+\]\['description'\]",
                 # NOTE: API returns the DataAddress type but we don't use it
                 r"root\['(?:input|output)'\]\[\d+\]\['value'\]\['type'\]",
+            ],
+            # TODO: revisar
+            ComponentObject.__name__: [
+                r"root\['fields'\]\[\d+\]\['description'\]",
+                r"root\['description'\]",
             ],
             File.__name__: [
                 r"root\['metadata'\]",
@@ -237,11 +244,17 @@ class SolutionManager:
         for state_component in components_list:
             self._plan_exec.plan_elem_state(Component, state_component)
             self._plan_routines_state(state_component)
+            self._plan_custom_objects_state(state_component)
 
     def _plan_routines_state(self, component: Component):
         """Shows the routines state if the plan were to be applied."""
         for routine in component.routines:
             self._plan_exec.plan_elem_state(RoutineObject, routine)
+
+    def _plan_custom_objects_state(self, component: Component):
+        """Shows the component objects state if the plan were to be applied."""
+        for obj in component.component_objects:
+            self._plan_exec.plan_elem_state(ComponentObject, obj)
 
     def _plan_files_state(self):
         """Shows the files state if the plan were to be applied."""
@@ -356,7 +369,11 @@ class SolutionManager:
             updated_routines = self._apply_routines_state(
                 component, Component.model_validate(result.updated_dict)
             )
+            updated_component_objects = self._apply_component_objects_state(
+                component, Component.model_validate(result.updated_dict)
+            )
             components_list[i].routines = updated_routines
+            components_list[i].component_objects = updated_component_objects
             save_yaml(self._state_path, self._state)
 
         imported_comp_list = self._state.imported_components
@@ -378,6 +395,12 @@ class SolutionManager:
                 not_found_is_exception=True,
             )
             imported_comp_list[i].routines = updated_routines
+            updated_component_objects = self._apply_component_objects_state(
+                component,
+                Component.model_validate(result.updated_dict),
+                not_found_is_exception=True,
+            )
+            imported_comp_list[i].component_objects = updated_component_objects
             save_yaml(self._state_path, self._state)
 
     def _apply_routines_state(
@@ -401,6 +424,28 @@ class SolutionManager:
                     result.updated_dict
                 )
         return routine_list
+
+    def _apply_component_objects_state(
+        self,
+        component: Component,
+        updated_component: Component,
+        not_found_is_exception: bool = False,
+    ) -> List[ComponentObject]:
+        """Applies ComponentObject states to the engine."""
+        component_object_list = component.component_objects
+        component_id = updated_component.id
+        for i in range(len(component_object_list)):
+            component_object_list[i].component_id = component_id
+            result = self._apply_exec.apply(
+                model=ComponentObject,
+                local_instance=component_object_list[i],
+                not_found_is_exception=not_found_is_exception,
+            )
+            if result.update:
+                component_object_list[i] = ComponentObject.model_validate(
+                    result.updated_dict
+                )
+        return component_object_list
 
     def _apply_functions_state(self):
         """Applies Function states to the engine."""
