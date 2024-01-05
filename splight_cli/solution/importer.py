@@ -6,6 +6,7 @@ from splight_lib.models import (
     Alert,
     Asset,
     Component,
+    ComponentObject,
     Function,
     RoutineObject,
     Secret,
@@ -67,6 +68,9 @@ class ImporterExecutor:
 
         if element == ElementType.component:
             retrieved_elem.routines = RoutineObject.list(component_id=id)
+            retrieved_elem.component_objects = ComponentObject.list(
+                component_id=id
+            )
 
         plan_import_elems = getattr(self._plan, f"{IMPORT_PREFIX}{element}s")
         plan_import_elems.append(retrieved_elem)
