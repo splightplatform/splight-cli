@@ -22,8 +22,8 @@ def test_plan_print(load_yaml_mock, save_yaml_mock):
 def test_plan_raise_undefined_asset_name(load_yaml_mock, save_yaml_mock):
     plan = get_plan()
     plan["components"][0]["routines"][0]["output"][0]["value"] = {
-        "asset": "local.{{test_asset}}",
-        "attribute": "attr_5",
+        "asset": f"asset.{{{{test_asset}}}}",
+        "attribute": f"asset.{{{{test_asset}}}}.attribute.{{{{attr_5}}}}",
     }
     load_yaml_mock.side_effect = [plan, plan]
     solution_manager = SolutionManager("./dummy_path", "./dummy_path")

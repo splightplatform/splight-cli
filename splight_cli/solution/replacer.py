@@ -334,6 +334,12 @@ class Replacer:
         elif attr_ref not in self._reference_map:
             missing_ref = attr_ref
 
+        if missing_ref is not None:
+            raise UndefinedID(
+                f"The reference '{missing_ref}' "
+                f"used in the routine named '{routine_name}' of the "
+                f"component '{component_name}' is not a valid reference."
+            )
         if self._attr_to_asset_map[attr_ref] != asset_ref:
             raise UndefinedID(
                 f"The attribute '{attr_ref}' is not an attribute of "
@@ -341,12 +347,6 @@ class Replacer:
                 f"'{routine_name}' of the component '{component_name}'."
             )
 
-        if missing_ref is not None:
-            raise UndefinedID(
-                f"The reference '{missing_ref}' "
-                f"used in the routine named '{routine_name}' of the "
-                f"component '{component_name}' is not a valid reference."
-            )
         return {
             "asset": self._reference_map[asset_ref],
             "attribute": self._reference_map[attr_ref],

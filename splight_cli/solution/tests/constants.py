@@ -4,6 +4,10 @@ from splight_cli.solution.solution import StateSolution
 from splight_cli.solution.utils import to_dict
 
 TEST_PLAN = {
+    "secrets": [],
+    "files": [],
+    "functions": [],
+    "alerts": [],
     "assets": [
         {
             "attributes": [
@@ -171,8 +175,8 @@ TEST_PLAN = {
                             "sensitive": False,
                             "type": "DataAddress",
                             "value": {
-                                "asset": "local.{{test_asset}}",
-                                "attribute": "attr_1",
+                                "asset": f"asset.{{{{test_asset}}}}",
+                                "attribute": f"asset.{{{{test_asset}}}}.attribute.{{{{attr_1}}}}",
                             },
                             "value_type": "Number",
                         },
@@ -199,12 +203,12 @@ TEST_PLAN = {
                             "type": "DataAddress",
                             "value": [
                                 {
-                                    "asset": "local.{{test_asset}}",
-                                    "attribute": "attr_2",
+                                    "asset": f"asset.{{{{test_asset}}}}",
+                                    "attribute": f"asset.{{{{test_asset}}}}.attribute.{{{{attr_2}}}}",
                                 },
                                 {
-                                    "asset": "local.{{test_asset}}",
-                                    "attribute": "attr_3",
+                                    "asset": f"asset.{{{{test_asset}}}}",
+                                    "attribute": f"asset.{{{{test_asset}}}}.attribute.{{{{attr_3}}}}",
                                 },
                             ],
                             "value_type": "Number",
@@ -222,8 +226,8 @@ TEST_PLAN = {
                             "sensitive": False,
                             "type": "DataAddress",
                             "value": {
-                                "asset": "local.{{test_asset}}",
-                                "attribute": "attr_4",
+                                "asset": f"asset.{{{{test_asset}}}}",
+                                "attribute": f"asset.{{{{test_asset}}}}.attribute.{{{{attr_4}}}}",
                             },
                             "value_type": "Number",
                         },
@@ -275,6 +279,10 @@ TEST_PLAN = {
     "imported_components": [],
 }
 TEST_STATE_FILLED = {
+    "secrets": [],
+    "files": [],
+    "functions": [],
+    "alerts": [],
     "assets": [
         {
             "attributes": [
