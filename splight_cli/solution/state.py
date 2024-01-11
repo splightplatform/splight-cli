@@ -9,9 +9,21 @@ from splight_lib.settings import BaseSettings
 
 from splight_cli.settings import AWSSettings
 
+# TODO: Make I/O asyncio safe
+# TODO: Change handlers to comply with these requirements:
 
-# TODO: make this asyncio safe everywhere
-# TODO: test bucket I/O
+# LocalFileHandler:
+# State(''): Create file 'state.json' locally.
+# State("~/Home/"): Create "~/Home/state.json" locally.
+# State('some_random_string'): Try to open the file locally.  Raise error if not possible.
+
+# S3FileHandler:
+# State('s3://bucket/') or  State('s3://bucket'): Create file 's3://bucket/state.json' in S3 bucket.
+# State('s3://bucket/somefile'): Try to open the file locally. Raise error if not possible.
+# State('s3://bucket/somepath/'): Create file 's3://bucket/somepath/state.json' in S3 bucket.
+# State('s3://'): Raise error because of missing bucket name.
+
+
 class UnexistingResourceException(Exception):
     def __init__(self, id):
         super().__init__(f"Resource with ID '{id}' not found.")
