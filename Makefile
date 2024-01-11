@@ -38,8 +38,6 @@ install: clean ## install the package to the active Python's site-packages
 	pip install -e ".[dev]"
 	pre-commit install
 
-black: ## run black formatter
+format:
 	black .
-
-isort: ## run isort formatter
 	isort .
