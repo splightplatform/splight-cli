@@ -3,15 +3,14 @@ from typing import Dict
 from urllib.parse import urlparse
 
 import boto3
-from pydantic import BaseModel, FilePath, PrivateAttr
+from pydantic import BaseModel, PrivateAttr
 from splight_lib.models.component import abstractmethod
 from splight_lib.settings import BaseSettings
 
 from splight_cli.settings import AWSSettings
 
 
-# TODO: lock for remote file
-# TODO: when URI is empty, create a state file local or in S3?
+# TODO: make this asyncio safe everywhere
 # TODO: test bucket I/O
 class UnexistingResourceException(Exception):
     def __init__(self, id):
@@ -34,7 +33,7 @@ class FileHandler(BaseModel):
 
 
 class LocalFileHandler(FileHandler):
-    path: FilePath
+    path: str
 
     def load(self) -> Dict:
         with open(self.path, "r") as fp:
@@ -85,6 +84,7 @@ class StateData(BaseModel):
     Represents the state data with Pydantic properties for serialization.
 
     # NOTE: Pydantic properties declared here will be included in the statefile.
+    Make sure to update them when necessary (i.e 'last_modified')
 
     Attributes:
         resource_map (Dict): A dictionary to store resource data.
@@ -145,16 +145,18 @@ class State(StateData):
 
     _file_handler: FileHandler = PrivateAttr()
 
-    def __init__(self, uri: str) -> None:
-        if uri.startswith("s3://"):
-            url = urlparse(self.uri)
-            file_handler = S3FileHandler(bucket=url.netloc, key=url.key)
-        else:
-            file_handler = LocalFileHandler(path=uri)
+    def __init__(self, uri: str = "") -> None:
+        if not isinstance(uri, str):
+            raise ValueError("State URI must be a string.")
 
-        super().__init__(
-            **file_handler.load(),
-        )
+        url = urlparse(uri)
+
+        if url.scheme == "s3":
+            file_handler = S3FileHandler(bucket=url.netloc, key=url.path)
+        else:
+            file_handler = LocalFileHandler(path=url.path)
+
+        super().__init__(**file_handler.load())
 
         self._file_handler = file_handler
 
