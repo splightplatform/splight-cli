@@ -1,27 +1,17 @@
 import json
+import os
 from typing import Dict
 from urllib.parse import urlparse
 
 import boto3
-from pydantic import BaseModel, PrivateAttr
+from pydantic import BaseModel, PrivateAttr, field_validator, model_validator
 from splight_lib.models.component import abstractmethod
 from splight_lib.settings import BaseSettings
 
 from splight_cli.settings import AWSSettings
+from splight_cli.solution.utils import bprint
 
 # TODO: Make I/O asyncio safe
-# TODO: Change handlers to comply with these requirements:
-
-# LocalFileHandler:
-# State(''): Create file 'state.json' locally.
-# State("~/Home/"): Create "~/Home/state.json" locally.
-# State('some_random_string'): Try to open the file locally.  Raise error if not possible.
-
-# S3FileHandler:
-# State('s3://bucket/') or  State('s3://bucket'): Create file 's3://bucket/state.json' in S3 bucket.
-# State('s3://bucket/somefile'): Try to open the file locally. Raise error if not possible.
-# State('s3://bucket/somepath/'): Create file 's3://bucket/somepath/state.json' in S3 bucket.
-# State('s3://'): Raise error because of missing bucket name.
 
 
 class UnexistingResourceException(Exception):
@@ -47,13 +37,28 @@ class FileHandler(BaseModel):
 class LocalFileHandler(FileHandler):
     path: str
 
+    @field_validator("path", mode="after")
+    def default_state_file(cls, value: str):
+        if not value:
+            value = "state.json"
+            if not os.path.isfile(value):
+                bprint(f"Creating state file at: '{value}'.")
+                cls._dump_json({}, value)
+            else:
+                bprint(f"Using state file at: '{value}'.")
+        return value
+
     def load(self) -> Dict:
         with open(self.path, "r") as fp:
             return json.load(fp)
 
     def save(self, state_data: Dict) -> None:
-        with open(self.path, "w") as fp:
-            json.dump(state_data, fp)
+        self._dump_json(state_data, self.path)
+
+    @staticmethod
+    def _dump_json(data: Dict, file_path: str) -> None:
+        with open(file_path, "w") as fp:
+            json.dump(data, fp)
 
 
 class S3FileHandler(FileHandler):
@@ -62,6 +67,20 @@ class S3FileHandler(FileHandler):
 
     _settings: BaseSettings = PrivateAttr()
     _client = PrivateAttr()
+
+    @model_validator
+    def default_state_file(self):
+        if not self.bucket:
+            raise ValueError("Bucket can not be empty.")
+
+        if not self.key:
+            self.key = "state.json"
+            # TODO: if file does not exist in S3
+            if ...:
+                bprint(f"Creating state file at: '{self.key}'.")
+                # TODO: create empty state
+            else:
+                bprint(f"Using state file at: '{self.key}'.")
 
     @property
     def _settings(self):
@@ -123,26 +142,46 @@ class StateData(BaseModel):
 
     resource_map: Dict = {}
 
+    def _validate_id(self, id: str) -> None:
+        if not isinstance(id, str):
+            raise ValueError("ID must be a string.")
+
+    def _validate_data(self, data: Dict) -> None:
+        if not isinstance(data, Dict):
+            raise ValueError("Data must be a dictionary.")
+
     def get(self, id: str) -> Dict:
+        self._validate_id(id)
+
         if id not in self.resource_map:
             raise UnexistingResourceException(id)
+
         return self.resource_map[id]
 
     def add(self, id: str, data: Dict) -> None:
-        if not id in self.resource_map:
-            self.resource_map[id] = data
-        else:
-            raise ResourceAlreadyExistsError()
+        self._validate_id(id)
+        self._validate_data(data)
+
+        if id in self.resource_map:
+            raise ResourceAlreadyExistsError(id)
+
+        self.resource_map[id] = data
 
     def delete(self, id: str) -> None:
-        if id in self.resource_map:
-            del self.resource_map[id]
-        else:
-            raise UnexistingResourceException(id)
+        self._validate_id(id)
 
-    def update(self, id: str, data: Dict) -> None:
         if id not in self.resource_map:
             raise UnexistingResourceException(id)
+
+        del self.resource_map[id]
+
+    def update(self, id: str, data: Dict) -> None:
+        self._validate_id(id)
+        self._validate_data(data)
+
+        if id not in self.resource_map:
+            raise UnexistingResourceException(id)
+
         self.resource_map[id] = data
 
 
