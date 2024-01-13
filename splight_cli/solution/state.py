@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict
+from typing import Dict, Iterator
 from urllib.parse import urlparse
 
 import boto3
@@ -68,7 +68,7 @@ class S3FileHandler(FileHandler):
     _settings: BaseSettings = PrivateAttr()
     _client = PrivateAttr()
 
-    @model_validator
+    @model_validator(mode="after")
     def default_state_file(self):
         if not self.bucket:
             raise ValueError("Bucket can not be empty.")
@@ -78,7 +78,7 @@ class S3FileHandler(FileHandler):
             # TODO: if file does not exist in S3
             if ...:
                 bprint(f"Creating state file at: '{self.key}'.")
-                # TODO: create empty state
+                self.save({})
             else:
                 bprint(f"Using state file at: '{self.key}'.")
 
@@ -158,6 +158,9 @@ class StateData(BaseModel):
 
         return self.resource_map[id]
 
+    def all(self) -> Iterator:
+        return self.resource_map.items()
+
     def add(self, id: str, data: Dict) -> None:
         self._validate_id(id)
         self._validate_data(data)
@@ -167,6 +170,8 @@ class StateData(BaseModel):
 
         self.resource_map[id] = data
 
+        return self
+
     def delete(self, id: str) -> None:
         self._validate_id(id)
 
@@ -174,6 +179,8 @@ class StateData(BaseModel):
             raise UnexistingResourceException(id)
 
         del self.resource_map[id]
+
+        return self
 
     def update(self, id: str, data: Dict) -> None:
         self._validate_id(id)
@@ -183,6 +190,8 @@ class StateData(BaseModel):
             raise UnexistingResourceException(id)
 
         self.resource_map[id] = data
+
+        return self
 
 
 class State(StateData):
@@ -213,3 +222,4 @@ class State(StateData):
 
     def save(self) -> None:
         self._file_handler.save(self.model_dump())
+        return self
