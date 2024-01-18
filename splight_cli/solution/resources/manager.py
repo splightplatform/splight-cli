@@ -28,11 +28,11 @@ class ResourceManager:
         # Create or update resources if they are present
         # in the state or not
         for spec_resource in spec_resources:
-            # TODO: Check for dependencies first
-            # TODO: check the dependency exists in the spec
-            # After dependencies create, extract their ID and replace
-            # the placeholders.
-            # ...
+            # TODO:
+            # If any dependencies:
+            #     Check it is valid (exists in the spec)
+            #     Create those resource/s
+            # Replace references for those IDs (they should be in the state now)
             if not state.contains(spec_resource.name, spec_resource.type):
                 # Create resource
                 spec_resource.create()

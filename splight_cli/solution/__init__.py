@@ -24,7 +24,7 @@ def callback(ctx: typer.Context):
 
 @solution_app.command()
 def apply(
-    ctx: typer.Context,
+    _: typer.Context,
     spec_file: str = typer.Argument(..., help="Path to the spec file."),
     state_file: str = typer.Option(
         "state.json", "--state", "-s", help="Path to the state file."
@@ -32,13 +32,12 @@ def apply(
 ) -> None:
     try:
         state = State(path=state_file)
-        parser = Parser(spec_file=spec_file)
-        manager = ResourceManager()
-
         state.load()
 
+        parser = Parser(spec_file=spec_file)
         spec_resources = parser.parse()
 
+        manager = ResourceManager()
         manager.sync(state)
         manager.create(spec_resources, state)
         manager.delete(spec_resources, state)

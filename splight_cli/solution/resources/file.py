@@ -6,6 +6,3 @@ from splight_cli.solution.resources.base import Resource
 
 class FileResource(Resource):
     _schema: SplightDatabaseBaseModel = File
-
-    def create(self) -> None:
-        self._client.save()
