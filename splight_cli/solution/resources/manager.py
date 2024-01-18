@@ -28,14 +28,13 @@ class ResourceManager:
         # Create or update resources if they are present
         # in the state or not
         for spec_resource in spec_resources:
+            # TODO: Check for dependencies first
+            # TODO: check the dependency exists in the spec
+            # After dependencies create, extract their ID and replace
+            # the placeholders.
+            # ...
             if not state.contains(spec_resource.name, spec_resource.type):
-                # Check for dependencies first
-                # After dependencies create, extract their ID and replace
-                # the placeholders.
-                # ...
-
                 # Create resource
-                __import__("ipdb").set_trace()
                 spec_resource.create()
 
                 # Save it to the state
@@ -46,9 +45,14 @@ class ResourceManager:
                 )
                 state.save()
             else:
+                # Load resource from the state
                 data = state.get(spec_resource.name, spec_resource.type)
                 state_resource = type_map[spec_resource.type](data)
+
+                # Update its parameters with the ones in spec
                 state_resource.update(spec_resource)
+
+                # Update the state data for the resource
                 state.update(
                     state_resource.name,
                     state_resource.type,
@@ -58,8 +62,12 @@ class ResourceManager:
 
     def delete(self, spec_resources: List[Resource], state: State):
         # Delete resources not defined by the spec file
-        for state_resource in state.all():
+        for _, type, data in state.all():
+            state_resource = type_map[type](data)
+
+            # NOTE: Resources implement '__eq__()'
             if state_resource not in spec_resources:
+                # TODO: check if any other resource depends on this one?
                 state_resource.delete()
-                state.delete(state_resource)
+                state.delete(state_resource.name, state_resource.type)
                 state.save()

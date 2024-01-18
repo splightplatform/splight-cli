@@ -38,6 +38,7 @@ class Resource:
 
     def update(self, resource) -> None:
         self._client = self._client.model_copy(update=resource.dump())
+        self._client.save()
 
     def delete(self) -> None:
         self._client.delete()

@@ -41,7 +41,6 @@ def apply(
 
         manager.sync(state)
         manager.create(spec_resources, state)
-        __import__("ipdb").set_trace()
         manager.delete(spec_resources, state)
 
     except Exception as e:
