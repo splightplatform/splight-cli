@@ -1,6 +1,0 @@
-class UndefinedID(Exception):
-    ...
-
-
-class ElemnentAlreadyDefined(Exception):
-    ...
