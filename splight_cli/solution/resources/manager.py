@@ -1,29 +1,65 @@
 from typing import List
 
+from splight_cli.solution.resources.asset import AssetResource
 from splight_cli.solution.resources.base import Resource
-from splight_cli.solution.resources.utils import resource_map
+from splight_cli.solution.resources.file import FileResource
 from splight_cli.solution.state import State
 
-# TODO: Si esta en el state, tiene que tener ID
-# TODO: Crear las cosas en orden de dependencia. Quizas usar dependencias como en DB
-# TODO: Lo mismo para borrar. Deberias impedir borrar algo que dependa de otra cosa?
-# TODO:
+type_map = {
+    "FileResource": FileResource,
+    "AssetResource": AssetResource,
+}
 
 
 class ResourceManager:
-    def __init__(
-        self,
-        spec_resources: List[Resource] = [],
-        state: State = None,
-    ) -> None:
+    def sync(self, state: State):
         # Sync state resources with respect to the engine
-        state_resources = []
-        for name, data in state.all():
-            resource = resource_map[data["type"]](**data["data"])
-            resource.sync()
-            state.update(name, resource.dump())
+        for _, type, data in state.all():
+            state_resource = type_map[type](data)
+            state_resource.sync()
+            state.update(
+                state_resource.name,
+                state_resource.type,
+                state_resource.dump(),
+            )
+            state.save()
 
-        __import__("ipdb").set_trace()
-        for resource in spec_resources:
-            if resource not in state_resources:
-                pass
+    def create(self, spec_resources: List[Resource], state: State):
+        # Create or update resources if they are present
+        # in the state or not
+        for spec_resource in spec_resources:
+            if not state.contains(spec_resource.name, spec_resource.type):
+                # Check for dependencies first
+                # After dependencies create, extract their ID and replace
+                # the placeholders.
+                # ...
+
+                # Create resource
+                __import__("ipdb").set_trace()
+                spec_resource.create()
+
+                # Save it to the state
+                state.add(
+                    spec_resource.name,
+                    spec_resource.type,
+                    spec_resource.dump(),
+                )
+                state.save()
+            else:
+                data = state.get(spec_resource.name, spec_resource.type)
+                state_resource = type_map[spec_resource.type](data)
+                state_resource.update(spec_resource)
+                state.update(
+                    state_resource.name,
+                    state_resource.type,
+                    state_resource.dump(),
+                )
+                state.save()
+
+    def delete(self, spec_resources: List[Resource], state: State):
+        # Delete resources not defined by the spec file
+        for state_resource in state.all():
+            if state_resource not in spec_resources:
+                state_resource.delete()
+                state.delete(state_resource)
+                state.save()

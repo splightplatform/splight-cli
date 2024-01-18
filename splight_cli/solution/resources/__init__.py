@@ -1,4 +1,11 @@
+from splight_cli.solution.resources.asset import AssetResource
+from splight_cli.solution.resources.base import Resource
+from splight_cli.solution.resources.file import FileResource
 from splight_cli.solution.resources.manager import ResourceManager
-from splight_cli.solution.resources.utils import resource_map
 
-__all__ = ["ResourceManager", "resource_map"]
+__all__ = [
+    "Resource",
+    "AssetResource",
+    "FileResource",
+    "ResourceManager",
+]

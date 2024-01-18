@@ -1,101 +1,58 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Type
+from typing import Dict
 
-from pydantic import BaseModel, computed_field
+from splight_lib.models.base import SplightDatabaseBaseModel
 
 
-class AbstractResource(ABC):
-    @property
-    @abstractmethod
-    def _schema(self):
-        pass
+class Resource:
+    _schema: SplightDatabaseBaseModel = None
 
-    @property
-    @abstractmethod
-    def _model(self):
-        pass
+    def __init__(
+        self,
+        arguments: Dict = {},
+    ) -> None:
+        if self._schema is None:
+            raise NotImplementedError("Resources must define a schema.")
 
-    @property
-    @abstractmethod
-    def name(self):
-        pass
+        if arguments:
+            self._client = self._schema(**arguments)
 
-    @abstractmethod
-    def create(self, *args, **kwargs) -> None:
-        pass
-
-    @abstractmethod
-    def update(self, resource: Type["AbstractResource"]) -> None:
-        pass
-
-    @abstractmethod
-    def delete(self, *args, **kwargs) -> None:
-        pass
-
-    @abstractmethod
-    def sync(self, id: str) -> None:
-        pass
-
-    @abstractmethod
-    def dump(self) -> None:
-        pass
-
-    @abstractmethod
     def __eq__(self, __value: object) -> bool:
-        pass
-
-
-class Resource(AbstractResource, BaseModel):
-    def __init__(self, **args) -> None:
-        super().__init__(**args)
-        self.__model = self._schema(**args)
+        if not isinstance(__value, self):
+            return False
+        return self.name == __value.name
 
     @property
-    def _schema(self):
-        raise NotImplementedError()
+    def name(self) -> str:
+        return self._client.name
 
-    @computed_field
     @property
     def type(self) -> str:
         return self.__class__.__name__
 
-    @computed_field
     @property
-    def model_data(self) -> Dict:
-        return self.__model
-
-    @property
-    def _model(self) -> Dict:
-        return self.__model
-
-    @_model.setter
-    def _model(self, value):
-        self.__model = value
-
-    @property
-    def name(self):
-        return self._model.name
+    def id(self) -> str:
+        return self._client.id
 
     def create(self) -> None:
-        self._model.save()
+        self._client.save()
 
-    def update(self, resource: Type["AbstractResource"]) -> None:
-        if self.name != resource.name:
-            raise ValueError(
-                "Can not update resource using another one with a different name"
-            )
-
-        self._model.model_validate(resource.dump()).save()
-        # TODO: ojo que no se updatean bien
+    def update(self, resource) -> None:
+        self._client = self._client.model_copy(update=resource.dump())
 
     def delete(self) -> None:
-        self._model.delete()
-        # TODO: borrar ID? reinicializar?
+        self._client.delete()
 
     def sync(self) -> None:
-        self._model = self._model.model_validate(
-            self._model.retrieve(resource_id=self._model.id).model_dump()
-        )
+        self._client = self._schema.retrieve(resource_id=self.id)
 
-    def dump(self) -> None:
-        return self.model_dump()
+    def dump(self) -> Dict:
+        # Me suena raro el caso de recibir los args del spec
+        # y compararlos con los que tiene el client (el cual incluye los
+        # computados).
+        # Hay que pensar bien como se va a comparar y como se va a armar el diff...
+
+        return self._client.model_dump(
+            exclude_none=True,
+            exclude_unset=True,
+            exclude_defaults=True,
+        )
