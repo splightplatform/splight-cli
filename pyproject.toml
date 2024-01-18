@@ -20,7 +20,6 @@ PyYAML = "6.0.1"
 rich = "13.0.1"
 pathspec = "0.11.1"
 packaging = "23.0"
-mock = "^5.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.3.0"
@@ -31,6 +30,7 @@ flake8 = "^6.1.0"
 pre-commit = "3.2.2"
 pytest = "^7.4.3"
 coverage = "^7.3.2"
+mock = "^5.1.0"
 
 [tool.poetry.scripts]
 splight = "splight_cli.cli:app"
