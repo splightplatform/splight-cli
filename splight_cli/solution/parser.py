@@ -16,7 +16,8 @@ class Parser:
         except FileNotFoundError:
             raise Exception(f"Spec file '{spec_file}' not found.")
 
-    def load_resources(self):
+    def parse(self):
+        # TODO: this should compute and pass the dependencies to each resource
         resources = []
         for resource_type in self._data:
             for resource_data in self._data[resource_type]:
@@ -25,5 +26,4 @@ class Parser:
                         arguments=resource_data,
                     )
                 )
-        # TODO: this should load the dependencies for each resource
         return resources

@@ -47,7 +47,7 @@ class Resource:
         self._client = self._schema.retrieve(resource_id=self.id)
 
     def dump(self) -> Dict:
-        # Me suena raro el caso de recibir los args del spec
+        # TODO: Me suena raro el caso de recibir los args del spec
         # y compararlos con los que tiene el client (el cual incluye los
         # computados).
         # Hay que pensar bien como se va a comparar y como se va a armar el diff...

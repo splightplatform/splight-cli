@@ -37,7 +37,7 @@ def apply(
 
         state.load()
 
-        spec_resources = parser.load_resources()
+        spec_resources = parser.parse()
 
         manager.sync(state)
         manager.create(spec_resources, state)
