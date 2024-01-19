@@ -1,7 +1,6 @@
 import typer
 from rich.console import Console
 
-from splight_cli.constants import error_style
 from splight_cli.context import check_credentials
 from splight_cli.solution.parser import Parser
 from splight_cli.solution.resources import ResourceManager
@@ -30,18 +29,55 @@ def apply(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    try:
-        state = State(path=state_file)
-        state.load()
+    state = State(path=state_file)
+    state.load()
 
-        parser = Parser(spec_file=spec_file)
-        spec_resources = parser.parse()
+    parser = Parser(spec_file=spec_file)
+    spec_resources = parser.parse()
 
-        manager = ResourceManager()
-        manager.sync(state)
-        manager.create(spec_resources, state)
-        manager.delete(spec_resources, state)
+    manager = ResourceManager(
+        spec_resources=spec_resources,
+        state=state,
+    )
+    manager.sync()
+    manager.plan()
+    manager.apply()
 
-    except Exception as e:
-        console.print(f"Error applying solution: {str(e)}", style=error_style)
-        raise typer.Exit(code=1)
+
+@solution_app.command()
+def plan(
+    _: typer.Context,
+    spec_file: str = typer.Argument(..., help="Path to the spec file."),
+    state_file: str = typer.Option(
+        "state.json", "--state", "-s", help="Path to the state file."
+    ),
+) -> None:
+    state = State(path=state_file)
+    state.load()
+
+    parser = Parser(spec_file=spec_file)
+    spec_resources = parser.parse()
+
+    manager = ResourceManager(
+        spec_resources=spec_resources,
+        state=state,
+    )
+    manager.sync()
+    manager.plan()
+
+
+@solution_app.command()
+def refresh(
+    _: typer.Context,
+    state_file: str = typer.Option(
+        "state.json", "--state", "-s", help="Path to the state file."
+    ),
+) -> None:
+    state = State(path=state_file)
+    state.load()
+
+    manager = ResourceManager(
+        spec_resources=[],
+        state=state,
+    )
+    manager.sync(save=True)
