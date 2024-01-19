@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Type
 
 from splight_lib.models.base import SplightDatabaseBaseModel
 
@@ -16,10 +16,10 @@ class Resource:
         if arguments:
             self._client = self._schema(**arguments)
 
-    def __eq__(self, __value: object) -> bool:
-        if not isinstance(__value, self):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, self.__class__):
             return False
-        return self.name == __value.name
+        return self.name == other.name
 
     @property
     def name(self) -> str:
@@ -36,7 +36,7 @@ class Resource:
     def create(self) -> None:
         self._client.save()
 
-    def update(self, resource) -> None:
+    def update(self, resource: Type["Resource"]) -> None:
         self._client = self._client.model_copy(update=resource.dump())
         self._client.save()
 
@@ -51,5 +51,4 @@ class Resource:
         return self._client.model_dump(
             exclude_none=True,
             exclude_unset=True,
-            exclude_defaults=True,
         )
