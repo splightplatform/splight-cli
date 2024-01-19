@@ -23,11 +23,12 @@ class ResourceManager:
         self._logger = ResourceLogger()
 
     def sync(self, save=False):
-        # Sync state resources with respect to the engine
         for _, type, data in self._state.all():
             state_resource = type_map[type](data)
+
             self._logger.resource_info("Refreshing state...", state_resource)
             state_resource.sync()
+
             self._state.update(
                 state_resource.name,
                 state_resource.type,
@@ -45,7 +46,11 @@ class ResourceManager:
             ):
                 self._to_create.append(spec_resource)
             else:
-                self._to_update.append(spec_resource)
+                data = self._state.get(spec_resource.name, spec_resource.type)
+                state_resource = type_map[spec_resource.type](data)
+
+                if state_resource.diff(spec_resource):
+                    self._to_update.append(spec_resource)
 
         for _, type, data in self._state.all():
             state_resource = type_map[type](data)
@@ -82,11 +87,9 @@ class ResourceManager:
         # Enter a value:
 
         for spec_resource in self._to_create:
-            # Create resource
             self._logger.resource_info("Creating resource...", spec_resource)
             spec_resource.create()
 
-            # Save it to the state
             self._state.add(
                 spec_resource.name,
                 spec_resource.type,
@@ -95,15 +98,12 @@ class ResourceManager:
             self._state.save()
 
         for spec_resource in self._to_update:
-            # Load resource from the state
             data = self._state.get(spec_resource.name, spec_resource.type)
             state_resource = type_map[spec_resource.type](data)
 
-            # Update its parameters with the ones in spec
             self._logger.resource_info("Updating resource...", spec_resource)
             state_resource.update(spec_resource)
 
-            # Update the state data for the resource
             self._state.update(
                 state_resource.name,
                 state_resource.type,
@@ -111,11 +111,9 @@ class ResourceManager:
             )
             self._state.save()
 
-        for state_resource in self._to_delete():
-            # Delete resource from the engine
+        for state_resource in self._to_delete:
             self._logger.resource_info("Deleting resource...", state_resource)
             state_resource.delete()
 
-            # Delete resource from the state
             self._state.delete(state_resource.name, state_resource.type)
             self._state.save()
