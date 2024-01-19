@@ -22,15 +22,19 @@ class Resource:
             return False
         return self.name == other.name
 
-    def diff(self, resource: Type["Resource"]):
-        if not isinstance(resource, self.__class__):
+    def diff(self, spec_resource: Type["Resource"]):
+        if not isinstance(spec_resource, self.__class__):
             return False
 
-        # State resource is always a superset of the
-        # spec resource.
-        # Thats why we only consider changes/deletions on the
-        # spec resource arguments.
-        diff = DeepDiff(resource.dump(), self.dump())
+        # Only consider changes made to the spec resource
+        # arguments
+        diff = DeepDiff(
+            spec_resource.dump(
+                exclude_unset=True,
+                exclude_none=True,
+            ),
+            self.dump(),
+        )
         del diff["dictionary_item_added"]
         return diff
 
@@ -49,8 +53,13 @@ class Resource:
     def create(self) -> None:
         self._client.save()
 
-    def update(self, resource: Type["Resource"]) -> None:
-        self._client = self._client.model_copy(update=resource.dump())
+    def update(self, spec_resource: Type["Resource"]) -> None:
+        self._client = self._client.model_copy(
+            update=spec_resource.dump(
+                exclude_unset=True,
+                exclude_none=True,
+            ),
+        )
         self._client.save()
 
     def delete(self) -> None:
@@ -59,7 +68,10 @@ class Resource:
     def sync(self) -> None:
         self._client = self._schema.retrieve(resource_id=self.id)
 
-    def dump(self) -> Dict:
+    def dump(
+        self, exclude_unset: bool = False, exclude_none: bool = False
+    ) -> Dict:
         return self._client.model_dump(
-            exclude_unset=True,
+            exclude_unset=exclude_unset,
+            exclude_none=exclude_none,
         )

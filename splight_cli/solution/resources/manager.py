@@ -16,11 +16,16 @@ class ResourceManager:
     def __init__(self, spec_resources: List[Resource], state: State) -> None:
         self._state = state
         self._spec_resources = spec_resources
+
         self._to_create = []
         self._to_update = []
         self._to_delete = []
 
         self._logger = ResourceLogger()
+
+    @property
+    def _are_changes(self):
+        return len(self._to_create + self._to_update + self._to_delete) != 0
 
     def sync(self, save=False):
         for _, type, data in self._state.all():
@@ -38,7 +43,7 @@ class ResourceManager:
                 self._state.save()
 
     def plan(self):
-        # TODO: append diffs to a list and print them?
+        diffs = []
         for spec_resource in self._spec_resources:
             if not self._state.contains(
                 spec_resource.name,
@@ -49,7 +54,9 @@ class ResourceManager:
                 data = self._state.get(spec_resource.name, spec_resource.type)
                 state_resource = type_map[spec_resource.type](data)
 
-                if state_resource.diff(spec_resource):
+                diff = state_resource.diff(spec_resource)
+                if diff:
+                    diffs.append(diff)
                     self._to_update.append(spec_resource)
 
         for _, type, data in self._state.all():
@@ -57,34 +64,17 @@ class ResourceManager:
             if state_resource not in self._spec_resources:
                 self._to_delete.append(state_resource)
 
-        if not self._to_create + self._to_update + self._to_delete:
-            self._logger.event(
-                "No changes. Your infrastructure matches the configuration.",
-                bold=True,
-                previous_line=True,
-                new_line=True,
-            )
-            self._logger.event(
-                "Splight has compared your real infrastructure against your configuration and found no differences, so no changes are needed.",
-                new_line=True,
-            )
+        if not self._are_changes:
+            self._logger.no_changes()
         else:
-            self._logger.event(
-                "Splight solution will perform the following actions:",
-                previous_line=True,
-                new_line=True,
-            )
-            self._logger.event(
-                f"Plan: {len(self._to_create)} to add, {len(self._to_update)} to change, {len(self._to_delete)} to destroy."
-            )
+            self._logger.plan()
 
     def apply(self):
-        # TODO:
-        # Do you want to perform these actions?
-        # Terraform will perform the actions described above.
-        # Only 'yes' will be accepted to approve.
-        #
-        # Enter a value:
+        if not self._are_changes:
+            return
+
+        if not self._logger.apply():
+            return
 
         for spec_resource in self._to_create:
             self._logger.resource_info("Creating resource...", spec_resource)
