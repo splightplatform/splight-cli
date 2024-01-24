@@ -69,7 +69,7 @@ class Parser:
     def __init__(self, spec_file: str) -> None:
         try:
             with open(spec_file, "r") as fp:
-                self._data = yaml.safe_load(fp)
+                self._spec_file_data = yaml.safe_load(fp)
         except FileNotFoundError:
             raise Exception(f"Spec file '{spec_file}' not found.")
 
@@ -77,8 +77,8 @@ class Parser:
         # Here we build the dependency graph using the resource keys
         dependency_graph = {}
 
-        resources = {}
-        for resource_spec in self._data:
+        specs = {}
+        for resource_spec in self._spec_file_data:
             name = resource_spec["name"]
             type = resource_spec["type"]
             arguments = resource_spec["arguments"]
@@ -99,12 +99,12 @@ class Parser:
                     depends_on.append(reference)
 
             key = f"{type}:{name}"
-            if key in resources:
+            if key in specs:
                 raise DuplicateResourceError(
                     f"Resource '{name}' of type '{type}' is defined twice."
                 )
 
-            resources[key] = {
+            specs[key] = {
                 "name": name,
                 "type": type,
                 "depends_on": depends_on,
@@ -116,4 +116,4 @@ class Parser:
             for reference in depends_on:
                 dependency_graph[key].add(reference["key"])
 
-        return resources, dependency_graph
+        return specs, dependency_graph
