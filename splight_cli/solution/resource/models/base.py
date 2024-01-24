@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Tuple
 from splight_lib.models.base import SplightDatabaseBaseModel
 
 
+# TODO: clean not used properties and methods
 class Resource:
     _schema: SplightDatabaseBaseModel = None
 
@@ -34,15 +35,12 @@ class Resource:
         return self._client.id
 
     def create(self) -> None:
-        # TODO: must replace references before calling this
         self._schema(**self.arguments).save()
 
     def update(self) -> None:
-        # TODO: arguments must be updated with spec before calling this
         self._schema(**self.arguments).save()
 
     def delete(self) -> None:
-        # TODO: args must have an ID before calling this
         self._schema(**self.arguments).delete()
 
     def refresh(self) -> None:
@@ -50,8 +48,8 @@ class Resource:
             resource_id=self.id
         ).model_dump()
 
-    def diff(self) -> None:
-        pass
+    def diff(self, arguments: Dict) -> Dict:
+        raise NotImplementedError()
 
     def dump(self) -> Dict:
         return {
