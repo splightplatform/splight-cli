@@ -62,9 +62,22 @@ class Resource:
         }
 
     def set_argument_value(self, path: List[str], value: Any):
-        raise NotImplementedError()
+        # Assumes the path exists
+        current = self.arguments
+        for key in path[:-1]:
+            current = current[key]
+
+        last_key = path[-1]
+
+        if isinstance(current, dict):
+            current[last_key] = value
+        elif isinstance(current, list):
+            current[int(last_key)] = value
+        else:
+            raise ValueError(f"Invalid path: {path}")
 
     def get_argument_value(self, path: List[str]) -> Any:
+        # Assumes the path exists
         current = self.arguments
         for key in path:
             if isinstance(current, dict):
