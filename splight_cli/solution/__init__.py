@@ -3,7 +3,7 @@ from rich.console import Console
 
 from splight_cli.context import check_credentials
 from splight_cli.solution.parser import Parser
-from splight_cli.solution.resources import ResourceManager
+from splight_cli.solution.resource import ResourceManager
 from splight_cli.solution.state import State
 
 solution_app = typer.Typer(
@@ -33,15 +33,14 @@ def apply(
     state.load()
 
     parser = Parser(spec_file=spec_file)
-    spec_resources = parser.parse()
+    specs, dependency_graph = parser.parse()
 
     manager = ResourceManager(
-        spec_resources=spec_resources,
         state=state,
+        specs=specs,
+        dependency_graph=dependency_graph,
     )
-    manager.sync()
     manager.plan()
-    manager.apply()
 
 
 @solution_app.command()
@@ -56,13 +55,13 @@ def plan(
     state.load()
 
     parser = Parser(spec_file=spec_file)
-    spec_resources = parser.parse()
+    specs, dependency_graph = parser.parse()
 
     manager = ResourceManager(
-        spec_resources=spec_resources,
         state=state,
+        specs=specs,
+        dependency_graph=dependency_graph,
     )
-    manager.sync()
     manager.plan()
 
 
@@ -76,8 +75,5 @@ def refresh(
     state = State(path=state_file)
     state.load()
 
-    manager = ResourceManager(
-        spec_resources=[],
-        state=state,
-    )
-    manager.sync(save=True)
+    manager = ResourceManager(state=state)
+    manager.refresh()
