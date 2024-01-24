@@ -107,6 +107,8 @@ class ResourceManager:
             # La cagada es que tampoco puedo simular, como podria cambiar el objeto en API
             # si lo crease con los arguments del spec
 
+            # Considera siempre hacer el refresh antes del plan, en el archivo init
+
             # We have not created this resource
             if key not in self._state:
                 diff = resource.diff({})
