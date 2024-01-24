@@ -1,19 +1,8 @@
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from pydantic import BaseModel
 from splight_lib.models.base import SplightDatabaseBaseModel
-
-
-class Action(str, Enum):
-    create = "create"
-    delete = "delete"
-    update = "update"
-
-
-class Plan(BaseModel):
-    action: Action
-    diff: Dict
 
 
 class Resource:
@@ -72,5 +61,8 @@ class Resource:
             "depends_on": self.depends_on,
         }
 
-    # TODO: set arg value method
-    # TODO: get arg value method
+    def set_argument_value(self, path: List[str], value: Any):
+        pass
+
+    def get_argument_value(self, path: List[str]) -> Any:
+        pass
