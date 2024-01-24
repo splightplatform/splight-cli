@@ -72,7 +72,8 @@ class Parser:
             arguments = resource_spec["arguments"]
 
             # Parse each resource leaf value to see if its a reference
-            depends_on = []
+            depends_on = set({})
+            references = []
             for path, value in walk(resource_spec):
                 result = parse_reference(value)
                 if result is not None:
@@ -84,7 +85,8 @@ class Parser:
                         "target": path,  # Where to put the value
                     }
 
-                    depends_on.append(reference)
+                    references.append(reference)
+                    depends_on.add(key)
 
             key = f"{type}:{name}"
             if key in specs:
@@ -95,13 +97,12 @@ class Parser:
             specs[key] = {
                 "name": name,
                 "type": type,
-                "depends_on": depends_on,
+                "depends_on": list(depends_on),
+                "references": references,
                 "arguments": arguments,
             }
 
             # Add its dependecies to the graph
-            dependency_graph[key] = set({})
-            for reference in depends_on:
-                dependency_graph[key].add(reference["key"])
+            dependency_graph[key] = depends_on
 
         return specs, dependency_graph
