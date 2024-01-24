@@ -1,11 +1,77 @@
+import re
+from typing import Dict, List, Optional
+
 import yaml
 
-from splight_cli.solution.resources import AssetResource, FileResource
+from splight_cli.solution.resources import Asset, File, Function
+from splight_cli.solution.resources.base import Resource
 
 type_map = {
-    "assets": AssetResource,
-    "files": FileResource,
+    "Asset": Asset,
+    "File": File,
+    "Function": Function,
 }
+
+
+class DuplicateResourceError(Exception):
+    pass
+
+
+def walk(data: Dict, current=[]):
+    result = []
+
+    if isinstance(data, Dict):
+        for key, value in data.items():
+            current.append(key)
+            result.extend(walk(value, current.copy()))
+            current.pop()
+    elif isinstance(data, List):
+        for index, item in enumerate(data):
+            current.append(index)
+            result.extend(walk(item, current.copy()))
+            current.pop()
+    else:
+        result.append((current.copy(), data))
+
+    return result
+
+
+def get_value(data, path):
+    current = data
+    for key in path:
+        if isinstance(current, dict):
+            current = current[key]
+        elif isinstance(current, list):
+            current = current[int(key)]
+        else:
+            raise ValueError(f"Invalid path: {path}")
+        return current
+
+
+def parse_reference(value: str) -> Optional[Dict]:
+    """Return the reference if it matches the regex or None otherwise"""
+
+    # Only process strings
+    if isinstance(value, str):
+        # Building this with format strings breaks the expression
+        pattern = r"^\${{(Asset|File|Function)\.(\w+)((?:\.\w+)+)}}$"
+
+        # Get the matches
+        match = re.match(pattern, value)
+
+        if match:
+            type, name, path = match.groups()
+
+            # The capturing group for path starts with a leading dot,
+            # so we remove it
+            path = path.lstrip(".").split(".")
+
+            # Cast the digit keys (array indexes)
+            path = [int(key) if key.isdigit() else key for key in path]
+
+            key = f"{type}:{name}"
+
+            return key, path
 
 
 class Parser:
@@ -16,14 +82,48 @@ class Parser:
         except FileNotFoundError:
             raise Exception(f"Spec file '{spec_file}' not found.")
 
-    def parse(self):
-        # TODO: this should compute and pass the dependencies to each resource
+    def parse(self) -> List[Resource]:
+        # Here we build the dependency graph using the resource keys
+        dependency_graph = {}
+
         resources = []
-        for resource_type in self._data:
-            for resource_data in self._data[resource_type]:
-                resources.append(
-                    type_map[resource_type](
-                        arguments=resource_data,
-                    )
+        for resource_spec in self._data:
+            name = resource_spec["name"]
+            type = resource_spec["type"]
+            arguments = resource_spec["arguments"]
+
+            # Parse each resource leaf value to see if its a reference
+            depends_on = []
+            for path, value in walk(resource_spec):
+                result = parse_reference(value)
+                if result is not None:
+                    key, source = result
+
+                    reference = {
+                        "key": key,  # Key of the referenced resource
+                        "source": source,  # Where to get the value
+                        "target": path,  # Where to put the value
+                    }
+
+                    depends_on.append(reference)
+
+            # Build resource object
+            resource = type_map[type](
+                name=name,
+                depends_on=depends_on,
+                arguments=arguments,
+            )
+
+            if resource in resources:
+                raise DuplicateResourceError(
+                    f"Resource '{resource.name}' of type '{resource.type}' is defined twice."
                 )
-        return resources
+
+            resources.append(resource)
+
+            # Add its dependecies to the graph
+            dependency_graph[resource.key] = set({})
+            for reference in depends_on:
+                dependency_graph[resource.key].add(reference["key"])
+
+        return resources, dependency_graph
