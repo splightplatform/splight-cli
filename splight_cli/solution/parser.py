@@ -27,18 +27,6 @@ def walk(data: Dict, current=[]):
     return result
 
 
-def get_value(data, path):
-    current = data
-    for key in path:
-        if isinstance(current, dict):
-            current = current[key]
-        elif isinstance(current, list):
-            current = current[int(key)]
-        else:
-            raise ValueError(f"Invalid path: {path}")
-        return current
-
-
 def parse_reference(value: str) -> Optional[Dict]:
     """Return the reference if it matches the regex or None otherwise"""
 
