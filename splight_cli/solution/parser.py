@@ -3,15 +3,6 @@ from typing import Dict, List, Optional
 
 import yaml
 
-from splight_cli.solution.resources import Asset, File, Function
-from splight_cli.solution.resources.base import Resource
-
-type_map = {
-    "Asset": Asset,
-    "File": File,
-    "Function": Function,
-}
-
 
 class DuplicateResourceError(Exception):
     pass
@@ -82,11 +73,11 @@ class Parser:
         except FileNotFoundError:
             raise Exception(f"Spec file '{spec_file}' not found.")
 
-    def parse(self) -> List[Resource]:
+    def parse(self) -> List[Dict]:
         # Here we build the dependency graph using the resource keys
         dependency_graph = {}
 
-        resources = []
+        resources = {}
         for resource_spec in self._data:
             name = resource_spec["name"]
             type = resource_spec["type"]
@@ -107,23 +98,22 @@ class Parser:
 
                     depends_on.append(reference)
 
-            # Build resource object
-            resource = type_map[type](
-                name=name,
-                depends_on=depends_on,
-                arguments=arguments,
-            )
-
-            if resource in resources:
+            key = f"{type}:{name}"
+            if key in resources:
                 raise DuplicateResourceError(
-                    f"Resource '{resource.name}' of type '{resource.type}' is defined twice."
+                    f"Resource '{name}' of type '{type}' is defined twice."
                 )
 
-            resources.append(resource)
+            resources[key] = {
+                "name": name,
+                "type": type,
+                "depends_on": depends_on,
+                "arguments": arguments,
+            }
 
             # Add its dependecies to the graph
-            dependency_graph[resource.key] = set({})
+            dependency_graph[key] = set({})
             for reference in depends_on:
-                dependency_graph[resource.key].add(reference["key"])
+                dependency_graph[key].add(reference["key"])
 
         return resources, dependency_graph
