@@ -1,7 +1,5 @@
-from enum import Enum
 from typing import Any, Dict, List, Tuple
 
-from pydantic import BaseModel
 from splight_lib.models.base import SplightDatabaseBaseModel
 
 
@@ -12,7 +10,8 @@ class Resource:
         self,
         name: str,
         arguments: Dict = {},
-        depends_on: List[Tuple[str, str]] = [],
+        depends_on: List[str] = [],
+        references: List[Dict] = [],
     ) -> None:
         if self._schema is None:
             raise NotImplementedError("Resources must define a schema.")
@@ -20,6 +19,7 @@ class Resource:
         self.name = name
         self.arguments = arguments
         self.depends_on = depends_on
+        self.references = references
 
     @property
     def type(self) -> str:
@@ -59,6 +59,7 @@ class Resource:
             "type": self.type,
             "arguments": self.arguments,
             "depends_on": self.depends_on,
+            "references": self.references,
         }
 
     def set_argument_value(self, path: List[str], value: Any):
