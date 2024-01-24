@@ -6,53 +6,45 @@ from pydantic import BaseModel
 
 
 class UnexistingResourceException(Exception):
-    def __init__(self, name):
-        super().__init__(f"Resource with name '{name}' not found.")
+    def __init__(self, key):
+        super().__init__(f"Resource '{key}' not found.")
 
 
 class ResourceAlreadyExistsError(Exception):
-    def __init__(self, name):
-        super().__init__(f"Resource with name '{name}' already exists.")
+    def __init__(self, key):
+        super().__init__(f"Resource '{key}' already exists.")
 
 
 class State(BaseModel):
-    resources: Dict[str, Dict[str, Dict]] = {}
+    resources: Dict = {}
     path: str
 
-    def contains(self, name: str, type: str) -> bool:
-        return type in self.resources and name in self.resources[type]
+    def contains(self, key: str) -> bool:
+        return key in self.resources
 
-    def get(self, name: str, type: str) -> Dict:
-        if not self.contains(name, type):
-            raise UnexistingResourceException(name)
-        return self.resources[type][name]
+    def get(self, key: str) -> Dict:
+        if not self.contains(key):
+            raise UnexistingResourceException(key)
+        return self.resources[key]
 
     def all(self) -> Iterator:
-        result = []
-        for type, resources_of_type in self.resources.items():
-            for name, data in resources_of_type.items():
-                result.append((name, type, data))
-        return result
+        return self.resources.keys()
 
-    def add(self, name: str, type: str, data: Dict) -> None:
-        if type not in self.resources:
-            self.resources[type] = {}
-        if self.contains(name, type):
-            raise ResourceAlreadyExistsError(name)
-        self.resources[type][name] = data
+    def add(self, key: str, id: str) -> None:
+        if self.contains(key):
+            raise ResourceAlreadyExistsError(key)
+        self.resources[key] = id
 
-    def delete(self, name: str, type: str) -> None:
-        if not self.contains(name, type):
-            raise UnexistingResourceException(name)
-        del self.resources[type][name]
-        if not self.resources[type]:
-            del self.resources[type]
+    def delete(self, key: str) -> None:
+        if not self.contains(key):
+            raise UnexistingResourceException(key)
+        del self.resources[key]
 
-    def update(self, name: str, type: str, data: Dict) -> None:
-        if not self.contains(name, type):
-            raise UnexistingResourceException(name)
-        self.delete(name, type)
-        self.add(name, type, data)
+    def update(self, key: str, id: str) -> None:
+        if not self.contains(key):
+            raise UnexistingResourceException(key)
+        self.delete(key)
+        self.add(key, id)
 
     def load(self) -> None:
         if isfile(self.path):
