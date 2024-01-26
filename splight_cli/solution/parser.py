@@ -74,7 +74,7 @@ class Parser:
             # Parse each resource leaf value to see if its a reference
             depends_on = set({})
             references = []
-            for path, value in walk(resource_spec):
+            for path, value in walk(resource_spec["arguments"]):
                 result = parse_reference(value)
                 if result is not None:
                     key, source = result
@@ -83,6 +83,7 @@ class Parser:
                         "key": key,  # Key of the referenced resource
                         "source": source,  # Where to get the value
                         "target": path,  # Where to put the value
+                        "string": value,  # The string value of the reference
                     }
 
                     references.append(reference)

@@ -40,7 +40,9 @@ def apply(
         specs=specs,
         dependency_graph=dependency_graph,
     )
+    manager.refresh()
     manager.plan()
+    manager.apply()
 
 
 @solution_app.command()
@@ -62,6 +64,7 @@ def plan(
         specs=specs,
         dependency_graph=dependency_graph,
     )
+    manager.refresh()
     manager.plan()
 
 

@@ -48,6 +48,27 @@ class ResourceManager:
         )
         return resource
 
+    def _update_references(
+        self, references: List[Dict], resources: List[Resource]
+    ):
+        # Replace each reference of this resource
+        for reference in references:
+            reference_key = reference["key"]
+            reference_source = reference["source"]
+            reference_target = reference["target"]
+            reference_string = reference["string"]
+
+            try:
+                value = resources[reference_key].get_argument_value(
+                    reference_source
+                )
+            except:
+                value = reference_string
+
+                # Replace it in our arguments.
+                # TODO: falta el resource de origen
+                resource.set_argument_value(reference_target, value)
+
     def refresh(self):
         for key in self._state.all():
             data = self._state.get(key)
@@ -62,75 +83,98 @@ class ResourceManager:
             )
             self._state.save()
 
-    def apply(self):
+    def plan(self):
         # TODO: Append orphans at the beggining
-        # TODO: Delete them from the state too (dry run in plan).
+        # TODO: Delete them from the state (do not save it).
+
+        to_create = 0
+        to_update = 0
+        to_delete = 0
+
+        plan = []
+
+        resources = {}
+
+        for key in self._specs_order:
+            # If this resource does not exist yet
+            if key not in self._state:
+                data = self._specs[key]
+
+                resource = self._create_resource(data)
+                resources[key] = resource
+
+                # Replace each reference of this resource
+                for reference in resource.references:
+                    reference_key = reference["key"]
+                    reference_source = reference["source"]
+                    reference_target = reference["target"]
+                    reference_string = reference["string"]
+
+                    try:
+                        value = resources[reference_key].get_argument_value(
+                            reference_source
+                        )
+                    except:
+                        value = reference_string
+
+                    # Replace it in our arguments.
+                    resource.set_argument_value(reference_target, value)
+
+                diff = resource.diff({})
+                plan.append(diff)
+
+                to_create += 1
+
+            # Already exists in the engine
+            else:
+                data = self._state.get(key)
+
+                resource = self._create_resource(data)
+                resources[key] = resource
+
+                # Replace each reference of this resource
+                for reference in resource.references:
+                    reference_key = reference["key"]
+                    reference_source = reference["source"]
+                    reference_target = reference["target"]
+                    reference_string = reference["string"]
+
+                    try:
+                        value = resources[reference_key].get_argument_value(
+                            reference_source
+                        )
+                    except:
+                        value = reference_string
+
+                    # Replace it in our arguments.
+                    resource.set_argument_value(reference_target, value)
+
+                new_arguments = self._specs[key]["arguments"]
+
+                diff = resource.diff(new_arguments)
+                if diff:
+                    plan.append(diff)
+                    to_update += 1
 
         __import__("ipdb").set_trace()
-        resources = {}
-        for key in self._specs_order:
-            data = self._specs[key]
 
-            resource = self._create_resource(data)
-            resources[key] = resource
+    def apply(self):
+        for resource in self._to_delete():
+            resource.delete()
+            self._state.delete(resource.key)
+            self._state.save()
 
-            # Busco la referencia en los previous arguments del resource que referencio.
-            for (
-                reference
-            ) in resource.references:  # TODO: better way to iterate this
-                reference_key = reference["key"]
-                reference_source = reference["source"]
-                reference_target = reference["target"]
+        for resource in self._to_create():
+            # TODO: there might be pending references. We should always find them in this step
+            resource.create()
+            self._state.add(resource.key, resource.dump())
+            self._state.save()
 
-                # We should find it, since the referenced resource was already processed.
-                # We can retrieve the value from the resources map or the state,
-                # since both are in sync.
-                value = resources[reference_key].get_argument_value(
-                    reference_source
-                )
-
-                # Replace it in our arguments.
-                resource.set_argument_value(reference_target, value)
-
-            # HASTA ACA VENIAS MORTAL.
-            # YO CREO QUE EL PROBLEMA RADICA EN QUE PREVIOUS ARGUMENTS ES LO QUE TIENE API.
-            # ES IMPOSIBLE QUE EL DIFF RETORNE VACIO.
-
-            # Tenes que hacer que el refresh del baseresource, actualize los args que ya tenias
-            # pero solamente los IDs? esto siempre daría diff contra el spec
-
-            # Solamente las keys de los arguments en el spec? <-- esto puede ser
-            # Hay que resolver esta biyeccion con mati
-
-            # spec_arguments <-> state_arguments <-> API
-
-            # La cagada es que tampoco puedo simular, como podria cambiar el objeto en API
-            # si lo crease con los arguments del spec
-
-            # Considera siempre hacer el refresh antes del plan, en el archivo init
-
-            # We have not created this resource
-            if key not in self._state:
-                diff = resource.diff({})
-                resource.create()
-
-                # TODO: do a refresh so you get the new arguments from API
-                self._state.add(key, resource.dump())
-
-            # This resource already exists
-            else:
-                state_data = self._state.get(key)
-                diff = resource.diff(state_data["arguments"])
-                if diff:
-                    # TODO: Implementar bien este update
-                    resource.update()
-
-                    # TODO: do a refresh so you get the new arguments from API
-                    self._state.update(key, resource.dump())
-
-    def plan(self):
-        # Si no existe esa key en el state:
-        #     Dejas la referencia sin reemplazar
-        # Else
-        #     La reemplazo
-        pass
+        for resource in self._to_update():
+            # TODO: there might be pending references. We should always find them in this step
+            resource.update_arguments(
+                new_arguments
+            )  # TODO: no olvidarte de esto en el apply
+            resource.update()
+            self._state.add(resource.key, resource.dump())
+            self._state.save()

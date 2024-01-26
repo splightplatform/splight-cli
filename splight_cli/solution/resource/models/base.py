@@ -1,5 +1,7 @@
-from typing import Any, Dict, List, Tuple
+from json import load
+from typing import Any, Dict, List
 
+from deepdiff import DeepDiff
 from splight_lib.models.base import SplightDatabaseBaseModel
 
 
@@ -44,12 +46,19 @@ class Resource:
         self._schema(**self.arguments).delete()
 
     def refresh(self) -> None:
+        # TODO: guardar el Id en el dump mepa...
         self.arguments = self._schema.retrieve(
             resource_id=self.id
         ).model_dump()
 
-    def diff(self, arguments: Dict) -> Dict:
+    def update_arguments(self, new_arguments: Dict) -> None:
+        # TODO: update only the keys in the new arguments
         raise NotImplementedError()
+
+    def diff(self, new_arguments: Dict) -> Dict:
+        diff = DeepDiff(new_arguments, self.arguments)
+        # TODO: solo chequear los que estan en los new args
+        return diff
 
     def dump(self) -> Dict:
         return {
