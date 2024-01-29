@@ -49,24 +49,23 @@ class ResourceManager:
         return resource
 
     def _update_references(
-        self, references: List[Dict], resources: List[Resource]
+        self, resource: Resource, resource_pool: List[Resource]
     ):
         # Replace each reference of this resource
-        for reference in references:
+        for reference in resource.references:
             reference_key = reference["key"]
             reference_source = reference["source"]
             reference_target = reference["target"]
             reference_string = reference["string"]
 
             try:
-                value = resources[reference_key].get_argument_value(
+                value = resource_pool[reference_key].get_argument_value(
                     reference_source
                 )
             except:
                 value = reference_string
 
                 # Replace it in our arguments.
-                # TODO: falta el resource de origen
                 resource.set_argument_value(reference_target, value)
 
     def refresh(self):
@@ -84,46 +83,32 @@ class ResourceManager:
             self._state.save()
 
     def plan(self):
-        # TODO: Append orphans at the beggining
-        # TODO: Delete them from the state (do not save it).
+        # TODO: i dont like how the plan thing works here.
+        # I'd do it somewhere else.
+        # Same thing for apply
 
-        to_create = 0
-        to_update = 0
-        to_delete = 0
-
-        plan = []
+        plan = {}
 
         resources = {}
 
+        for key in self._state.all():
+            if key not in self._specs:
+                # TODO: negative diff
+                self._state.delete(key)
+
         for key in self._specs_order:
             # If this resource does not exist yet
-            if key not in self._state:
+            if not self._state.contains(key):
                 data = self._specs[key]
 
                 resource = self._create_resource(data)
                 resources[key] = resource
 
                 # Replace each reference of this resource
-                for reference in resource.references:
-                    reference_key = reference["key"]
-                    reference_source = reference["source"]
-                    reference_target = reference["target"]
-                    reference_string = reference["string"]
-
-                    try:
-                        value = resources[reference_key].get_argument_value(
-                            reference_source
-                        )
-                    except:
-                        value = reference_string
-
-                    # Replace it in our arguments.
-                    resource.set_argument_value(reference_target, value)
+                self._update_references(resource, resources)
 
                 diff = resource.diff({})
-                plan.append(diff)
-
-                to_create += 1
+                plan[key] = diff
 
             # Already exists in the engine
             else:
@@ -133,48 +118,76 @@ class ResourceManager:
                 resources[key] = resource
 
                 # Replace each reference of this resource
-                for reference in resource.references:
-                    reference_key = reference["key"]
-                    reference_source = reference["source"]
-                    reference_target = reference["target"]
-                    reference_string = reference["string"]
+                self._update_references(resource, resources)
 
-                    try:
-                        value = resources[reference_key].get_argument_value(
-                            reference_source
-                        )
-                    except:
-                        value = reference_string
+                new_arguments = self._specs[key]["arguments"]
 
-                    # Replace it in our arguments.
-                    resource.set_argument_value(reference_target, value)
+                diff = resource.diff(new_arguments)
+                if diff:
+                    plan[key] = diff
+
+        if not plan:
+            self._logger.event(
+                "Your infrastructure matches the configuration."
+            )
+        else:
+            self._logger.event(
+                "Splight solution will perform the following actions:",
+            )
+            for key, diff in plan.items():
+                self._logger.event(f"Changes for resource '{key}':")
+                self._logger.diff(diff)
+
+    def apply(self):
+        plan = []
+
+        resources = {}
+
+        for key in self._state.all():
+            if key not in self._specs:
+                data = self._state.get(key)
+
+                resource = self._create_resource(data)
+
+                resource.delete()
+
+                self._state.delete(key)
+                self._state.save()
+
+        for key in self._specs_order:
+            # If this resource does not exist yet
+            if not self._state.contains(key):
+                data = self._specs[key]
+
+                resource = self._create_resource(data)
+                resources[key] = resource
+
+                # Replace each reference of this resource
+                self._update_references(resource, resources)
+
+                diff = resource.diff({})
+                plan.append(diff)
+
+                resource.create()
+                self._state.add(resource.key, resource.dump())
+                self._state.save()
+
+            # Already exists in the engine
+            else:
+                data = self._state.get(key)
+
+                resource = self._create_resource(data)
+                resources[key] = resource
+
+                # Replace each reference of this resource
+                self._update_references(resource, resources)
 
                 new_arguments = self._specs[key]["arguments"]
 
                 diff = resource.diff(new_arguments)
                 if diff:
                     plan.append(diff)
-                    to_update += 1
-
-        __import__("ipdb").set_trace()
-
-    def apply(self):
-        for resource in self._to_delete():
-            resource.delete()
-            self._state.delete(resource.key)
-            self._state.save()
-
-        for resource in self._to_create():
-            # TODO: there might be pending references. We should always find them in this step
-            resource.create()
-            self._state.add(resource.key, resource.dump())
-            self._state.save()
-
-        for resource in self._to_update():
-            # TODO: there might be pending references. We should always find them in this step
-            resource.update_arguments(
-                new_arguments
-            )  # TODO: no olvidarte de esto en el apply
-            resource.update()
-            self._state.add(resource.key, resource.dump())
-            self._state.save()
+                    resource.update_arguments(new_arguments)
+                    resource.update()
+                    self._state.add(resource.key, resource.dump())
+                    self._state.save()

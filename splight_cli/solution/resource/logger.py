@@ -18,7 +18,7 @@ class ResourceLogger:
         )
         print(self._bold(formatted_message))
 
-    def _event(
+    def event(
         self,
         message: str,
         previous_line: bool = False,
@@ -33,34 +33,18 @@ class ResourceLogger:
             formatted_message += "\n"
         print(formatted_message)
 
-    def no_changes(self):
-        self._event(
-            "No changes. Your infrastructure matches the configuration.",
-            bold=True,
-            previous_line=True,
-            new_line=True,
-        )
-        self._event(
-            "Splight has compared your real infrastructure against your configuration and found no differences, so no changes are needed.",
-        )
+    def diff(self, diff):
+        """Pritty prints a DeepDiff"""
 
-    def plan(self, diffs):
-        self._event(
-            "Splight solution will perform the following actions:",
-            previous_line=True,
-            new_line=True,
-        )
-        # self._logger.print_diffs(diffs)
-        # self._event(
-        #     f"Plan: {len(self._to_create)} to add, {len(self._to_update)} to change, {len(self._to_delete)} to destroy."
-        # )
+        lines = []
 
-    def apply(self):
-        confirmation = confirm(
-            """
-            Do you want to perform these actions?
-            Terraform will perform the actions described above.
+        for op, items in diff.items():
+            for item in items:
+                if op == "dictionary_item_added":
+                    lines.append(f"+ {item}")
+                elif op == "dictionary_item_removed":
+                    lines.append(f"- {item}")
+                elif op == "values_changed":
+                    lines.append(f"~ {item}")
 
-            Enter a value:"""
-        )
-        return confirmation
+        print("\n".join(lines))
