@@ -35,16 +35,4 @@ class ResourceLogger:
 
     def diff(self, diff):
         """Pritty prints a DeepDiff"""
-
-        lines = []
-
-        for op, items in diff.items():
-            for item in items:
-                if op == "dictionary_item_added":
-                    lines.append(f"+ {item}")
-                elif op == "dictionary_item_removed":
-                    lines.append(f"- {item}")
-                elif op == "values_changed":
-                    lines.append(f"~ {item}")
-
-        print("\n".join(lines))
+        print("\n".join(diff))

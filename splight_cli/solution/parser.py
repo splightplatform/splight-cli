@@ -3,28 +3,11 @@ from typing import Dict, List, Optional
 
 import yaml
 
+from splight_cli.solution.dict import walk_dict
+
 
 class DuplicateResourceError(Exception):
     pass
-
-
-def walk(data: Dict, current=[]):
-    result = []
-
-    if isinstance(data, Dict):
-        for key, value in data.items():
-            current.append(key)
-            result.extend(walk(value, current.copy()))
-            current.pop()
-    elif isinstance(data, List):
-        for index, item in enumerate(data):
-            current.append(index)
-            result.extend(walk(item, current.copy()))
-            current.pop()
-    else:
-        result.append((current.copy(), data))
-
-    return result
 
 
 def parse_reference(value: str) -> Optional[Dict]:
@@ -74,7 +57,7 @@ class Parser:
             # Parse each resource leaf value to see if its a reference
             depends_on = set({})
             references = []
-            for path, value in walk(resource_spec["arguments"]):
+            for path, value in walk_dict(resource_spec["arguments"]):
                 result = parse_reference(value)
                 if result is not None:
                     key, source = result

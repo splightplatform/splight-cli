@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from toposort import toposort_flatten as toposort
 
+from splight_cli.solution.resource.diff import Diff
 from splight_cli.solution.resource.logger import ResourceLogger
 from splight_cli.solution.resource.models import (
     Asset,
@@ -33,19 +34,9 @@ class ResourceManager:
 
         self._logger = ResourceLogger()
 
-    def _create_resource(self, data):
-        name = data["name"]
-        type = data["type"]
-        arguments = data["arguments"]
-        depends_on = data["depends_on"]
-        references = data["references"]
-
-        resource = type_map[type](
-            name=name,
-            arguments=arguments,
-            depends_on=depends_on,
-            references=references,
-        )
+    def _create_resource(self, data: Dict):
+        type = data.get("type")
+        resource = type_map[type](**data)
         return resource
 
     def _update_references(
@@ -74,7 +65,7 @@ class ResourceManager:
             resource = self._create_resource(data)
 
             self._logger.resource("Refreshing state...", resource)
-            resource.sync()
+            resource.refresh()
 
             self._state.update(
                 resource.key,
@@ -93,7 +84,13 @@ class ResourceManager:
 
         for key in self._state.all():
             if key not in self._specs:
-                # TODO: negative diff
+                data = self._state.get(key)
+
+                resource = self._create_resource(data)
+
+                diff = Diff(new_arguments={}, old_arguments=resource.arguments)
+                plan[key] = {"operation": "deleted", "diff": diff}
+
                 self._state.delete(key)
 
         for key in self._specs_order:
@@ -107,8 +104,8 @@ class ResourceManager:
                 # Replace each reference of this resource
                 self._update_references(resource, resources)
 
-                diff = resource.diff({})
-                plan[key] = diff
+                diff = Diff(new_arguments=resource.arguments, old_arguments={})
+                plan[key] = {"operation": "created", "diff": diff}
 
             # Already exists in the engine
             else:
@@ -122,9 +119,12 @@ class ResourceManager:
 
                 new_arguments = self._specs[key]["arguments"]
 
-                diff = resource.diff(new_arguments)
+                diff = Diff(
+                    new_arguments=new_arguments,
+                    old_arguments=resource.arguments,
+                )
                 if diff:
-                    plan[key] = diff
+                    plan[key] = {"operation": "updated", "diff": diff}
 
         if not plan:
             self._logger.event(
@@ -134,13 +134,18 @@ class ResourceManager:
             self._logger.event(
                 "Splight solution will perform the following actions:",
             )
-            for key, diff in plan.items():
-                self._logger.event(f"Changes for resource '{key}':")
+            for key, data in plan.items():
+                action = data["operation"]
+                diff = data["diff"]
+
+                name, type = key.split(":")
+                self._logger.event(
+                    f"Resource '{name}' of type '{type}' will be {action}:",
+                    previous_line=True,
+                )
                 self._logger.diff(diff)
 
     def apply(self):
-        plan = []
-
         resources = {}
 
         for key in self._state.all():
@@ -150,6 +155,7 @@ class ResourceManager:
                 resource = self._create_resource(data)
 
                 resource.delete()
+                self._logger.resource("Resource deleted", resource)
 
                 self._state.delete(key)
                 self._state.save()
@@ -165,10 +171,11 @@ class ResourceManager:
                 # Replace each reference of this resource
                 self._update_references(resource, resources)
 
-                diff = resource.diff({})
-                plan.append(diff)
+                diff = diff({})
 
                 resource.create()
+                self._logger.resource("Resource created", resource)
+
                 self._state.add(resource.key, resource.dump())
                 self._state.save()
 
@@ -184,10 +191,11 @@ class ResourceManager:
 
                 new_arguments = self._specs[key]["arguments"]
 
-                diff = resource.diff(new_arguments)
+                diff = diff(new_arguments)
                 if diff:
-                    plan.append(diff)
                     resource.update_arguments(new_arguments)
                     resource.update()
+                    self._logger.resource("Resource updated", resource)
+
                     self._state.add(resource.key, resource.dump())
                     self._state.save()

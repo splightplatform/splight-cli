@@ -1,17 +1,18 @@
-from json import load
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
-from deepdiff import DeepDiff
 from splight_lib.models.base import SplightDatabaseBaseModel
 
+from splight_cli.solution.dict import get_dict_value, set_dict_value, walk_dict
 
-# TODO: clean not used properties and methods
+
 class Resource:
     _schema: SplightDatabaseBaseModel = None
 
     def __init__(
         self,
         name: str,
+        type: str,
+        id: Optional[str] = None,
         arguments: Dict = {},
         depends_on: List[str] = [],
         references: List[Dict] = [],
@@ -20,24 +21,20 @@ class Resource:
             raise NotImplementedError("Resources must define a schema.")
 
         self.name = name
+        self.type = type
+        self.id = id
         self.arguments = arguments
         self.depends_on = depends_on
         self.references = references
 
     @property
-    def type(self) -> str:
-        return self.__class__.__name__
-
-    @property
     def key(self) -> str:
         return f"{self.type}:{self.name}"
 
-    @property
-    def id(self) -> str:
-        return self._client.id
-
     def create(self) -> None:
-        self._schema(**self.arguments).save()
+        client = self._schema(**self.arguments)
+        client.save()
+        self.id = client.id
 
     def update(self) -> None:
         self._schema(**self.arguments).save()
@@ -46,52 +43,26 @@ class Resource:
         self._schema(**self.arguments).delete()
 
     def refresh(self) -> None:
-        # TODO: guardar el Id en el dump mepa...
-        self.arguments = self._schema.retrieve(
-            resource_id=self.id
-        ).model_dump()
-
-    def update_arguments(self, new_arguments: Dict) -> None:
-        # TODO: update only the keys in the new arguments
-        raise NotImplementedError()
-
-    def diff(self, new_arguments: Dict) -> Dict:
-        diff = DeepDiff(new_arguments, self.arguments)
-        # TODO: solo chequear los que estan en los new args
-        return diff
+        new_arguments = self._schema.retrieve(self.id).model_dump()
+        for path, _ in walk_dict(self.arguments):
+            new_value = get_dict_value(path, new_arguments)
+            self.set_argument_value(path, new_value)
 
     def dump(self) -> Dict:
         return {
             "name": self.name,
+            "id": self.id,
             "type": self.type,
             "arguments": self.arguments,
             "depends_on": self.depends_on,
             "references": self.references,
         }
 
+    def update_arguments(self, new_arguments: Dict) -> None:
+        self.arguments = new_arguments
+
     def set_argument_value(self, path: List[str], value: Any):
-        # Assumes the path exists
-        current = self.arguments
-        for key in path[:-1]:
-            current = current[key]
-
-        last_key = path[-1]
-
-        if isinstance(current, dict):
-            current[last_key] = value
-        elif isinstance(current, list):
-            current[int(last_key)] = value
-        else:
-            raise ValueError(f"Invalid path: {path}")
+        return set_dict_value(value, path, self.arguments)
 
     def get_argument_value(self, path: List[str]) -> Any:
-        # Assumes the path exists
-        current = self.arguments
-        for key in path:
-            if isinstance(current, dict):
-                current = current[key]
-            elif isinstance(current, list):
-                current = current[int(key)]
-            else:
-                raise ValueError(f"Invalid path: {path}")
-            return current
+        return get_dict_value(path, self.arguments)

@@ -28,7 +28,7 @@ class State(BaseModel):
         return self.resources[key]
 
     def all(self) -> Iterator:
-        return self.resources.keys()
+        return list(self.resources.keys())
 
     def add(self, key: str, id: str) -> None:
         if self.contains(key):
