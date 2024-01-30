@@ -1,6 +1,7 @@
 import typer
 from rich.console import Console
 
+from splight_cli.constants import error_style
 from splight_cli.context import check_credentials
 from splight_cli.solution.parser import Parser
 from splight_cli.solution.resource import ResourceManager
@@ -29,21 +30,28 @@ def apply(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    state = State(path=state_file)
-    state.load()
+    try:
+        state = State(path=state_file)
+        state.load()
 
-    parser = Parser(spec_file=spec_file)
-    specs, dependency_graph = parser.parse()
+        parser = Parser(spec_file=spec_file)
+        specs, dependency_graph = parser.parse()
 
-    manager = ResourceManager(
-        state=state,
-        specs=specs,
-        dependency_graph=dependency_graph,
-    )
-    manager.refresh()
-    plan = manager.plan()
-    if plan:
-        manager.apply()
+        manager = ResourceManager(
+            state=state,
+            specs=specs,
+            dependency_graph=dependency_graph,
+        )
+        manager.refresh()
+        plan = manager.plan()
+        if plan:
+            manager.apply()
+
+    except Exception as e:
+        console.print(
+            f"Error planning solution:\n\t {str(e)}", style=error_style
+        )
+        raise typer.Exit(code=1)
 
 
 @solution_app.command()
@@ -54,19 +62,25 @@ def plan(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    state = State(path=state_file)
-    state.load()
+    try:
+        state = State(path=state_file)
+        state.load()
 
-    parser = Parser(spec_file=spec_file)
-    specs, dependency_graph = parser.parse()
+        parser = Parser(spec_file=spec_file)
+        specs, dependency_graph = parser.parse()
 
-    manager = ResourceManager(
-        state=state,
-        specs=specs,
-        dependency_graph=dependency_graph,
-    )
-    manager.refresh()
-    manager.plan()
+        manager = ResourceManager(
+            state=state,
+            specs=specs,
+            dependency_graph=dependency_graph,
+        )
+        manager.refresh()
+        manager.plan()
+    except Exception as e:
+        console.print(
+            f"Error planning solution:\n\t {str(e)}", style=error_style
+        )
+        raise typer.Exit(code=1)
 
 
 @solution_app.command()
@@ -76,8 +90,14 @@ def refresh(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    state = State(path=state_file)
-    state.load()
+    try:
+        state = State(path=state_file)
+        state.load()
 
-    manager = ResourceManager(state=state)
-    manager.refresh()
+        manager = ResourceManager(state=state)
+        manager.refresh()
+    except Exception as e:
+        console.print(
+            f"Error planning solution:\n\t {str(e)}", style=error_style
+        )
+        raise typer.Exit(code=1)
