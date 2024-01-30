@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from toposort import toposort_flatten as toposort
+from typer import confirm
 
 from splight_cli.solution.resource.diff import Diff
 from splight_cli.solution.resource.logger import ResourceLogger
@@ -74,10 +75,6 @@ class ResourceManager:
             self._state.save()
 
     def plan(self):
-        # TODO: i dont like how the plan thing works here.
-        # I'd do it somewhere else.
-        # Same thing for apply
-
         plan = {}
 
         resources = {}
@@ -148,6 +145,13 @@ class ResourceManager:
     def apply(self):
         resources = {}
 
+        self._logger.event(
+            "Do you want to apply this changes?", bold=True, previous_line=True
+        )
+        if not confirm("Insert choice: "):
+            self._logger.event("No actions performed")
+            return
+
         for key in self._state.all():
             if key not in self._specs:
                 data = self._state.get(key)
@@ -171,8 +175,6 @@ class ResourceManager:
                 # Replace each reference of this resource
                 self._update_references(resource, resources)
 
-                diff = diff({})
-
                 resource.create()
                 self._logger.resource("Resource created", resource)
 
@@ -191,7 +193,7 @@ class ResourceManager:
 
                 new_arguments = self._specs[key]["arguments"]
 
-                diff = diff(new_arguments)
+                diff = Diff(new_arguments, resource.arguments)
                 if diff:
                     resource.update_arguments(new_arguments)
                     resource.update()

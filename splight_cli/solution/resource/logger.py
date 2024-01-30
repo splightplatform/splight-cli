@@ -1,5 +1,4 @@
 from colorama import Style
-from typer import confirm
 
 
 class ResourceLogger:
@@ -34,5 +33,4 @@ class ResourceLogger:
         print(formatted_message)
 
     def diff(self, diff):
-        """Pritty prints a DeepDiff"""
         print("\n".join(diff))
