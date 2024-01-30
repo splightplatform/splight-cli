@@ -62,7 +62,9 @@ class Parser:
                 if result is not None:
                     key, source = result
 
-                    # Must be done here, otherwise it would affect the dependency graph
+                    # Must be done here, otherwise it would affect the dependency graph.
+                    # Paths and values are validated later on, since we may need data
+                    # that is available after creation.
                     if key not in specs:
                         raise ValueError(
                             f"Reference '{value}' in resource '{name}' of type '{type}' points to a non existing resource."
