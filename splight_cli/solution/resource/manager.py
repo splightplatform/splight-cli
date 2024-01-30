@@ -133,7 +133,7 @@ class ResourceManager:
                 action = data["operation"]
                 diff = data["diff"]
 
-                name, type = key.split(":")
+                type, name = key.split(":")
                 self._logger.event(
                     f"Resource '{name}' of type '{type}' will be {action}:",
                     previous_line=True,
