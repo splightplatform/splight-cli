@@ -62,6 +62,12 @@ class Parser:
                 if result is not None:
                     key, source = result
 
+                    # Must be done here, otherwise it would affect the dependency graph
+                    if key not in specs:
+                        raise ValueError(
+                            f"Reference '{value}' in resource '{name}' of type '{type}' points to a non existing resource."
+                        )
+
                     reference = {
                         "key": key,  # Key of the referenced resource
                         "source": source,  # Where to get the value
