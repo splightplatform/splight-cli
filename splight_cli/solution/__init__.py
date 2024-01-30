@@ -41,8 +41,9 @@ def apply(
         dependency_graph=dependency_graph,
     )
     manager.refresh()
-    manager.plan()
-    manager.apply()
+    plan = manager.plan()
+    if plan:
+        manager.apply()
 
 
 @solution_app.command()

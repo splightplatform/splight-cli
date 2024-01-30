@@ -88,8 +88,6 @@ class ResourceManager:
                 diff = Diff(new_arguments={}, old_arguments=resource.arguments)
                 plan[key] = {"operation": "deleted", "diff": diff}
 
-                self._state.delete(key)
-
         for key in self._specs_order:
             # If this resource does not exist yet
             if not self._state.contains(key):
@@ -141,6 +139,8 @@ class ResourceManager:
                     previous_line=True,
                 )
                 self._logger.diff(diff)
+
+        return plan
 
     def apply(self):
         resources = {}
