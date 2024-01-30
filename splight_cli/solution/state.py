@@ -1,6 +1,6 @@
 import json
 from os.path import isfile
-from typing import Dict, Iterator
+from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -27,24 +27,24 @@ class State(BaseModel):
             raise UnexistingResourceException(key)
         return self.resources[key]
 
-    def all(self) -> Iterator:
+    def all(self) -> List:
         return list(self.resources.keys())
 
-    def add(self, key: str, id: str) -> None:
+    def add(self, key: str, data: Dict) -> None:
         if self.contains(key):
             raise ResourceAlreadyExistsError(key)
-        self.resources[key] = id
+        self.resources[key] = data
 
     def delete(self, key: str) -> None:
         if not self.contains(key):
             raise UnexistingResourceException(key)
         del self.resources[key]
 
-    def update(self, key: str, id: str) -> None:
+    def update(self, key: str, data: Dict) -> None:
         if not self.contains(key):
             raise UnexistingResourceException(key)
         self.delete(key)
-        self.add(key, id)
+        self.add(key, data)
 
     def load(self) -> None:
         if isfile(self.path):

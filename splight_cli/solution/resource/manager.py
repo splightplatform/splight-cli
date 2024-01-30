@@ -199,5 +199,5 @@ class ResourceManager:
                     resource.update()
                     self._logger.resource("Resource updated", resource)
 
-                    self._state.add(resource.key, resource.dump())
+                    self._state.update(resource.key, resource.dump())
                     self._state.save()

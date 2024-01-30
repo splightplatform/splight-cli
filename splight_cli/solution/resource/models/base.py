@@ -37,10 +37,10 @@ class Resource:
         self.id = client.id
 
     def update(self) -> None:
-        self._schema(**self.arguments).save()
+        self._schema(id=self.id, **self.arguments).save()
 
     def delete(self) -> None:
-        self._schema(**self.arguments).delete()
+        self._schema(id=self.id, **self.arguments).delete()
 
     def refresh(self) -> None:
         new_arguments = self._schema.retrieve(self.id).model_dump()
