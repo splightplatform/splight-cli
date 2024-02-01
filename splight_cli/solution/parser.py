@@ -56,6 +56,8 @@ class Parser:
                     # Must be done here, otherwise it would affect the dependency graph.
                     # Paths and values are validated later on, since we may need data
                     # that is available after creation.
+                    # This also prevents trying to delete a resource which has another
+                    # one referencing it.
                     if key not in specs:
                         raise ValueError(
                             f"Reference '{value}' in resource '{name}' of type '{type}' points to a non existing resource."
@@ -87,4 +89,7 @@ class Parser:
             # Add its dependecies to the graph
             dependency_graph[key] = depends_on
 
+        # NOTE: Before adding/changing features of the parser, insert a breakpoint
+        # here and inspect the specs and dependency_graph objects, to see the shape
+        # of the objects that the rest of the code needs.
         return specs, dependency_graph
