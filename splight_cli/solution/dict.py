@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 
+# TODO: make this faster
 def walk_dict(data: Dict, current=[]):
     result = []
 
