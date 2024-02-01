@@ -30,28 +30,21 @@ def apply(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    try:
-        state = State(path=state_file)
-        state.load()
+    state = State(path=state_file)
+    state.load()
 
-        parser = Parser(spec_file=spec_file)
-        specs, dependency_graph = parser.parse()
+    parser = Parser(spec_file=spec_file)
+    specs, dependency_graph = parser.parse()
 
-        manager = ResourceManager(
-            state=state,
-            specs=specs,
-            dependency_graph=dependency_graph,
-        )
-        manager.refresh()
-        plan = manager.plan()
-        if plan:
-            manager.apply()
-
-    except Exception as e:
-        console.print(
-            f"Error planning solution:\n\t {str(e)}", style=error_style
-        )
-        raise typer.Exit(code=1)
+    manager = ResourceManager(
+        state=state,
+        specs=specs,
+        dependency_graph=dependency_graph,
+    )
+    manager.refresh()
+    plan = manager.plan()
+    if plan:
+        manager.apply()
 
 
 @solution_app.command()
@@ -62,25 +55,19 @@ def plan(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    try:
-        state = State(path=state_file)
-        state.load()
+    state = State(path=state_file)
+    state.load()
 
-        parser = Parser(spec_file=spec_file)
-        specs, dependency_graph = parser.parse()
+    parser = Parser(spec_file=spec_file)
+    specs, dependency_graph = parser.parse()
 
-        manager = ResourceManager(
-            state=state,
-            specs=specs,
-            dependency_graph=dependency_graph,
-        )
-        manager.refresh()
-        manager.plan()
-    except Exception as e:
-        console.print(
-            f"Error planning solution:\n\t {str(e)}", style=error_style
-        )
-        raise typer.Exit(code=1)
+    manager = ResourceManager(
+        state=state,
+        specs=specs,
+        dependency_graph=dependency_graph,
+    )
+    manager.refresh()
+    manager.plan()
 
 
 @solution_app.command()
@@ -90,14 +77,8 @@ def refresh(
         "state.json", "--state", "-s", help="Path to the state file."
     ),
 ) -> None:
-    try:
-        state = State(path=state_file)
-        state.load()
+    state = State(path=state_file)
+    state.load()
 
-        manager = ResourceManager(state=state)
-        manager.refresh()
-    except Exception as e:
-        console.print(
-            f"Error planning solution:\n\t {str(e)}", style=error_style
-        )
-        raise typer.Exit(code=1)
+    manager = ResourceManager(state=state)
+    manager.refresh()
