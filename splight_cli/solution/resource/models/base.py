@@ -43,6 +43,9 @@ class Resource:
         self._schema(id=self.id, **self.arguments).delete()
 
     def refresh(self) -> None:
+        # NOTE: override this method if you need to process an
+        # incoming value (i.e decrypt secret before setting the argument
+        # value)
         new_arguments = self._schema.retrieve(self.id).model_dump()
         for path, _ in walk_dict(self.arguments):
             new_value = get_dict_value(path, new_arguments)
