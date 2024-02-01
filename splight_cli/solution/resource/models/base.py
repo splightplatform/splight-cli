@@ -48,7 +48,16 @@ class Resource:
         # value)
         new_arguments = self._schema.retrieve(self.id).model_dump()
         for path, _ in walk_dict(self.arguments):
-            new_value = get_dict_value(path, new_arguments)
+            try:
+                new_value = get_dict_value(path, new_arguments)
+            except:
+                # This happens because the user gave a wrong extra attribute
+                # and was ignored by API so it is not present in the new arguments.
+                # By improving the function get_dict_value we could simplify
+                # this code
+                # Also this check is not necessary if we validate a JSON Schema
+                # previously in the parser class.
+                continue
             self.set_argument_value(path, new_value)
 
     def dump(self) -> Dict:
@@ -66,6 +75,3 @@ class Resource:
 
     def set_argument_value(self, path: List[str], value: Any):
         return set_dict_value(value, path, self.arguments)
-
-    def get_argument_value(self, path: List[str]) -> Any:
-        return get_dict_value(path, self.arguments)
