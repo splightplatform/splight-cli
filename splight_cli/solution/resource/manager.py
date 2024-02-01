@@ -75,10 +75,14 @@ class ResourceManager:
             self._state.save()
 
     def plan(self):
-        plan = {}
+        # I would not alter the flow of this function since it covers up
+        # all the possible edits you make to the spec file.
 
+        plan = {}
         resources = {}
 
+        # TODO: dependency_graph order in delete
+        # First remove the state items not present in the spec file
         for key in self._state.all():
             if key not in self._specs:
                 data = self._state.get(key)
@@ -88,6 +92,7 @@ class ResourceManager:
                 diff = Diff(new_arguments={}, old_arguments=resource.arguments)
                 plan[key] = {"operation": "deleted", "diff": diff}
 
+        # Iterate over the resource specs in the spec file
         for key in self._specs_order:
             # If this resource does not exist yet
             if not self._state.contains(key):
@@ -96,9 +101,13 @@ class ResourceManager:
                 resource = self._create_resource(data)
                 resources[key] = resource
 
-                # Replace each reference of this resource
+                # Replace each reference of this resource.
+                # If it does not exist, we set the reference text
+                # just to show in the plan what value will receive later.
                 self._update_references(resource, resources)
 
+                # We do not have previous arguments because this a new
+                # resource.
                 diff = Diff(new_arguments=resource.arguments, old_arguments={})
                 plan[key] = {"operation": "created", "diff": diff}
 
@@ -110,6 +119,7 @@ class ResourceManager:
                 resources[key] = resource
 
                 # Replace each reference of this resource
+                # Same thing as before.
                 self._update_references(resource, resources)
 
                 new_arguments = self._specs[key]["arguments"]
@@ -118,6 +128,11 @@ class ResourceManager:
                     new_arguments=new_arguments,
                     old_arguments=resource.arguments,
                 )
+
+                # This resource changed if the diff contains at least a line.
+                # We ignore this resource if the arguments stay the same.
+                # Note that we are comparing both arguments with their references
+                # replaced.
                 if diff:
                     plan[key] = {"operation": "updated", "diff": diff}
 
@@ -126,6 +141,7 @@ class ResourceManager:
                 "Your infrastructure matches the configuration."
             )
         else:
+            # Just print some messages and the diff for each resource
             self._logger.event(
                 "Splight solution will perform the following actions:",
             )
@@ -143,6 +159,9 @@ class ResourceManager:
         return plan
 
     def apply(self):
+        # I would not alter the flow of this function since it covers up
+        # all the possible edits you make to the spec file.
+
         resources = {}
 
         self._logger.event(
@@ -152,6 +171,8 @@ class ResourceManager:
             self._logger.event("No actions performed")
             return
 
+        # TODO: dependency_graph order in delete
+        # First remove the state items not present in the spec file
         for key in self._state.all():
             if key not in self._specs:
                 data = self._state.get(key)
