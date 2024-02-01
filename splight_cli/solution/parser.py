@@ -16,7 +16,7 @@ def parse_reference(value: str) -> Optional[Dict]:
     # Only process strings
     if isinstance(value, str):
         # Building this with format strings breaks the expression
-        pattern = r"^\${{(Asset|Attribute|Metadata|File|Function)\.(\w+)}}$"
+        pattern = r"^\${{(Asset|Attribute|Metadata|File|Function|Secret|Alert|Component|Routine)\.(\w+)}}$"
 
         # Get the matches
         match = re.match(pattern, value)
@@ -58,6 +58,7 @@ class Parser:
                     # that is available after creation.
                     # This also prevents trying to delete a resource which has another
                     # one referencing it.
+                    # Also prevents self-referencing.
                     if key not in specs:
                         raise ValueError(
                             f"Reference '{value}' in resource '{name}' of type '{type}' points to a non existing resource."
