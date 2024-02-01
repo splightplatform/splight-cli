@@ -10,6 +10,8 @@ def strike_text(text):
 
 
 def Diff(new_arguments: Dict, old_arguments: Dict) -> Dict:
+    # TODO: this try catch mechanic could be simplified by improving
+    # the 'Dict' related functions.
     diff = []
     for path, new_value in walk_dict(new_arguments):
         try:
