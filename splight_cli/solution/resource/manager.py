@@ -7,14 +7,18 @@ from splight_cli.solution.resource.diff import Diff
 from splight_cli.solution.resource.logger import ResourceLogger
 from splight_cli.solution.resource.models import (
     Asset,
+    Attribute,
     File,
     Function,
+    Metadata,
     Resource,
 )
 from splight_cli.solution.state import State
 
 type_map = {
     "Asset": Asset,
+    "Attribute": Attribute,
+    "Metadata": Metadata,
     "File": File,
     "Function": Function,
 }
@@ -46,19 +50,15 @@ class ResourceManager:
         # Replace each reference of this resource
         for reference in resource.references:
             reference_key = reference["key"]
-            reference_source = reference["source"]
             reference_target = reference["target"]
             reference_string = reference["string"]
 
-            try:
-                value = resource_pool[reference_key].get_argument_value(
-                    reference_source
-                )
-            except:
+            value = resource_pool[reference_key].id
+            if value is None:
                 value = reference_string
 
-                # Replace it in our arguments.
-                resource.set_argument_value(reference_target, value)
+            # Replace it in our arguments.
+            resource.set_argument_value(reference_target, value)
 
     def refresh(self):
         for key in self._state.all():
@@ -113,21 +113,22 @@ class ResourceManager:
 
             # Already exists in the engine
             else:
-                data = self._state.get(key)
+                state_data = self._state.get(key)
+                state_resource = self._create_resource(state_data)
 
-                resource = self._create_resource(data)
-                resources[key] = resource
+                spec_data = self._specs[key]
+                spec_resource = self._create_resource(spec_data)
 
                 # Replace each reference of this resource
                 # Same thing as before.
-                self._update_references(resource, resources)
-
-                new_arguments = self._specs[key]["arguments"]
+                self._update_references(spec_resource, resources)
 
                 diff = Diff(
-                    new_arguments=new_arguments,
-                    old_arguments=resource.arguments,
+                    new_arguments=spec_resource.arguments,
+                    old_arguments=state_resource.arguments,
                 )
+
+                resources[key] = state_resource
 
                 # This resource changed if the diff contains at least a line.
                 # We ignore this resource if the arguments stay the same.
@@ -204,21 +205,26 @@ class ResourceManager:
 
             # Already exists in the engine
             else:
-                data = self._state.get(key)
+                state_data = self._state.get(key)
+                state_resource = self._create_resource(state_data)
 
-                resource = self._create_resource(data)
-                resources[key] = resource
+                spec_data = self._specs[key]
+                spec_resource = self._create_resource(spec_data)
 
                 # Replace each reference of this resource
-                self._update_references(resource, resources)
+                self._update_references(spec_resource, resources)
 
-                new_arguments = self._specs[key]["arguments"]
+                diff = Diff(
+                    new_arguments=spec_resource.arguments,
+                    old_arguments=state_resource.arguments,
+                )
 
-                diff = Diff(new_arguments, resource.arguments)
+                resources[key] = state_resource
+
                 if diff:
-                    resource.update_arguments(new_arguments)
-                    resource.update()
-                    self._logger.resource("Resource updated", resource)
+                    state_resource.update_arguments(spec_resource.arguments)
+                    state_resource.update()
+                    self._logger.resource("Resource updated", state_resource)
 
-                    self._state.update(resource.key, resource.dump())
+                    self._state.update(key, state_resource.dump())
                     self._state.save()
