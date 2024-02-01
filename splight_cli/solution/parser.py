@@ -16,24 +16,15 @@ def parse_reference(value: str) -> Optional[Dict]:
     # Only process strings
     if isinstance(value, str):
         # Building this with format strings breaks the expression
-        pattern = r"^\${{(Asset|File|Function)\.(\w+)((?:\.\w+)+)}}$"
+        pattern = r"^\${{(Asset|Attribute|Metadata|File|Function)\.(\w+)}}$"
 
         # Get the matches
         match = re.match(pattern, value)
 
         if match:
-            type, name, path = match.groups()
-
-            # The capturing group for path starts with a leading dot,
-            # so we remove it
-            path = path.lstrip(".").split(".")
-
-            # Cast the digit keys (array indexes)
-            path = [int(key) if key.isdigit() else key for key in path]
-
+            type, name = match.groups()
             key = f"{type}:{name}"
-
-            return key, path
+            return key
 
 
 class Parser:
@@ -60,7 +51,7 @@ class Parser:
             for path, value in walk_dict(resource_spec["arguments"]):
                 result = parse_reference(value)
                 if result is not None:
-                    key, source = result
+                    key = result
 
                     # Must be done here, otherwise it would affect the dependency graph.
                     # Paths and values are validated later on, since we may need data
@@ -72,7 +63,6 @@ class Parser:
 
                     reference = {
                         "key": key,  # Key of the referenced resource
-                        "source": source,  # Where to get the value
                         "target": path,  # Where to put the value
                         "string": value,  # The string value of the reference
                     }
