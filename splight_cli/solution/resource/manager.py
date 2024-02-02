@@ -12,6 +12,7 @@ from splight_cli.solution.resource.models import (
     Function,
     Metadata,
     Resource,
+    Secret,
 )
 from splight_cli.solution.state import State
 
@@ -21,6 +22,7 @@ type_map = {
     "Metadata": Metadata,
     "File": File,
     "Function": Function,
+    "Secret": Secret,
 }
 
 
@@ -81,7 +83,7 @@ class ResourceManager:
         plan = {}
         resources = {}
 
-        # TODO: dependency_graph order in delete
+        # FIXME: dependency_graph order in delete
         # First remove the state items not present in the spec file
         for key in self._state.all():
             if key not in self._specs:
@@ -172,7 +174,7 @@ class ResourceManager:
             self._logger.event("No actions performed")
             return
 
-        # TODO: dependency_graph order in delete
+        # FIXME: dependency_graph order in delete
         # First remove the state items not present in the spec file
         for key in self._state.all():
             if key not in self._specs:
