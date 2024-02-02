@@ -1,7 +1,6 @@
 import typer
 from rich.console import Console
 
-from splight_cli.constants import error_style
 from splight_cli.context import check_credentials
 from splight_cli.solution.parser import Parser
 from splight_cli.solution.resource import ResourceManager
