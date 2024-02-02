@@ -6,11 +6,12 @@ from splight_cli.solution.resource.models.base import Resource
 
 # FIXME: After the first time this resource is created, the value will be saved
 # unencrypted in the state.
-# This can be fixed easily by overriding the create method.
-# But needs a fix from the splight_lib first, which is, that the model does not
+# This can be fixed easily by overriding the create method and replacing the plain
+# text value with the encrypted one inside de client.
+# But it needs a fix from the splight_lib first, which is, that the model does not
 # reinitialize itself with the API response after the '.save()'.
 # In other words, the model does not contain the encrypted value after '.save()'
-# A wordaround is refreshing the resource after creation (see below) which achieves
+# A workaround is refreshing the resource after creation (see below) which achieves
 # the same goal, but does one more request.
 class Secret(Resource):
     _schema: SplightDatabaseBaseModel = SecretSchema
@@ -32,5 +33,6 @@ class Secret(Resource):
         client.save()
         self.id = client.id
 
-        # If this fails the state will be inconsistent
+        # NOTE: If this fails the state will be inconsistent,
+        # better do the fix explained above
         self.refresh()  # Retrieve the encrypted value
