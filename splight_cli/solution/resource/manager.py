@@ -29,7 +29,7 @@ type_map = {
 # NOTE: One good thing about this approach, is that the code is idempotent.
 # That means, if it fails, you can just fix your spec issues (inspect the traceback)
 # and try again. The state won't loose its consistency.
-# FIXME: Add paralelize the processing of non dependent resources.
+# FIXME: Paralelize the processing of non dependent resources.
 # Use toposort instead of toposort_flatten for this purpose.
 class ResourceManager:
     def __init__(
