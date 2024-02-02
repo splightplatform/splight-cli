@@ -39,6 +39,8 @@ class Parser:
         # Here we build the dependency graph using the resource keys
         dependency_graph = {}
 
+        # FIXME: fails for an empty spec file
+        # - Does not destroy all elements.
         specs = {}
         for resource_spec in self._spec_file_data:
             name = resource_spec["name"]
