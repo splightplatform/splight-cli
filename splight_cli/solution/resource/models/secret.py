@@ -10,6 +10,7 @@ from splight_cli.solution.resource.models.base import Resource
 # But needs a fix from the splight_lib first, which is, that the model does not
 # reinitialize itself with the API response after the '.save()'.
 # In other words, the model does not contain the encrypted value after '.save()'
+# A wordaround is refreshing the resource after creation (see below).
 class Secret(Resource):
     _schema: SplightDatabaseBaseModel = SecretSchema
 
@@ -24,3 +25,9 @@ class Secret(Resource):
             arguments["value"] = client.decrypt(arguments["name"]).value
 
         super().__init__(*args, **kwargs)
+
+    def create(self) -> None:
+        client = self._schema(**self.arguments)
+        client.save()
+        self.id = client.id
+        self.refresh()  # Retrieve the encrypted value
