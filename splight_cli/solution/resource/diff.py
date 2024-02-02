@@ -6,12 +6,15 @@ from splight_cli.solution.dict import get_dict_value, walk_dict
 
 
 def strike_text(text):
-    return "".join(["\u0336{}".format(c) for c in text])
+    return "".join(["\u0336{}".format(c) for c in str(text)])
 
 
 def Diff(new_arguments: Dict, old_arguments: Dict) -> Dict:
-    # TODO: this try catch mechanic could be simplified by improving
+    # FIXME: this try catch mechanic could be simplified by improving
     # the 'Dict' related functions.
+
+    # FIXME: Try replacing the QueryFilter in a function for a single value.
+    # The diff will show incorrectly.
     diff = []
     for path, new_value in walk_dict(new_arguments):
         try:
