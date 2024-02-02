@@ -10,7 +10,8 @@ from splight_cli.solution.resource.models.base import Resource
 # But needs a fix from the splight_lib first, which is, that the model does not
 # reinitialize itself with the API response after the '.save()'.
 # In other words, the model does not contain the encrypted value after '.save()'
-# A wordaround is refreshing the resource after creation (see below).
+# A wordaround is refreshing the resource after creation (see below) which achieves
+# the same goal, but does one more request.
 class Secret(Resource):
     _schema: SplightDatabaseBaseModel = SecretSchema
 
