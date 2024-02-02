@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 
-# TODO: make this faster
+# FIXME: make this faster using a stack
 def walk_dict(data: Dict, current=[]):
     result = []
 

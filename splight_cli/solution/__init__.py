@@ -21,6 +21,11 @@ def callback(ctx: typer.Context):
     check_credentials(ctx)
 
 
+# FIXME: find a nice way to print the exceptions.
+# Take into account that most exception messages are short and do not have
+# that much content. I would include the traceback, or at least some part of it.
+# Another option is to not catch them, and show the entire error, so the user can
+# debug it.
 @solution_app.command()
 def apply(
     _: typer.Context,

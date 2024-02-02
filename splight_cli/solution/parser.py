@@ -12,6 +12,12 @@ class DuplicateResourceError(Exception):
 
 def parse_reference(value: str) -> Optional[Dict]:
     """Return the reference if it matches the regex or None otherwise"""
+    # FIXME: make it so we are able to reference the 'name' of a resource.
+    # This is super easy to do:
+    # 1. Add '.id' and '.name' at the end of the regex
+    # 2. Save that accessor to the references dict in each spec.
+    # 3. Change the 'replace_references' function in ResourceManager so it
+    #    gets the correct attribute.
 
     # Only process strings
     if isinstance(value, str):

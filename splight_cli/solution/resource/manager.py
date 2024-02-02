@@ -26,6 +26,9 @@ type_map = {
 }
 
 
+# NOTE: One good thing about this approach, is that the code is idempotent.
+# That means, if it fails, you can just fix your spec issues (inspect the traceback)
+# and try again. The state won't loose its consistency.
 class ResourceManager:
     def __init__(
         self,
