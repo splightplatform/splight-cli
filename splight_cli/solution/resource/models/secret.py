@@ -31,4 +31,6 @@ class Secret(Resource):
         client = self._schema(**self.arguments)
         client.save()
         self.id = client.id
+
+        # If this fails the state will be inconsistent
         self.refresh()  # Retrieve the encrypted value
