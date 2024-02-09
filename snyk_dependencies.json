@@ -3,7 +3,7 @@
   "ok": true,
   "dependencyCount": 76,
   "org": "thomas.vadora",
-  "policy": "# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.\nversion: v1.25.1\n# ignores vulnerabilities until expiry date; change duration by modifying expiry date\nignore:\n  SNYK-PYTHON-CRYPTOGRAPHY-6050294:\n    - '*':\n        reason: None Given\n        expires: 2030-02-03T18:45:41.764Z\n        created: 2024-01-04T18:45:41.768Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6126975:\n    - '*':\n        reason: None Given\n        expires: 2030-02-03T18:45:50.775Z\n        created: 2024-01-04T18:45:50.782Z\n        source: cli\n  'snyk:lic:pip:pyppmd:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:02.039Z\n        created: 2024-01-04T18:46:02.048Z\n        source: cli\n  'snyk:lic:pip:pybcj:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:13.007Z\n        created: 2024-01-04T18:46:13.015Z\n        source: cli\n  'snyk:lic:pip:py7zr:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:23.541Z\n        created: 2024-01-04T18:46:23.545Z\n        source: cli\n  'snyk:lic:pip:pathspec:MPL-2.0':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:32.210Z\n        created: 2024-01-04T18:46:32.220Z\n        source: cli\n  'snyk:lic:pip:multivolumefile:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:43.513Z\n        created: 2024-01-04T18:46:43.523Z\n        source: cli\n  'snyk:lic:pip:inflate64:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:52.077Z\n        created: 2024-01-04T18:46:52.084Z\n        source: cli\n  'snyk:lic:pip:certifi:MPL-2.0':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:47:01.021Z\n        created: 2024-01-04T18:47:01.030Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6149518:\n    - '*':\n        reason: None Given\n        expires: 2024-02-09T18:23:19.568Z\n        created: 2024-01-10T18:23:19.580Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6210214:\n    - '*':\n        reason: None Given\n        expires: 2024-03-03T12:24:23.146Z\n        created: 2024-02-02T12:24:23.176Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6157248:\n    - '*':\n        reason: None Given\n        expires: 2024-03-03T12:24:52.408Z\n        created: 2024-02-02T12:24:52.431Z\n        source: cli\npatch: {}\n",
+  "policy": "# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.\nversion: v1.25.1\n# ignores vulnerabilities until expiry date; change duration by modifying expiry date\nignore:\n  SNYK-PYTHON-CRYPTOGRAPHY-6050294:\n    - '*':\n        reason: None Given\n        expires: 2030-02-03T18:45:41.764Z\n        created: 2024-01-04T18:45:41.768Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6126975:\n    - '*':\n        reason: None Given\n        expires: 2030-02-03T18:45:50.775Z\n        created: 2024-01-04T18:45:50.782Z\n        source: cli\n  'snyk:lic:pip:pyppmd:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:02.039Z\n        created: 2024-01-04T18:46:02.048Z\n        source: cli\n  'snyk:lic:pip:pybcj:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:13.007Z\n        created: 2024-01-04T18:46:13.015Z\n        source: cli\n  'snyk:lic:pip:py7zr:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:23.541Z\n        created: 2024-01-04T18:46:23.545Z\n        source: cli\n  'snyk:lic:pip:pathspec:MPL-2.0':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:32.210Z\n        created: 2024-01-04T18:46:32.220Z\n        source: cli\n  'snyk:lic:pip:multivolumefile:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:43.513Z\n        created: 2024-01-04T18:46:43.523Z\n        source: cli\n  'snyk:lic:pip:inflate64:LGPL-2.1':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:46:52.077Z\n        created: 2024-01-04T18:46:52.084Z\n        source: cli\n  'snyk:lic:pip:certifi:MPL-2.0':\n    - '*':\n        reason: License issue\n        expires: 2030-02-03T18:47:01.021Z\n        created: 2024-01-04T18:47:01.030Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6149518:\n    - '*':\n        reason: None Given\n        expires: 2024-03-10T20:01:20.850Z\n        created: 2024-02-09T20:01:20.882Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6210214:\n    - '*':\n        reason: None Given\n        expires: 2024-03-03T12:24:23.146Z\n        created: 2024-02-02T12:24:23.176Z\n        source: cli\n  SNYK-PYTHON-CRYPTOGRAPHY-6157248:\n    - '*':\n        reason: None Given\n        expires: 2024-03-03T12:24:52.408Z\n        created: 2024-02-02T12:24:52.431Z\n        source: cli\npatch: {}\n",
   "isPrivate": true,
   "licensesPolicy": {
     "severities": {},
@@ -177,15 +177,15 @@
           },
           {
             "assigner": "SUSE",
-            "severity": "high",
-            "cvssV3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
-            "cvssV3BaseScore": 7.5,
-            "modificationTime": "2023-11-22T11:02:51.571843Z"
+            "severity": "medium",
+            "cvssV3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L",
+            "cvssV3BaseScore": 5.3,
+            "modificationTime": "2024-02-06T23:02:37.691670Z"
           }
         ],
         "description": "## Overview\n\nAffected versions of this package are vulnerable to Denial of Service (DoS) when the `DH_generate_key()`, `DH_check_pub_key()`, `DH_check_pub_key_ex()`, `EVP_PKEY_public_check()`, and `EVP_PKEY_generate()` functions are used. An attacker can cause long delays and potentially a Denial of Service by supplying excessively long X9.42 DH keys or parameters obtained from an untrusted source. \r\n\r\n**Note:**\r\n\r\nThis is only exploitable if the application uses these functions to generate or check an X9.42 DH key or parameters. Also, the OpenSSL `pkey` command line application, when using the `-pubcheck` option, as well as the OpenSSL `genpkey` command line application, are vulnerable to this issue.\n## Remediation\nUpgrade `cryptography` to version 42.0.0 or higher.\n## References\n- [GitHub Commit](https://github.com/openssl/openssl/commit/db925ae2e65d0d925adef429afc37f75bd1c2017)\n- [GitHub Commit](https://github.com/openssl/openssl/commit/ddeb4b6c6d527e54ce9a99cba785c0f7776e54b6)\n- [GitHub Commit](https://github.com/openssl/openssl/commit/ec061bf8ff2add8050599058557178c03295bcc0)\n- [GitHub Commit](https://github.com/pyca/cryptography/commit/01d55b2af8ae167315288c03b192c59c86425009)\n- [RedHat Bugzilla Bug](https://bugzilla.redhat.com/show_bug.cgi?id=2248616)\n- [Security Advisory](https://www.openssl.org/news/secadv/20231106.txt)\n",
         "epssDetails": {
-          "percentile": "0.33049",
+          "percentile": "0.32973",
           "probability": "0.00079",
           "modelVersion": "v2023.03.01"
         },
@@ -205,12 +205,12 @@
         "disclosureTime": "2023-10-24T00:00:00Z",
         "packageManager": "pip",
         "publicationTime": "2023-11-08T15:16:15.075620Z",
-        "modificationTime": "2024-01-26T12:43:37.247062Z",
+        "modificationTime": "2024-02-06T23:02:37.691670Z",
         "socialTrendAlert": false,
         "severityWithCritical": "medium",
         "from": [
-          "splight-cli@4.6.2",
-          "splight-lib@4.6.4",
+          "splight-cli@4.7.0",
+          "splight-lib@5.0.0",
           "cryptography@41.0.7"
         ],
         "upgradePath": [],
@@ -296,8 +296,8 @@
         "socialTrendAlert": false,
         "severityWithCritical": "medium",
         "from": [
-          "splight-cli@4.6.2",
-          "splight-lib@4.6.4",
+          "splight-cli@4.7.0",
+          "splight-lib@5.0.0",
           "cryptography@41.0.7"
         ],
         "upgradePath": [],
@@ -421,8 +421,8 @@
         "socialTrendAlert": false,
         "severityWithCritical": "medium",
         "from": [
-          "splight-cli@4.6.2",
-          "splight-lib@4.6.4",
+          "splight-cli@4.7.0",
+          "splight-lib@5.0.0",
           "cryptography@41.0.7"
         ],
         "upgradePath": [],
@@ -434,8 +434,8 @@
           "ignored": [
             {
               "reason": "None Given",
-              "expires": "2024-02-09T18:23:19.568Z",
-              "created": "2024-01-10T18:23:19.580Z",
+              "expires": "2024-03-10T20:01:20.850Z",
+              "created": "2024-02-09T20:01:20.882Z",
               "source": "cli",
               "path": [
                 "*"
@@ -535,8 +535,8 @@
         "socialTrendAlert": false,
         "severityWithCritical": "medium",
         "from": [
-          "splight-cli@4.6.2",
-          "splight-lib@4.6.4",
+          "splight-cli@4.7.0",
+          "splight-lib@5.0.0",
           "cryptography@41.0.7"
         ],
         "upgradePath": [],
@@ -561,7 +561,7 @@
       {
         "id": "SNYK-PYTHON-CRYPTOGRAPHY-6210214",
         "title": "NULL Pointer Dereference",
-        "CVSSv3": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L",
+        "CVSSv3": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
         "credit": [
           "Bahaa Naamneh"
         ],
@@ -579,8 +579,8 @@
           "triageAdvice": null
         },
         "language": "python",
-        "severity": "low",
-        "cvssScore": 3.3,
+        "severity": "medium",
+        "cvssScore": 5.5,
         "functions": [],
         "malicious": false,
         "isDisputed": false,
@@ -622,10 +622,21 @@
             "cvssV3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:L",
             "cvssV3BaseScore": 3.3,
             "modificationTime": "2024-01-25T13:59:48.995274Z"
+          },
+          {
+            "assigner": "NVD",
+            "severity": "medium",
+            "cvssV3Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
+            "cvssV3BaseScore": 5.5,
+            "modificationTime": "2024-02-03T01:11:14.382067Z"
           }
         ],
         "description": "## Overview\n\nAffected versions of this package are vulnerable to NULL Pointer Dereference when processing a maliciously formatted PKCS12 file. The vulnerability exists due to improper handling of optional `ContentInfo` fields, which can be set to null. An attacker can cause a denial of service by sending crafted input that leads to applications loading files in PKCS12 format from untrusted sources to terminate abruptly.\n## Remediation\nUpgrade `cryptography` to version 42.0.2 or higher.\n## References\n- [GitHub Commit](https://github.com/alexcrichton/openssl-src-rs/commit/add20f73b6b42be7451af2e1044d4e0e778992b2)\n- [GitHub Commit](https://github.com/openssl/openssl/commit/09df4395b5071217b76dc7d3d2e630eb8c5a79c2)\n- [GitHub Commit](https://github.com/openssl/openssl/commit/775acfdbd0c6af9ac855f34969cdab0c0c90844a)\n- [GitHub Commit](https://github.com/openssl/openssl/commit/d135eeab8a5dbf72b3da5240bab9ddb7678dbd2c)\n- [GitHub Commit](https://github.com/pyca/cryptography/commit/3519591d255d4506fbcd0d04037d45271903c64d)\n- [GitHub PR](https://github.com/openssl/openssl/pull/23362)\n- [OpenSSL Advisory](https://www.openssl.org/news/secadv/20240125.txt)\n",
-        "epssDetails": null,
+        "epssDetails": {
+          "percentile": "0.61053",
+          "probability": "0.00228",
+          "modelVersion": "v2023.03.01"
+        },
         "identifiers": {
           "CVE": [
             "CVE-2024-0727"
@@ -642,12 +653,12 @@
         "disclosureTime": "2024-01-22T00:00:00Z",
         "packageManager": "pip",
         "publicationTime": "2024-01-31T17:09:40.537426Z",
-        "modificationTime": "2024-01-31T17:09:40.537723Z",
+        "modificationTime": "2024-02-04T12:40:05.827562Z",
         "socialTrendAlert": false,
-        "severityWithCritical": "low",
+        "severityWithCritical": "medium",
         "from": [
-          "splight-cli@4.6.2",
-          "splight-lib@4.6.4",
+          "splight-cli@4.7.0",
+          "splight-lib@5.0.0",
           "cryptography@41.0.7"
         ],
         "upgradePath": [],
