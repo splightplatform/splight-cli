@@ -2,16 +2,6 @@
 version: v1.25.0
 # ignores vulnerabilities until expiry date; change duration by modifying expiry date
 ignore:
-  SNYK-PYTHON-CRYPTOGRAPHY-6050294:
-    - '*':
-        reason: None Given
-        expires: 2030-02-03T18:45:41.764Z
-        created: 2024-01-04T18:45:41.768Z
-  SNYK-PYTHON-CRYPTOGRAPHY-6126975:
-    - '*':
-        reason: None Given
-        expires: 2030-02-03T18:45:50.775Z
-        created: 2024-01-04T18:45:50.782Z
   'snyk:lic:pip:pyppmd:LGPL-2.1':
     - '*':
         reason: License issue
@@ -47,19 +37,34 @@ ignore:
         reason: License issue
         expires: 2030-02-03T18:47:01.021Z
         created: 2024-01-04T18:47:01.030Z
-  SNYK-PYTHON-CRYPTOGRAPHY-6149518:
+  SNYK-PYTHON-DNSPYTHON-6241713:
     - '*':
         reason: None Given
-        expires: 2024-03-10T20:01:20.850Z
-        created: 2024-02-09T20:01:20.882Z
+        expires: 2024-03-16T19:01:03.165Z
+        created: 2024-02-15T19:01:03.182Z
   SNYK-PYTHON-CRYPTOGRAPHY-6210214:
     - '*':
         reason: None Given
-        expires: 2024-03-03T12:24:23.146Z
-        created: 2024-02-02T12:24:23.176Z
+        expires: 2024-03-16T19:01:14.655Z
+        created: 2024-02-15T19:01:14.676Z
   SNYK-PYTHON-CRYPTOGRAPHY-6157248:
     - '*':
         reason: None Given
-        expires: 2024-03-03T12:24:52.408Z
-        created: 2024-02-02T12:24:52.431Z
+        expires: 2024-03-16T19:01:26.238Z
+        created: 2024-02-15T19:01:26.255Z
+  SNYK-PYTHON-CRYPTOGRAPHY-6149518:
+    - '*':
+        reason: None Given
+        expires: 2024-03-16T19:01:34.659Z
+        created: 2024-02-15T19:01:34.680Z
+  SNYK-PYTHON-CRYPTOGRAPHY-6050294:
+    - '*':
+        reason: None Given
+        expires: 2024-03-16T19:02:31.959Z
+        created: 2024-02-15T19:02:31.982Z
+  SNYK-PYTHON-CRYPTOGRAPHY-6126975:
+    - '*':
+        reason: None Given
+        expires: 2024-03-16T19:02:39.071Z
+        created: 2024-02-15T19:02:39.094Z
 patch: {}

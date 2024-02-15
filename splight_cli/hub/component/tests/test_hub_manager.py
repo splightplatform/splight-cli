@@ -53,7 +53,7 @@ def test_push_spec_format_error(mock_exists, mock_json_load):
 @patch.object(ComponentManager, "test", return_value=None)
 @patch(
     "splight_cli.hub.component.hub_manager.json.load",
-    return_value={"name": "mycomponent"},
+    return_value={"name": "mycomponent", "splight_lib_version": "1.1.0"},
 )
 def test_push_spec_missing_keys(mock_exists, mock_json_load):
     manager = HubComponentManager()
@@ -70,7 +70,7 @@ def test_push_spec_missing_keys(mock_exists, mock_json_load):
     return_value={
         "name": "mycomponent",
         "version": "0.1.0",
-        "splight_cli_version": "3.0.0",
+        "splight_lib_version": "3.0.0",
         "input": "wrong_input_type",
     },
 )
