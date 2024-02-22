@@ -630,10 +630,8 @@ class ComponentUpgradeManager:
         )
         new_component = Component(
             name=f"{from_component.name}-{hub_component.version}",
-            bindings=hub_component.bindings,
             version=f"{hub_component.name}-{hub_component.version}",
             endpoints=hub_component.endpoints,
-            commands=hub_component.commands,
             component_type=hub_component.component_type,
             output=hub_component.output,
             description=hub_component.description,

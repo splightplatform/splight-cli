@@ -17,9 +17,7 @@ def generate_component(
             "component_type": json_spec.get("component_type", "connector"),
             "input": json_spec.get("input", []),
             "output": json_spec.get("output", []),
-            "commands": json_spec.get("commands", []),
             "endpoints": json_spec.get("endpoints", []),
-            "bindings": json_spec.get("bindings", []),
         }
     }
     return component_id, component

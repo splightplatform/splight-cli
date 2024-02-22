@@ -49,8 +49,6 @@ TEST_PLAN = {
     ],
     "components": [
         {
-            "bindings": [],
-            "commands": [],
             "component_type": "algorithm",
             "custom_types": [],
             "endpoints": [],
@@ -324,8 +322,6 @@ TEST_STATE_FILLED = {
     ],
     "components": [
         {
-            "bindings": [],
-            "commands": [],
             "component_type": "algorithm",
             "custom_types": [],
             "endpoints": [],
