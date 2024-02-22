@@ -76,36 +76,6 @@
             ]
         }
     ],
-    "commands": [
-        {
-            "name": "command_myasset_print",
-            "fields": [
-                {
-                    "name": "asset",
-                    "type": "MyAsset",
-                    "required": true,
-                    "value": null
-                }
-            ]
-        }
-    ],
-    "bindings": [
-        {
-            "name": "handle_myasset_create",
-            "object_type": "MyAsset",
-            "object_action": "CREATE"
-        },
-        {
-            "name": "handle_myasset_create",
-            "object_type": "MyAsset",
-            "object_action": "UPDATE"
-        },
-        {
-            "name": "handle_myasset_delete",
-            "object_type": "MyAsset",
-            "object_action": "DELETE"
-        }
-    ],
     "endpoints": [
         {
             "name": "proxy",
