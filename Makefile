@@ -27,6 +27,9 @@ clean-test: ## remove test and coverage artifacts
 	find . -name '*.pytest_cache' -exec rm -rf {} +
 	rm -f .coverage
 
+set-version:
+	poetry version $(version)
+
 test: ## run tests with pytest
 	pytest splight_cli
 

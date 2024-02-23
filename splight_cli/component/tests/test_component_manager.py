@@ -19,7 +19,7 @@ SPEC = Spec.model_validate(
     {
         "name": "TestComponent",
         "version": "0.1.0",
-        "splight_cli_version": "1.1.1",
+        "splight_lib_version": "1.1.1",
         "privacy_policy": "public",
         "component_type": "algorithm",
         "custom_types": [],
@@ -37,11 +37,7 @@ SPEC = Spec.model_validate(
         "output": [
             {"name": "Test", "fields": [{"name": "Asset", "type": "Asset"}]}
         ],
-        "commands": [
-            {"name": "Hello", "fields": [{"name": "message", "type": "str"}]}
-        ],
         "tags": ["tag1", "tag2", "tag3"],
-        "bindings": [],
         "endpoints": [{"name": "proxy", "port": 1080}],
     }
 )
