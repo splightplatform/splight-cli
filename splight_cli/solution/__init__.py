@@ -1,13 +1,10 @@
-import logging
-from uuid import UUID
-
 import typer
 from rich.console import Console
 
-from splight_cli.constants import error_style
 from splight_cli.context import check_credentials
-from splight_cli.solution.models import ElementType
-from splight_cli.solution.solution import SolutionManager
+from splight_cli.solution.parser import Parser
+from splight_cli.solution.resource import ResourceManager
+from splight_cli.solution.state import State
 
 solution_app = typer.Typer(
     name="Splight Solution",
@@ -16,7 +13,6 @@ solution_app = typer.Typer(
     no_args_is_help=True,
 )
 
-logger = logging.getLogger()
 console = Console()
 
 
@@ -25,79 +21,68 @@ def callback(ctx: typer.Context):
     check_credentials(ctx)
 
 
-@solution_app.command()
-def plan(
-    ctx: typer.Context,
-    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
-    state_file: str = typer.Option(
-        None, "--state", "-s", help="Path to state yaml file."
-    ),
-    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
-) -> None:
-    try:
-        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
-        manager.plan()
-    except Exception as e:
-        console.print(f"Error planning solution: {str(e)}", style=error_style)
-        raise typer.Exit(code=1)
-
-
+# FIXME: find a nice way to print the exceptions.
+# Take into account that most exception messages are short and do not have
+# that much content. I would include the traceback, or at least some part of it.
+# Another option is to not catch them, and show the entire error, so the user can
+# debug it.
 @solution_app.command()
 def apply(
-    ctx: typer.Context,
-    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
+    _: typer.Context,
+    spec_file: str = typer.Argument(..., help="Path to the spec file."),
     state_file: str = typer.Option(
-        None, "--state", "-s", help="Path to state yaml file."
+        "state.json", "--state", "-s", help="Path to the state file."
     ),
-    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
-    try:
-        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
+    state = State(path=state_file)
+    state.load()
+
+    parser = Parser(spec_file=spec_file)
+    specs, dependency_graph = parser.parse()
+
+    manager = ResourceManager(
+        state=state,
+        specs=specs,
+        dependency_graph=dependency_graph,
+    )
+    manager.refresh()
+    plan = manager.plan()
+    if plan:
         manager.apply()
-    except Exception as e:
-        console.print(f"Error applying solution: {str(e)}", style=error_style)
-        raise typer.Exit(code=1)
-
-
-@solution_app.command("import")
-def _import(
-    ctx: typer.Context,
-    element: ElementType = typer.Argument(
-        ...,
-        case_sensitive=False,
-        help="One of: 'asset', 'secret', 'component', 'function'.",
-    ),
-    id: UUID = typer.Argument(..., help="The element uuid to be fetched."),
-    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
-    state_file: str = typer.Option(
-        None, "--state", "-s", help="Path to state yaml file."
-    ),
-    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
-) -> None:
-    try:
-        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
-        manager.import_element(element, id)
-    except Exception as e:
-        console.print(
-            f"Error importing {element}: {str(e)}", style=error_style
-        )
-        raise typer.Exit(code=1)
 
 
 @solution_app.command()
-def destroy(
-    ctx: typer.Context,
-    plan_file: str = typer.Argument(..., help="Path to plan yaml file."),
+def plan(
+    _: typer.Context,
+    spec_file: str = typer.Argument(..., help="Path to the spec file."),
     state_file: str = typer.Option(
-        None, "--state", "-s", help="Path to state yaml file."
+        "state.json", "--state", "-s", help="Path to the state file."
     ),
-    yes_to_all: bool = typer.Option(False, "--yes", "-y"),
 ) -> None:
-    try:
-        manager = SolutionManager(plan_file, state_file, yes_to_all=yes_to_all)
-        manager.destroy()
-    except Exception as e:
-        console.print(
-            f"Error destroying solution: {str(e)}", style=error_style
-        )
-        raise typer.Exit(code=1)
+    state = State(path=state_file)
+    state.load()
+
+    parser = Parser(spec_file=spec_file)
+    specs, dependency_graph = parser.parse()
+
+    manager = ResourceManager(
+        state=state,
+        specs=specs,
+        dependency_graph=dependency_graph,
+    )
+    manager.refresh()
+    manager.plan()
+
+
+@solution_app.command()
+def refresh(
+    _: typer.Context,
+    state_file: str = typer.Option(
+        "state.json", "--state", "-s", help="Path to the state file."
+    ),
+) -> None:
+    state = State(path=state_file)
+    state.load()
+
+    manager = ResourceManager(state=state)
+    manager.refresh()
