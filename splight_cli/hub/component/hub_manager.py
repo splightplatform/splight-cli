@@ -76,7 +76,8 @@ class HubComponentManager:
         if not components:
             raise HubComponentNotFound(name, version)
 
-        component_data = components[0].download()
+        component_file_wrapper = components[0].download()
+        component_data = component_file_wrapper.read()
 
         # TODO: search for a better approach
         version_modified = version.replace(".", "_")
