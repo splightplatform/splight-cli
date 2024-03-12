@@ -1,8 +1,5 @@
 # Splight CLI
 
-![snyk_code](https://github.com/splightplatform/splight-cli/blob/gh-pages/snyk_code.svg?raw=True)
-![snyk_dependencies](https://github.com/splightplatform/splight-cli/blob/gh-pages/snyk_dependencies.svg?raw=True)
-
 ---
 
 ## Table of Content
@@ -47,6 +44,7 @@ pip install splight-cli
 ```
 
 Once you have installed `splight-cli` you can check the installation with
+
 ```bash
 splight --version
 ```
@@ -222,12 +220,15 @@ You can also retrieve one of the parameters using the `get` command:
 ```bash
 splight configure get <parameter>
 ```
+
 for example for reading the `SPLIGHT_PLATFORM_API_HOST`:
+
 ```bash
 splight configure get splight_platform_api_host
 ```
 
 In the same way you can modify one parameter using the `set` command
+
 ```bash
 splight configure set <parameter> <value>
 ```
@@ -282,6 +283,7 @@ The `engine` command is used for interacting with the Splight Engine. So far, th
 subcommands provide an interface for creating, reaading and deleting resources in the engine.
 
 The command is
+
 ```bash
 splight engine <subcommand> <action> [extra args]
 ```
@@ -290,6 +292,7 @@ depending on the which sub-command you use you can get different actions
 to perform
 
 The valid sub-commands so far are:
+
 - `asset`
 - `attribute`
 - `component`
@@ -315,7 +318,7 @@ The available subcommands are
 
 - `create <name>` to create a new workspace. After the creation of a new worskpace you need to configure _Splight CLI_ with `splight configure`.
 - `delete <name>` to delete an existing workspace.
-- `list` to list all workspaces. Current workspace displays a '*' to the left.
+- `list` to list all workspaces. Current workspace displays a '\*' to the left.
 - `select <name>` to switch between different configured workspaces.
 - `show <name>` to display the contents of an existing workspace.
 
@@ -551,10 +554,10 @@ splight component run <component directory> --local
 ```
 
 This way, the component will run using local clients for database and datalake. This is extremely
-useful for development since you can create instances of the different database objects in the 
-local database for running different scenearios or differents tests. The same can be applied for 
+useful for development since you can create instances of the different database objects in the
+local database for running different scenearios or differents tests. The same can be applied for
 datalake data, the local client stores the data in files. In both cases, for database and datalake,
-the files are created in the same directory as the `__init__.py` file of the component, so you 
+the files are created in the same directory as the `__init__.py` file of the component, so you
 can modified it based on your needs.
 
 You can interact with the local databases using the library, for example
