@@ -109,7 +109,11 @@ def test_push_already_exists_with_force(mock_exists, mock_component_manager):
 
 
 @patch.object(HubComponent, "list_mine", return_value=[HUB_COMPONENT])
-@patch.object(HubComponent, "download", return_value=b"This is a component")
+@patch.object(
+    HubComponent,
+    "download",
+    return_value=open(os.path.join(TEST_COMPONENT_PATH, "spec.json"), "r"),
+)
 @patch("builtins.open", new_callable=mock_open())
 @patch("py7zr.SevenZipFile")
 @patch("shutil.move", return_value=None)
