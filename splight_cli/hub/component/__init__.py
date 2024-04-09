@@ -6,7 +6,7 @@ from splight_cli.constants import error_style
 from splight_cli.hub.component.hub_manager import HubComponentManager
 
 component_app = typer.Typer(
-    name="Splight Engine Component",
+    name="Splight Hub Component",
     add_completion=True,
     rich_markup_mode="rich",
     no_args_is_help=True,

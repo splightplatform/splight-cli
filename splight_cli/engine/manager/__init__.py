@@ -6,3 +6,12 @@ from splight_cli.engine.manager.manager import (
     ResourceManager,
     ResourceManagerException,
 )
+
+__all__ = [
+    ComponentUpgradeManager,
+    ComponentUpgradeManagerException,
+    DatalakeManager,
+    DatalakeManagerException,
+    ResourceManager,
+    ResourceManagerException,
+]
