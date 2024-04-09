@@ -50,7 +50,7 @@ class Resource:
         for path, _ in walk_dict(self.arguments):
             try:
                 new_value = get_dict_value(path, new_arguments)
-            except:
+            except Exception:
                 # This happens because the user gave a wrong extra attribute
                 # and was ignored by API so it is not present in the new arguments.
                 # By improving the function get_dict_value we could simplify

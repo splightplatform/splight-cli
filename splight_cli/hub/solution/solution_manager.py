@@ -59,8 +59,8 @@ class HubSolutionManager:
 
         self._set_files_from_path(solution, path)
 
-        # with Loader("Pushing Solution to Splight Hub"):
-        solution.save()
+        with Loader("Pushing Solution to Splight Hub"):
+            solution.save()
 
     def _set_files_from_path(self, solution: HubSolution, path: str):
         main_file_path = os.path.join(path, MAIN_FILE)

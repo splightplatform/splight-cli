@@ -49,6 +49,10 @@ force-exclude = ".*/component/templates/.*py"
 profile = "black"
 line_length = 79
 
+[tool.ruff]
+line-length = 79
+exclude = ["*/component/templates/*"]
+
 [tool.pytest.ini_options]
 filterwarnings = [
     "error",

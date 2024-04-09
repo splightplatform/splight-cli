@@ -19,7 +19,7 @@ def Diff(new_arguments: Dict, old_arguments: Dict) -> Dict:
     for path, new_value in walk_dict(new_arguments):
         try:
             get_dict_value(path, old_arguments)
-        except:
+        except Exception:
             line = f"\t{Fore.GREEN}+{Style.RESET_ALL} {'.'.join([str(key) for key in path])}: {new_value}"
             diff.append(line)
             continue
@@ -32,7 +32,7 @@ def Diff(new_arguments: Dict, old_arguments: Dict) -> Dict:
     for path, old_value in walk_dict(old_arguments):
         try:
             get_dict_value(path, new_arguments)
-        except:
+        except Exception:
             line = f"\t{Fore.RED}-{Style.RESET_ALL} {'.'.join([str(key) for key in path])}: {strike_text(old_value)}"
             diff.append(line)
 

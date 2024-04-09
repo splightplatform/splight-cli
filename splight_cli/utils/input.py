@@ -64,7 +64,7 @@ def prompt_param(param: Dict[str, Primitive], prefix: str = "") -> Primitive:
 def list_of(input_value: str, param_type: Type = str) -> List:
     try:
         values = literal_eval(input_value)
-    except:
+    except Exception:
         return None
 
     if not isinstance(values, List):
