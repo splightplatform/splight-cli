@@ -37,9 +37,6 @@ def push(
         manager = HubSolutionManager()
         manager.push(name, version, description, tags, path, force=force)
     except Exception as exc:
-        import traceback
-        import sys
-        traceback.print_exc(file=sys.stdout)
         console.print(f"Error pushing component: {exc}", style=error_style)
         raise typer.Exit(code=1)
 
