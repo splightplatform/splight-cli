@@ -7,7 +7,6 @@ from splight_cli.engine.manager.manager import (
     ResourceManagerException,
 )
 
-
 __all__ = [
     ComponentUpgradeManager,
     ComponentUpgradeManagerException,
