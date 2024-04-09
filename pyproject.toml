@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "splight-cli"
-version = "4.11.2"
+version = "4.12.0"
 description = "Splight Command Line Interface"
 authors = ["Splight Dev <dev@splight-ae.com>"]
 readme = "README.md"
@@ -32,6 +32,7 @@ pre-commit = "3.2.2"
 pytest = "^7.4.3"
 coverage = "^7.3.2"
 mock = "^5.1.0"
+ruff = "^0.3.5"
 
 [tool.poetry.scripts]
 splight = "splight_cli.cli:app"
