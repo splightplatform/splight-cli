@@ -10,6 +10,7 @@ from splight_cli.hub.solution.constants import (
     MAIN_FILE,
     VALUES_FILE,
     VARIABLES_FILE,
+    README_FILE,
 )
 from splight_cli.hub.solution.exceptions import (
     HubSolutionAlreadyExists,
@@ -70,16 +71,22 @@ class HubSolutionManager:
             raise MissingSolutionFile(MAIN_FILE, path)
 
         variables_file_path = os.path.join(path, VARIABLES_FILE)
-        if os.path.exists(main_file_path):
+        if os.path.exists(variables_file_path):
             solution.variables_file = variables_file_path
         else:
             raise MissingSolutionFile(VARIABLES_FILE, path)
 
         values_file_path = os.path.join(path, VALUES_FILE)
-        if os.path.exists(main_file_path):
+        if os.path.exists(values_file_path):
             solution.values_file = values_file_path
         else:
             raise MissingSolutionFile(VALUES_FILE, path)
+        
+        readme_file_path = os.path.join(path, README_FILE)
+        if os.path.exists(readme_file_path):
+            solution.readme_file = readme_file_path
+        else:
+            raise MissingSolutionFile(README_FILE, path)
 
     def _get_component(self, name: str, version: str) -> HubSolution:
         solutions = HubSolution.list(name=name, version=version)
