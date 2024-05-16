@@ -8,9 +8,9 @@ from splight_lib.models import HubSolution
 
 from splight_cli.hub.solution.constants import (
     MAIN_FILE,
+    README_FILE,
     VALUES_FILE,
     VARIABLES_FILE,
-    README_FILE,
 )
 from splight_cli.hub.solution.exceptions import (
     HubSolutionAlreadyExists,
@@ -81,7 +81,7 @@ class HubSolutionManager:
             solution.values_file = values_file_path
         else:
             raise MissingSolutionFile(VALUES_FILE, path)
-        
+
         readme_file_path = os.path.join(path, README_FILE)
         if os.path.exists(readme_file_path):
             solution.readme_file = readme_file_path
