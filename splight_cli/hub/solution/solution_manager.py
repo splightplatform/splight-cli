@@ -1,11 +1,20 @@
+import json
 import os
 from collections import namedtuple
-from typing import List
 
+from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubSolution
 
+from splight_cli.constants import (  # COMPRESSION_TYPE,; SPLIGHT_IGNORE,
+    SPEC_FILE,
+    success_style,
+)
+from splight_cli.hub.component.exceptions import (
+    SpecFormatError,
+    SpecValidationError,
+)
 from splight_cli.hub.solution.constants import (
     MAIN_FILE,
     README_FILE,
@@ -38,30 +47,33 @@ class HubSolutionManager:
 
     def push(
         self,
-        name: str,
-        version: str,
-        description: str,
-        tags: List[str] = [],
         path: str = ".",
         force: bool = False,
     ):
         try:
-            solution = self._get_component(name, version)
-        except HubSolutionNotFound:
-            exist_in_hub = False
-            solution = HubSolution(
-                name=name, version=version, description=description, tags=tags
-            )
-        else:
-            exist_in_hub = True
+            with open(os.path.join(path, SPEC_FILE)) as fid:
+                spec = json.load(fid)
+        except Exception as exc:
+            raise SpecFormatError(exc)
 
-        if not force and exist_in_hub:
+        # Validate spec fields before pushing the model
+        try:
+            instance = HubSolution.model_validate(spec)
+        except ValidationError as exc:
+            raise SpecValidationError(exc)
+
+        name = instance.name
+        version = instance.version
+
+        if not force and self._exists_in_hub(name, version):
             raise HubSolutionAlreadyExists(name, version)
 
-        self._set_files_from_path(solution, path)
+        with Loader("Pushing Component to Splight Hub"):
+            solution = HubSolution.upload(path)
 
-        with Loader("Pushing Solution to Splight Hub"):
-            solution.save()
+        console.print(
+            f"Solution {solution.id} pushed succesfully", style=success_style
+        )
 
     def _set_files_from_path(self, solution: HubSolution, path: str):
         main_file_path = os.path.join(path, MAIN_FILE)
@@ -88,8 +100,11 @@ class HubSolutionManager:
         else:
             raise MissingSolutionFile(README_FILE, path)
 
-    def _get_component(self, name: str, version: str) -> HubSolution:
+    def _get_hub_solution(self, name: str, version: str) -> HubSolution:
         solutions = HubSolution.list(name=name, version=version)
         if not solutions:
             raise HubSolutionNotFound(name, version)
         return solutions[0]
+
+    def _exists_in_hub(self, name: str, version: str) -> bool:
+        return bool(self._get_hub_solution(name, version))
