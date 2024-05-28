@@ -1,13 +1,16 @@
 import json
 import os
+import shutil
 from collections import namedtuple
 
+import py7zr
 from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubSolution
 
-from splight_cli.constants import (  # COMPRESSION_TYPE,; SPLIGHT_IGNORE,
+from splight_cli.constants import (
+    COMPRESSION_TYPE,
     SPEC_FILE,
     success_style,
 )
@@ -15,16 +18,10 @@ from splight_cli.hub.component.exceptions import (
     SpecFormatError,
     SpecValidationError,
 )
-from splight_cli.hub.solution.constants import (
-    MAIN_FILE,
-    README_FILE,
-    VALUES_FILE,
-    VARIABLES_FILE,
-)
 from splight_cli.hub.solution.exceptions import (
     HubSolutionAlreadyExists,
     HubSolutionNotFound,
-    MissingSolutionFile,
+    SolutionDirectoryAlreadyExists,
 )
 from splight_cli.utils.loader import Loader
 
@@ -75,30 +72,38 @@ class HubSolutionManager:
             f"Solution {solution.id} pushed succesfully", style=success_style
         )
 
-    def _set_files_from_path(self, solution: HubSolution, path: str):
-        main_file_path = os.path.join(path, MAIN_FILE)
-        if os.path.exists(main_file_path):
-            solution.main_file = main_file_path
-        else:
-            raise MissingSolutionFile(MAIN_FILE, path)
+    def pull(self, name: str, version: str):
+        with Loader("Pulling solution from Splight Hub"):
+            self._pull_solution(name, version)
+        console.print(
+            f"Solution {name} pulled succesfully", style=success_style
+        )
 
-        variables_file_path = os.path.join(path, VARIABLES_FILE)
-        if os.path.exists(variables_file_path):
-            solution.variables_file = variables_file_path
-        else:
-            raise MissingSolutionFile(VARIABLES_FILE, path)
+    def _pull_solution(self, name: str, version: str):
+        solution = self._get_hub_solution(name, version)
+        name, version = solution.name, solution.version
+        file_wrapper = solution.download()
+        file_data = file_wrapper.read()
 
-        values_file_path = os.path.join(path, VALUES_FILE)
-        if os.path.exists(values_file_path):
-            solution.values_file = values_file_path
-        else:
-            raise MissingSolutionFile(VALUES_FILE, path)
+        version_modified = version.replace(".", "_")
+        solution_path = f"{name}/{version_modified}"
+        versioned_name = f"{name}-{version}"
+        file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
+        if os.path.exists(solution_path):
+            raise SolutionDirectoryAlreadyExists(solution_path)
 
-        readme_file_path = os.path.join(path, README_FILE)
-        if os.path.exists(readme_file_path):
-            solution.readme_file = readme_file_path
-        else:
-            raise MissingSolutionFile(README_FILE, path)
+        try:
+            with open(file_name, "wb") as fid:
+                fid.write(file_data)
+
+            with py7zr.SevenZipFile(file_name, "r") as z:
+                z.extractall(path=".")
+            shutil.move(f"{versioned_name}", solution_path)
+        except Exception as exc:
+            raise exc
+        finally:
+            if os.path.exists(file_name):
+                os.remove(file_name)
 
     def _get_hub_solution(self, name: str, version: str) -> HubSolution:
         solutions = HubSolution.list(name=name, version=version)

@@ -31,23 +31,23 @@ def push(
         manager = HubSolutionManager()
         manager.push(path, force=force)
     except Exception as exc:
-        console.print(f"Error pushing component: {exc}", style=error_style)
+        console.print(f"Error pushing solution: {exc}", style=error_style)
         raise typer.Exit(code=1)
 
 
 # TODO: Define the pull command
-# @solution_app.command()
-# def pull(
-#     ctx: typer.Context,
-#     name: str = typer.Argument(..., help="The component's name"),
-#     version: str = typer.Argument(..., help="The component's version"),
-# ):
-#     try:
-#         manager = HubComponentManager()
-#         manager.pull(name=name, version=version)
-#     except Exception as exc:
-#         console.print(f"Error pulling component: {exc}", style=error_style)
-#         raise typer.Exit(code=1)
+@solution_app.command()
+def pull(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The component's name"),
+    version: str = typer.Argument(..., help="The component's version"),
+):
+    try:
+        manager = HubSolutionManager()
+        manager.pull(name=name, version=version)
+    except Exception as exc:
+        console.print(f"Error pulling solution: {exc}", style=error_style)
+        raise typer.Exit(code=1)
 
 
 @solution_app.command()
