@@ -65,7 +65,7 @@ class HubSolutionManager:
         if not force and self._exists_in_hub(name, version):
             raise HubSolutionAlreadyExists(name, version)
 
-        with Loader("Pushing Component to Splight Hub"):
+        with Loader("Pushing Solution to Splight Hub"):
             solution = HubSolution.upload(path)
 
         console.print(
