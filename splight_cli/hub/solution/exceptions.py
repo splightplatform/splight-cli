@@ -20,3 +20,11 @@ class MissingSolutionFile(Exception):
 
     def __str__(self) -> str:
         return self._msg
+
+
+class SolutionDirectoryAlreadyExists(Exception):
+    def __init__(self, path: str):
+        self._msg = f"Solution directory {path} already exists"
+
+    def __str__(self) -> str:
+        return self._msg

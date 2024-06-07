@@ -1,5 +1,3 @@
-from typing import List
-
 import typer
 from rich.console import Console
 from splight_lib.models import Component
@@ -21,11 +19,7 @@ MODEL = Component
 @solution_app.command()
 def push(
     ctx: typer.Context,
-    name: str = typer.Option(..., help="The solution's name"),
-    version: str = typer.Option(..., help="The solution's version"),
-    description: str = typer.Option("", help="The solution's description"),
-    tags: List[str] = typer.Option([], help="The solution's tags"),
-    path: str = typer.Option(".", help="Path to solution files"),
+    path: str = typer.Argument(..., help="Path to solution files"),
     force: bool = typer.Option(
         False,
         "--force",
@@ -35,25 +29,28 @@ def push(
 ):
     try:
         manager = HubSolutionManager()
-        manager.push(name, version, description, tags, path, force=force)
+        manager.push(path, force=force)
     except Exception as exc:
-        console.print(f"Error pushing component: {exc}", style=error_style)
+        import traceback
+        import sys
+        traceback.print_exc(file=sys.stdout)
+        console.print(f"Error pushing solution: {exc}", style=error_style)
         raise typer.Exit(code=1)
 
 
 # TODO: Define the pull command
-# @solution_app.command()
-# def pull(
-#     ctx: typer.Context,
-#     name: str = typer.Argument(..., help="The component's name"),
-#     version: str = typer.Argument(..., help="The component's version"),
-# ):
-#     try:
-#         manager = HubComponentManager()
-#         manager.pull(name=name, version=version)
-#     except Exception as exc:
-#         console.print(f"Error pulling component: {exc}", style=error_style)
-#         raise typer.Exit(code=1)
+@solution_app.command()
+def pull(
+    ctx: typer.Context,
+    name: str = typer.Argument(..., help="The component's name"),
+    version: str = typer.Argument(..., help="The component's version"),
+):
+    try:
+        manager = HubSolutionManager()
+        manager.pull(name=name, version=version)
+    except Exception as exc:
+        console.print(f"Error pulling solution: {exc}", style=error_style)
+        raise typer.Exit(code=1)
 
 
 @solution_app.command()

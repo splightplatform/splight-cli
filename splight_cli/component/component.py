@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 from enum import auto
@@ -8,7 +7,6 @@ from typing import List, Optional
 from caseconverter import pascalcase
 from jinja2 import Template
 from rich.console import Console
-from splight_lib.client.database import LOCAL_DB_FILE
 from splight_lib.component.spec import Spec
 from strenum import LowercaseStrEnum
 
@@ -19,11 +17,6 @@ from splight_cli.component.exceptions import (
     ReadmeExists,
 )
 from splight_cli.component.loaders import InitLoader
-from splight_cli.component.utils import (
-    db_from_spec,
-    fake_asset,
-    fake_attribute,
-)
 from splight_cli.constants import (
     INIT_FILE,
     PYTHON_CMD,
@@ -207,19 +200,3 @@ class ComponentManager:
     def _validate_cli_version(self, component_cli_version: str):
         if component_cli_version != __version__:
             raise InvalidSplightCLIVersion(component_cli_version, __version__)
-
-    def create_local_db(self, path: str):
-        spec = Spec.from_file(os.path.join(path, SPEC_FILE))
-        json_spec = spec.model_dump()
-
-        splight_db = db_from_spec(json_spec)
-
-        # agnostic from component
-        asset = fake_asset()
-        splight_db["asset"].update(asset)
-
-        attribute = fake_attribute()
-        splight_db["attribute"].update(attribute)
-
-        with open(LOCAL_DB_FILE, "w") as db_file:
-            json.dump(splight_db, db_file, indent=4)
