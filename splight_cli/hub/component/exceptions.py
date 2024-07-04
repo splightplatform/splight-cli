@@ -45,3 +45,7 @@ class HubComponentNotFound(Exception):
 
     def __str__(self) -> str:
         return self._msg
+
+
+class BuildError(Exception):
+    ...
