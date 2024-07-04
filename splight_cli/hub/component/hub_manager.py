@@ -10,14 +10,13 @@ from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubComponent
 
-from splight_cli.component.component import ComponentManager
 from splight_cli.constants import (
     COMPRESSION_TYPE,
-    PYTHON_TESTS_FILE,
     SPEC_FILE,
     SPLIGHT_IGNORE,
     success_style,
 )
+from splight_cli.hub.component.component_builder import ComponentBuilder
 from splight_cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     ComponentDirectoryAlreadyExists,
@@ -40,7 +39,7 @@ class HubComponentManager:
 
         # Validate spec fields before pushing the model
         try:
-            HubComponent.model_validate(spec)
+            component = HubComponent.model_validate(spec)
         except ValidationError as exc:
             raise SpecValidationError(exc)
 
@@ -50,12 +49,8 @@ class HubComponentManager:
         if not force and self._exists_in_hub(name, version):
             raise ComponentAlreadyExists(name, version)
 
-        if os.path.exists(os.path.join(path, PYTHON_TESTS_FILE)):
-            # run test before push to hub. To run test, ctx isn't needed
-            console.print(
-                "Testing component before push to hub...", style=success_style
-            )
-            ComponentManager().test(path)
+        builder = ComponentBuilder(spec, path)
+        builder.build()
 
         with Loader("Pushing Component to Splight Hub"):
             component = HubComponent.upload(path)
