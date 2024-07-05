@@ -17,3 +17,5 @@ RUN python installer.py --name ${COMPONENT_NAME} --version ${COMPONENT_VERSION}
 
 # Cleaning up files
 RUN rm installer.py Dockerfile
+
+ENTRYPOINT ["splight-runner", "run-component"]
