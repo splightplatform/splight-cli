@@ -50,10 +50,10 @@ class HubComponentManager:
             raise ComponentAlreadyExists(name, version)
 
         builder = ComponentBuilder(spec, path)
-        builder.build()
+        image_file = builder.build()
 
         with Loader("Pushing Component to Splight Hub"):
-            component = HubComponent.upload(path)
+            component = HubComponent.upload(path, image_file)
 
         console.print(
             f"Component {component.id} pushed succesfully", style=success_style

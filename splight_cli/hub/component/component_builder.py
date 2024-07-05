@@ -1,6 +1,8 @@
-import sys
+import gzip
 import os
+import re
 import shutil
+import sys
 
 import docker
 
@@ -31,16 +33,45 @@ class ComponentBuilder:
         self._component_path = component_path
         self._docker_client = docker.from_env()
 
-    def build(self):
+    def build(self) -> str:
         original_path = os.getcwd()
         self._copy_resources()
         os.chdir(self._component_path)
-        self._build_component()
+        image_file = self._build_component()
         self._clean_up()
         os.chdir(original_path)
+        return image_file
 
-    def _build_component(self):
-        tag = f"component:{self._component_name}-{self._component_version}"
+    def _build_component(self) -> str:
+        full_name = f"{self._component_name}-{self._component_version}"
+        tag = f"component:{full_name}"
+        streamer = self._build_component_image(tag)
+        for chunk in streamer:
+            try:
+                log = self._parse_chunk(chunk)
+            except BuildError as exc:
+                sys.stdout.write(exc)
+                sys.stdout.flush()
+                raise exc
+            if log:
+                sys.stdout.write(f"{log}\n")
+                sys.stdout.flush()
+
+            if "stream" in chunk:
+                match = re.search(
+                    r"(^Successfully built |sha256:)([0-9a-f]+)$",
+                    chunk["stream"],
+                )
+                if match:
+                    image_id = match.group(2)
+        image = self._docker_client.images.get(image_id)
+        file_name = f"{full_name}.tgz"
+        image_file = gzip.open(file_name, "wb")
+        for chunk in image.save():
+            image_file.write(chunk)
+        return file_name
+
+    def _build_component_image(self, tag: str):
         client = self._docker_client.api
         streamer = client.build(
             path=".",
@@ -57,17 +88,7 @@ class ComponentBuilder:
             },
             decode=True,
         )
-        for chunk in streamer:
-            try:
-                log = self._parse_chunk(chunk)
-            except BuildError as exc:
-                sys.stdout.write(exc)
-                sys.stdout.flush()
-                raise exc
-            if log:
-                sys.stdout.write(f"{log}\n")
-                sys.stdout.flush()
-        __import__('ipdb').set_trace()
+        return streamer
 
     def _copy_resources(self):
         for resource in self._RESOURCES:
