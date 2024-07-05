@@ -66,9 +66,9 @@ class ComponentBuilder:
                     image_id = match.group(2)
         image = self._docker_client.images.get(image_id)
         file_name = f"{full_name}.tgz"
-        image_file = gzip.open(file_name, "wb")
-        for chunk in image.save():
-            image_file.write(chunk)
+        with gzip.open(file_name, "wb") as image_file:
+            for chunk in image.save(named=True):
+                image_file.write(chunk)
         return file_name
 
     def _build_component_image(self, tag: str):
