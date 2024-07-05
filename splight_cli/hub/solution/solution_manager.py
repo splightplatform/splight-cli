@@ -9,11 +9,7 @@ from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubSolution
 
-from splight_cli.constants import (
-    COMPRESSION_TYPE,
-    SPEC_FILE,
-    success_style,
-)
+from splight_cli.constants import COMPRESSION_TYPE, SPEC_FILE, success_style
 from splight_cli.hub.component.exceptions import (
     SpecFormatError,
     SpecValidationError,
