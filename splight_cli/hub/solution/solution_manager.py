@@ -108,4 +108,8 @@ class HubSolutionManager:
         return solutions[0]
 
     def _exists_in_hub(self, name: str, version: str) -> bool:
-        return bool(self._get_hub_solution(name, version))
+        try:
+            self._get_hub_solution(name, version)
+            return True
+        except HubSolutionNotFound:
+            return False
