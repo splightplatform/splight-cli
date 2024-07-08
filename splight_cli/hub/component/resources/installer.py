@@ -34,7 +34,7 @@ class HubComponentInstaller:
 
     def _load_commands(self) -> List[List[str]]:
         file = os.path.join(self._component_path, self._INIT_FILE)
-        lines: List[str] = []
+        lines: List[List[str]] = []
         lines.append(["RUN", "pip", "cache", "purge"])
         with open(file) as f:
             for line in f:
