@@ -9,11 +9,7 @@ from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubSolution
 
-from splight_cli.constants import (
-    COMPRESSION_TYPE,
-    SPEC_FILE,
-    success_style,
-)
+from splight_cli.constants import COMPRESSION_TYPE, SPEC_FILE, success_style
 from splight_cli.hub.component.exceptions import (
     SpecFormatError,
     SpecValidationError,
@@ -112,4 +108,8 @@ class HubSolutionManager:
         return solutions[0]
 
     def _exists_in_hub(self, name: str, version: str) -> bool:
-        return bool(self._get_hub_solution(name, version))
+        try:
+            self._get_hub_solution(name, version)
+            return True
+        except HubSolutionNotFound:
+            return False
