@@ -15,10 +15,8 @@ from splight_lib.models import (
     HubComponent,
     RoutineObject,
 )
-from splight_lib.models.base import (
-    SplightDatabaseBaseModel,
-    SplightDatalakeBaseModel,
-)
+from splight_lib.models.database_base import SplightDatabaseBaseModel
+from splight_lib.models.datalake_base import SplightDatalakeBaseModel
 from splight_lib.models.component import (
     DataAddress,
     InputDataAddress,
