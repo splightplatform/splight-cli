@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from splight_lib.models.base import SplightDatabaseBaseModel
+from splight_lib.models.database_base import SplightDatabaseBaseModel
 
 from splight_cli.solution.dict import get_dict_value, set_dict_value, walk_dict
 
