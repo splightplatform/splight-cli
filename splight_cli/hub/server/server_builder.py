@@ -9,7 +9,6 @@ from splight_cli.hub.server.exceptions import BuildError
 
 
 class ServerBuilder:
-
     def __init__(self, server_spec: dict, server_path: str):
         self._base_path = os.path.dirname(__file__)
         self._server_name = server_spec["name"]
@@ -62,12 +61,6 @@ class ServerBuilder:
             rm=True,
             pull=True,
             quiet=False,
-            # buildargs={
-            #     "COMPONENT_NAME": self._component_name,
-            #     "COMPONENT_VERSION": self._component_version,
-            #     "SPL_PACKAGE": self._spl_pkg,
-            #     "SPL_PACKAGE_VERSION": self._spl_pkg_version,
-            # },
             decode=True,
         )
         return streamer
