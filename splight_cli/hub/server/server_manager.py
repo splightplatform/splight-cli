@@ -1,7 +1,7 @@
-from collections import namedtuple
 import json
 import os
 import shutil
+from collections import namedtuple
 from typing import Optional
 
 import py7zr
@@ -10,13 +10,15 @@ from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubServer
 
-from splight_cli.constants import (
-    COMPRESSION_TYPE,
-    SPEC_FILE,
-    success_style,
+from splight_cli.constants import COMPRESSION_TYPE, SPEC_FILE, success_style
+from splight_cli.hub.server.exceptions import (
+    HubServerNotFound,
+    ServerAlreadyExists,
+    ServerDirectoryAlreadyExists,
+    SpecFormatError,
+    SpecValidationError,
 )
 from splight_cli.hub.server.server_builder import ServerBuilder
-from splight_cli.hub.server.exceptions import HubServerNotFound, ServerAlreadyExists, ServerDirectoryAlreadyExists, SpecFormatError, SpecValidationError
 from splight_cli.utils.loader import Loader
 
 console = Console()
@@ -58,9 +60,7 @@ class HubServerManager:
     def pull(self, name: str, version: str):
         with Loader("Pulling server from Splight Hub"):
             self._pull_server(name, version)
-        console.print(
-            f"Server {name} pulled succesfully", style=success_style
-        )
+        console.print(f"Server {name} pulled succesfully", style=success_style)
 
     def _pull_server(self, name: str, version: str):
         server = self._get_hub_server(name, version)

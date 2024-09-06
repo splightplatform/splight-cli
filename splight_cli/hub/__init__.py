@@ -2,8 +2,8 @@ import typer
 
 from splight_cli.context import check_credentials
 from splight_cli.hub.component import component_app
-from splight_cli.hub.solution import solution_app
 from splight_cli.hub.server import server_app
+from splight_cli.hub.solution import solution_app
 
 hub_app = typer.Typer(
     name="Splight Hub",

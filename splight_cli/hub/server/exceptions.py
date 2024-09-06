@@ -7,7 +7,8 @@ class SpecFormatError(Exception):
 
     def __str__(self) -> str:
         return self._msg
-    
+
+
 class SpecValidationError(Exception):
     def __init__(self, error):
         field = loads(error.json())[0]["loc"][0]
@@ -18,7 +19,8 @@ class SpecValidationError(Exception):
 
     def __str__(self) -> str:
         return self._msg
-    
+
+
 class ServerAlreadyExists(Exception):
     def __init__(self, name: str, version: str):
         self._msg = f"Server {name}-{version} already exists in HUB"
@@ -33,7 +35,8 @@ class ServerDirectoryAlreadyExists(Exception):
 
     def __str__(self) -> str:
         return self._msg
-    
+
+
 class HubServerNotFound(Exception):
     """Exception raised when a version is invalid."""
 
@@ -43,5 +46,5 @@ class HubServerNotFound(Exception):
     def __str__(self) -> str:
         return self._msg
 
-class BuildError(Exception):
-    ...
+
+class BuildError(Exception): ...
