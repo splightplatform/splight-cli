@@ -15,14 +15,14 @@ from splight_lib.models import (
     HubComponent,
     RoutineObject,
 )
-from splight_lib.models.database_base import SplightDatabaseBaseModel
-from splight_lib.models.datalake_base import SplightDatalakeBaseModel
 from splight_lib.models.component import (
     DataAddress,
     InputDataAddress,
     InputParameter,
     Parameter,
 )
+from splight_lib.models.database_base import SplightDatabaseBaseModel
+from splight_lib.models.datalake_base import SplightDatalakeBaseModel
 
 from splight_cli.component.exceptions import InvalidCSVColumns
 from splight_cli.constants import (
@@ -100,9 +100,11 @@ class ResourceManager:
             table.add_row(
                 str(counter),
                 item.id,
-                item.name
-                if hasattr(item, "name")
-                else getattr(item, "title", ""),
+                (
+                    item.name
+                    if hasattr(item, "name")
+                    else getattr(item, "title", "")
+                ),
             )
             for counter, item in enumerate(instances)
         ]

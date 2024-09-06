@@ -47,5 +47,4 @@ class HubComponentNotFound(Exception):
         return self._msg
 
 
-class BuildError(Exception):
-    ...
+class BuildError(Exception): ...
