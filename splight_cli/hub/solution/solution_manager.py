@@ -10,10 +10,7 @@ from rich.table import Table
 from splight_lib.models import HubSolution
 
 from splight_cli.constants import COMPRESSION_TYPE, SPEC_FILE, success_style
-from splight_cli.hub.component.exceptions import (
-    SpecFormatError,
-    SpecValidationError,
-)
+from splight_cli.hub.exceptions import SpecFormatError, SpecValidationError
 from splight_cli.hub.solution.exceptions import (
     HubSolutionAlreadyExists,
     HubSolutionNotFound,

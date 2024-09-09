@@ -11,12 +11,11 @@ from rich.table import Table
 from splight_lib.models import HubServer
 
 from splight_cli.constants import COMPRESSION_TYPE, SPEC_FILE, success_style
+from splight_cli.hub.exceptions import SpecFormatError, SpecValidationError
 from splight_cli.hub.server.exceptions import (
     HubServerNotFound,
     ServerAlreadyExists,
     ServerDirectoryAlreadyExists,
-    SpecFormatError,
-    SpecValidationError,
 )
 from splight_cli.hub.server.server_builder import ServerBuilder
 from splight_cli.utils.loader import Loader

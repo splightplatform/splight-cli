@@ -21,9 +21,8 @@ from splight_cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     ComponentDirectoryAlreadyExists,
     HubComponentNotFound,
-    SpecFormatError,
-    SpecValidationError,
 )
+from splight_cli.hub.exceptions import SpecFormatError, SpecValidationError
 from splight_cli.utils.loader import Loader
 
 console = Console()

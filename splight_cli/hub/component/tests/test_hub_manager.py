@@ -9,10 +9,9 @@ from splight_cli.component import ComponentManager
 from splight_cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     HubComponentNotFound,
-    SpecFormatError,
-    SpecValidationError,
 )
 from splight_cli.hub.component.hub_manager import HubComponentManager
+from splight_cli.hub.exceptions import SpecFormatError, SpecValidationError
 
 BASE_PATH = os.getcwd()
 TEST_COMPONENT_PATH = os.path.join(
