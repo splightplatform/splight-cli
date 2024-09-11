@@ -36,7 +36,6 @@ def push(
         raise typer.Exit(code=1)
 
 
-# TODO: Define the pull command
 @server_app.command()
 def pull(
     ctx: typer.Context,
