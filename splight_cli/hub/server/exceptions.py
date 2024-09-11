@@ -1,12 +1,12 @@
-class ComponentAlreadyExists(Exception):
+class ServerAlreadyExists(Exception):
     def __init__(self, name: str, version: str):
-        self._msg = f"Component {name}-{version} already exists in HUB"
+        self._msg = f"Server {name}-{version} already exists in HUB"
 
     def __str__(self) -> str:
         return self._msg
 
 
-class ComponentDirectoryAlreadyExists(Exception):
+class ServerDirectoryAlreadyExists(Exception):
     def __init__(self, directory: str):
         self._msg = f"Directory with name {directory} already exists in path"
 
@@ -14,11 +14,11 @@ class ComponentDirectoryAlreadyExists(Exception):
         return self._msg
 
 
-class HubComponentNotFound(Exception):
+class HubServerNotFound(Exception):
     """Exception raised when a version is invalid."""
 
     def __init__(self, name: str, version: str):
-        self._msg = f"Hub component {name} version {version} not found."
+        self._msg = f"Hub server {name} version {version} not found."
 
     def __str__(self) -> str:
         return self._msg
