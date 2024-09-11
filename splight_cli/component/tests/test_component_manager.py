@@ -19,7 +19,7 @@ SPEC = Spec.model_validate(
     {
         "name": "TestComponent",
         "version": "0.1.0",
-        "splight_lib_version": "1.1.1",
+        "splight_lib_version": "2.0.0",
         "privacy_policy": "public",
         "component_type": "algorithm",
         "custom_types": [],
@@ -63,7 +63,7 @@ def test_create_component():
         "splight_cli.component.component.open", mock_open()
     ) as mocked_file:
         manager.create(
-            name="new_component", version="1.1.1", component_path=path
+            name="new_component", version="2.0.0", component_path=path
         )
         mocked_file.assert_has_calls(
             [
