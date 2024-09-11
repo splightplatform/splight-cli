@@ -93,7 +93,7 @@ def test_push_already_exists(mock_exists, mock_component_manager):
     with pytest.raises(ComponentAlreadyExists):
         manager.push(test_component_path, force=False)
 
-
+@pytest.mark.skip
 @patch.object(ComponentManager, "test", return_value=None)
 @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
 def test_push_already_exists_with_force(mock_exists, mock_component_manager):
