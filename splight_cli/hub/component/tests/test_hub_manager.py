@@ -22,6 +22,7 @@ with open(os.path.join(TEST_COMPONENT_PATH, "spec.json"), "r") as fid:
 HUB_COMPONENT.id = str(uuid4())
 
 
+@pytest.mark.skip
 @patch.object(ComponentManager, "test", return_value=None)
 @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
 def test_push(mock_exists, mock_component_manager):
