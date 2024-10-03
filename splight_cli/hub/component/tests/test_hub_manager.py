@@ -6,6 +6,7 @@ import pytest
 from splight_lib.models import HubComponent
 
 from splight_cli.component import ComponentManager
+from splight_cli.hub.component.component_builder import ComponentBuilder
 from splight_cli.hub.component.exceptions import (
     ComponentAlreadyExists,
     HubComponentNotFound,
@@ -22,10 +23,10 @@ with open(os.path.join(TEST_COMPONENT_PATH, "spec.json"), "r") as fid:
 HUB_COMPONENT.id = str(uuid4())
 
 
-@pytest.mark.skip
+@patch.object(ComponentBuilder, "build", return_value="image_file")
 @patch.object(ComponentManager, "test", return_value=None)
 @patch.object(HubComponentManager, "_exists_in_hub", return_value=False)
-def test_push(mock_exists, mock_component_manager):
+def test_push(mock_exists, mock_component_manager, mock_builder):
     manager = HubComponentManager()
     test_component_path = os.path.join(
         os.getcwd(), "splight_cli/tests/test_component/"
@@ -34,7 +35,8 @@ def test_push(mock_exists, mock_component_manager):
         HubComponent, "upload", return_value=HUB_COMPONENT
     ) as mock_hub:
         manager.push(test_component_path)
-        mock_hub.assert_called_with(test_component_path)
+        mock_builder.assert_called()
+        mock_hub.assert_called_with(test_component_path, "image_file")
 
 
 @patch.object(ComponentManager, "test", return_value=None)
@@ -94,10 +96,12 @@ def test_push_already_exists(mock_exists, mock_component_manager):
         manager.push(test_component_path, force=False)
 
 
-@pytest.mark.skip
+@patch.object(ComponentBuilder, "build", return_value="image_file")
 @patch.object(ComponentManager, "test", return_value=None)
 @patch.object(HubComponentManager, "_exists_in_hub", return_value=True)
-def test_push_already_exists_with_force(mock_exists, mock_component_manager):
+def test_push_already_exists_with_force(
+    mock_exists, mock_component_manager, mock_builder
+):
     manager = HubComponentManager()
     test_component_path = os.path.join(
         os.getcwd(), "splight_cli/tests/test_component/"
@@ -106,7 +110,8 @@ def test_push_already_exists_with_force(mock_exists, mock_component_manager):
         HubComponent, "upload", return_value=HUB_COMPONENT
     ) as mock_hub:
         manager.push(test_component_path, force=True)
-        mock_hub.assert_called_with(test_component_path)
+        mock_builder.assert_called()
+        mock_hub.assert_called_with(test_component_path, "image_file")
 
 
 @patch.object(HubComponent, "list_mine", return_value=[HUB_COMPONENT])
