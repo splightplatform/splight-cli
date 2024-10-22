@@ -1,21 +1,25 @@
 from typing import Optional
 
 import typer
+from rich.console import Console
 
 from splight_cli.component import component_app
 from splight_cli.config import config_app
+from splight_cli.constants import error_style
 from splight_cli.context import Context
+from splight_cli.context.exceptions import MissingConfigurationFile
 from splight_cli.engine import engine_app
 from splight_cli.hub import hub_app
 from splight_cli.solution import solution_app
 from splight_cli.version import __version__
 from splight_cli.workspace import workspace_app
 
+console = Console()
 app = typer.Typer(
     name="Splight Command Line",
     add_completion=True,
     rich_markup_mode="rich",
-    no_args_is_help=True,
+    invoke_without_command=True,
     pretty_exceptions_enable=False,
 )
 
@@ -40,4 +44,16 @@ def main(
         None, "--version", "-v", callback=version_callback, is_eager=True
     ),
 ):
-    ctx.obj = Context()
+    try:
+        ctx.obj = Context()
+    except MissingConfigurationFile as exc:
+        console.print(
+            (
+                f"Error running Splight: {str(exc)}. "
+                "Run command 'splight configure' to configure your environment"
+            ),
+            style=error_style,
+        )
+        raise typer.Exit(code=1)
+    if ctx.invoked_subcommand is None:
+        ctx.get_help()
