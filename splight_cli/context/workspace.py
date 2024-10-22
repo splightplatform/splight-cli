@@ -8,9 +8,9 @@ from splight_cli.constants import (
     DEFAULT_WORKSPACE_NAME,
     DEFAULT_WORKSPACES,
 )
+from splight_cli.context.exceptions import MissingConfigurationFile
 from splight_cli.settings import SplightCLIConfig, SplightCLISettings
 from splight_cli.utils.yaml import get_yaml_from_file, save_yaml_to_file
-from splight_cli.context.exceptions import MissingConfigurationFile
 
 
 class WorkspaceDeleteError(Exception):
