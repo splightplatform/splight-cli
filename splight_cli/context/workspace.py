@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import List
 
@@ -7,6 +8,7 @@ from splight_cli.constants import (
     DEFAULT_WORKSPACE_NAME,
     DEFAULT_WORKSPACES,
 )
+from splight_cli.context.exceptions import MissingConfigurationFile
 from splight_cli.settings import SplightCLIConfig, SplightCLISettings
 from splight_cli.utils.yaml import get_yaml_from_file, save_yaml_to_file
 
@@ -32,6 +34,8 @@ class NotExistingWorkspace(Exception):
 
 class WorkspaceManager:
     def __init__(self):
+        if not os.path.exists(CONFIG_FILE):
+            raise MissingConfigurationFile("Config file does not exist")
         self.config_file = CONFIG_FILE
         path = Path(self.config_file)
         path.parent.mkdir(parents=True, exist_ok=True)

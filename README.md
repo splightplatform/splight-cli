@@ -159,36 +159,6 @@ component, here we will only cover the different sub-commands you can use
   code in the same directory where the command was executed. If `<path>`
   is specified, then the files will be located in the specified path.
 
-- Install component requirements
-
-  The command
-
-  ```bash
-  splight component install-requirements <path>
-  ```
-
-  Where the parameter `<path>` is the path to the component that will be installed
-  locally.
-
-  This command is useful for running locally a component for testing and development.
-
-- Run locally a component
-
-  You can run locally a component, this is quite usefull for testing a comoponent
-  before push it and for development a new component. The command is the following
-
-  ```bash
-  splight component run <path> [-r] [-rs]
-  ```
-
-  This command will run a component locally. Optionally you can use the flag
-  `-r/--reset-input`, so you will be asked to configure some parameters for the
-  component. If it is the first time you run a component, you will see some messages in
-  the terminal for input some parameters values that are needed for running correctly
-  the component. Also, you can use the flag `-rs/--run-spec` for using a custom
-  configuration different to the one defined in the `spec.json` file. In the following
-  section we will dive in in the usage of the file `spec.json`.
-
 - Create component Readme
 
   As a component developer, you can generate a README.md file automatically using the
@@ -352,63 +322,81 @@ This will create a directory with the following structure:
 
 ```
 <name>-<version>
-│   __init__.py
+│   main.py
 │   Initialization
 │   spec.json
 │   README.md
 ```
 
-- `__init__.py` : The component is coded here.
+- `main.py` : The main file to contian the component's code.
 - `Initialization` : Execute instructions for the component to be initialized.
 - `spec.json` : JSON file where the component metadata is set.
 - `README.md` : Text that describes the component and how it works
 
 #### Component Core
 
-When creating a component, inside `__init__.py` you will find a component template already written in python for you, in order to make it easier to write the component code.
+When creating a component, inside `main.py` you will find a component template 
+already written in python for you, in order to make it easier to write the component code.
 
-For example, when you create an algorithm component, in `__init__.py` will have the following:
+For example, when you create an algorithm component, in `main.py` will have the following:
 
 ```python
 import random
+from typing import Optional, Type
 
-from splight_lib import logging
-from splight_lib.component.abstract import AbstractComponent
+import typer
+from splight_lib.component import SplightBaseComponent
 from splight_lib.execution import Task
+from splight_lib.logging import getLogger
+from splight_lib.models import Number
 
-from splight_models import Variable
+app = typer.Typer(pretty_exceptions_enable=False)
 
 
-logger = logging.getLogger()
-
-
-class Main(AbstractComponent):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        logger.info("It worked!")
+class ExampleComponent(SplightBaseComponent):
+    def __init__(self, component_id: str):
+        super().__init__(component_id)
+        self._logger = getLogger("MyComponent")
 
     def start(self):
-        # To start a periodic function uncomment this
-        self.execution_client.start(
+        self.execution_engine.start(
             Task(
-                handler=self._my_periodic_function,
-                args=tuple(),
-                period=self.period
+                handler=self._run,
+                args=(self.input.min, self.input.max),
+                period=self.input.period,
             )
         )
 
-    def _my_periodic_function(self):
-        logger.info("It worked!")
-        # To ingest in datalake uncomment the following
-        args = {
-            "value": chosen_number,
-        }
-        self.datalake_client.save(
-            Variable,
-            instances=[Variable(args=args)],
-            collection=self.collection_name
+    def _run(self, min_value: float, max_value: float):
+        value = self._give_a_random_value(
+            self.input.lower_bound, self.input.upper_bound
         )
+        preds = Number(
+            value=value,
+        )
+        preds.save()
+        self._logger.info(f"\nValue = {value}\n")
+
+    def _give_a_random_value(self, min: float, max: float) -> float:
+        return (max - min) * random.random() + min
+
+
+@app.command()
+def main(
+    component_id: str = typer.Option(...),
+    input: Optional[str] = typer.Option(None),
+):
+    logger = getLogger("MyComponent")
+    component = ExampleComponent(component_id=component_id)
+    try:
+        component.start()
+    except Exception as exc:
+        logger.exception(exc, tags="EXCEPTION")
+        component.stop()
+
+
+if __name__ == "__main__":
+    app()
 ```
 
 The component class must always be called `Main` and must inherit from one of
@@ -417,165 +405,3 @@ execution of the component starts when the method `start()` is called, so the me
 should be implemented by the developer that is writting the component. Also, we
 provide you a lot of useful functions in our package so you can use them to interact
 with the platform and make better components
-
-#### Component Initialization
-
-In the case you need some previous steps to be run before the component is executed,
-you can use the file `Initialization`. When you create your component with Splight Hub,
-`Initialization` will have the following:
-
-```json
-RUN pip install splight-lib==<some lib version>
-```
-
-This command will be run before the component is executed. You can add more lines like
-this, or maybe even create a requirements.txt file in the component directory and just
-leave `Initialization` as:
-
-```json
-RUN pip install -r requirements.txt
-```
-
-#### Component Configuration
-
-The file `spec.json` defines all the specification for the component, in this file you
-will find generic information about the component like the name and version but also
-you will find the input and output parameters.
-
-The structure of the file `spec.json` is the following
-
-```json
-{
-  "name": "component_name",
-  "version": "component_version",
-  "tags": ["tag1", "tag2"],
-  "custom_types": [],
-  "input": [],
-  "output": []
-}
-```
-
-A component can have different inputs and outputs that are previously defined, these
-parameters can any or primite Python types like `str`, `int`, `float`, `bool` or `file`,
-can also take the value of any Splight parameter like `Asset`, `Attribute`,
-`Component`, `Mapping`, `Query`, but also can be custom type defined in the
-`"custom_types"` key.
-A parameter have the structure
-
-```json
-{
-  "name": <name>,
-  "type": <type>,
-  "required": <required>,
-  "value": <value>
-}
-```
-
-and also accepts the key `"multiple"` with `true` or `false` value to specify if the
-parameter can take multiple value that is parsed as a list when the component is running.
-
-A custom type is defined by the following format
-
-```json
-{
-  "name": "<custom_type_name",
-  "fields": [
-    {
-      "name": "<name>",
-      "type": "<type>",
-      "required": "<required>",
-      "multiple": "<multiple>",
-      "value": "<value>"
-    }
-  ]
-}
-```
-
-Then the custom type can be used as input or output. For example, we create
-a custom type:
-
-```json
-{
-  "name": "AssetAttribute",
-  "fields": [
-    {
-      "name": "asset",
-      "type": "Asset",
-      "required": true,
-      "multiple": false
-    },
-    {
-      "name": "attribute",
-      "type": "Attribute",
-      "depends_on": "asset",
-      "required": true,
-      "multiple": false
-    }
-  ]
-}
-```
-
-So we can use it as follows
-
-```json
-{
-    "name": "CustomTypeVar",
-    "type": "AssetAttribute",
-    "required": true,
-    "multiple": false,
-    "value": [
-        {
-            "name": "asset",
-            "type": "Asset",
-            "required": true,
-            "multiple": false,
-            "value": <asset_id>
-        },
-        {
-            "name": "attribute",
-            "type": "Attribute",
-            "required": true,
-            "multiple": false,
-            "value": <attribute_id>
-        }
-    ]
-}
-```
-
-This is just an example but you can create custom types as complex as you want,
-the limit is your imagination.
-
-#### Running Locally
-
-You can run the component locally before pushing it to the platform with the `--local` option:
-
-```bash
-splight component run <component directory> --local
-```
-
-This way, the component will run using local clients for database and datalake. This is extremely
-useful for development since you can create instances of the different database objects in the
-local database for running different scenearios or differents tests. The same can be applied for
-datalake data, the local client stores the data in files. In both cases, for database and datalake,
-the files are created in the same directory as the `__init__.py` file of the component, so you
-can modified it based on your needs.
-
-You can interact with the local databases using the library, for example
-
-```python
-from splight_models import Asset, Attribute, Number
-from splight_lib.client.database import LocalDatabaseClient
-from splight_lib.client.datalake import LocalDatalakeClient
-
-
-component_path = ...
-db_client = LocalDatabaseClient(namespace="default", path=component_path)
-dl_client = LocalDatalakeClient(namespace="default", path=component_path)
-
-all_assets = db_client.get(Asset)
-attribute = Attribute(name="SomeAttribute")
-
-db_client.save(attribute)
-
-df = client.get_dataframe(Number, asset=all_assets[0].id, attribute=attribute.id)
-```
