@@ -8,8 +8,8 @@ console = Console()
 
 
 class Context:
-    def __init__(self):
-        self.__workspace = WorkspaceManager()
+    def __init__(self, new_workspace: bool = False):
+        self.__workspace = WorkspaceManager(new_workspace=new_workspace)
 
     @property
     def workspace(self):

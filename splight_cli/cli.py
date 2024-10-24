@@ -43,9 +43,13 @@ def main(
     version: Optional[bool] = typer.Option(
         None, "--version", "-v", callback=version_callback, is_eager=True
     ),
-):
+) -> None:
     try:
-        ctx.obj = Context()
+        ctx.obj = Context(
+            new_workspace=(
+                True if ctx.invoked_subcommand == "configure" else False
+            )
+        )
     except MissingConfigurationFile as exc:
         console.print(
             (
