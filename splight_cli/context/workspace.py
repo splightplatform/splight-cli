@@ -33,8 +33,8 @@ class NotExistingWorkspace(Exception):
 
 
 class WorkspaceManager:
-    def __init__(self):
-        if not os.path.exists(CONFIG_FILE):
+    def __init__(self, new_workspace: bool = False):
+        if not os.path.exists(CONFIG_FILE) and not new_workspace:
             raise MissingConfigurationFile("Config file does not exist")
         self.config_file = CONFIG_FILE
         path = Path(self.config_file)
