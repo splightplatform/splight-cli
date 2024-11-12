@@ -8,7 +8,6 @@ from splight_cli.constants import (
     DEFAULT_WORKSPACE_NAME,
     DEFAULT_WORKSPACES,
 )
-from splight_cli.context.exceptions import MissingConfigurationFile
 from splight_cli.settings import SplightCLIConfig, SplightCLISettings
 from splight_cli.utils.yaml import get_yaml_from_file, save_yaml_to_file
 
@@ -32,21 +31,39 @@ class NotExistingWorkspace(Exception):
         return self._msg
 
 
+class ConfigurationError(Exception):
+    pass
+
+
 class WorkspaceManager:
     def __init__(self, new_workspace: bool = False):
-        if not os.path.exists(CONFIG_FILE) and not new_workspace:
-            raise MissingConfigurationFile("Config file does not exist")
         self.config_file = CONFIG_FILE
-        path = Path(self.config_file)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.touch()
         self._config = self.__load_config()
         self._workspaces = self._config.workspaces
         self._current_workspace = self._config.current_workspace
         self._settings = self._workspaces[self._current_workspace]
+        if not self._settings.is_configured():
+            raise ConfigurationError(
+                (
+                    "There is at least one variable missing. "
+                    "Use command 'splight configure'"
+                )
+            )
 
     def __load_config(self):
-        config = get_yaml_from_file(self.config_file)
+        try:
+            if os.path.exists(self.config_file):
+                config = self._load_from_file(self.config_file)
+            else:
+                config = self._load_from_env()
+        except Exception as exc:
+            raise ConfigurationError(
+                "An error ocurred while loading configuration"
+            ) from exc
+        return config
+
+    def _load_from_file(self, file_path: str) -> SplightCLIConfig:
+        config = get_yaml_from_file(file_path)
         # Default values
         config["workspaces"] = config.get("workspaces", DEFAULT_WORKSPACES)
         workspace_name = config.get(
@@ -59,8 +76,19 @@ class WorkspaceManager:
                 else list(config["workspaces"].keys())[0]
             )
         config["current_workspace"] = workspace_name
-        save_yaml_to_file(config, self.config_file)
+        save_yaml_to_file(config, file_path)
         config = SplightCLIConfig.model_validate(config)
+        return config
+
+    def _load_from_env(self) -> SplightCLIConfig:
+        config = SplightCLIConfig(
+            current_workspace=DEFAULT_WORKSPACE_NAME,
+            workspaces=DEFAULT_WORKSPACES,
+        )
+        path = Path(self.config_file)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+        save_yaml_to_file(config.model_dump(), self.config_file)
         return config
 
     @property
