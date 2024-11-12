@@ -11,8 +11,6 @@ from splight_cli.constants import (
 from splight_cli.settings import SplightCLIConfig, SplightCLISettings
 from splight_cli.utils.yaml import get_yaml_from_file, save_yaml_to_file
 
-# from splight_lib.settings import SplightSettings
-
 
 class WorkspaceDeleteError(Exception):
     def __init__(self, workspace: str):
