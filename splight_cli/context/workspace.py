@@ -42,7 +42,7 @@ class WorkspaceManager:
         self._workspaces = self._config.workspaces
         self._current_workspace = self._config.current_workspace
         self._settings = self._workspaces[self._current_workspace]
-        if not self._settings.is_configured():
+        if not self._settings.is_configured() and not new_workspace:
             raise ConfigurationError(
                 (
                     "There is at least one variable missing. "

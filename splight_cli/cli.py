@@ -7,7 +7,7 @@ from splight_cli.component import component_app
 from splight_cli.config import config_app
 from splight_cli.constants import error_style
 from splight_cli.context import Context
-from splight_cli.context.exceptions import MissingConfigurationFile
+from splight_cli.context.workspace import ConfigurationError
 from splight_cli.engine import engine_app
 from splight_cli.hub import hub_app
 from splight_cli.solution import solution_app
@@ -50,7 +50,7 @@ def main(
                 True if ctx.invoked_subcommand == "configure" else False
             )
         )
-    except MissingConfigurationFile as exc:
+    except ConfigurationError as exc:
         console.print(
             (
                 f"Error running Splight: {str(exc)}. "
