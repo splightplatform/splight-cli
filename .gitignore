@@ -53,7 +53,5 @@ Thumbs.db
 # Eggs
 *.egg-info
 
-cli/solution/*.yml
-
 # Cov report
 .coverage
