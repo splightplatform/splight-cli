@@ -5,7 +5,7 @@ from splight_lib.models import Asset, Attribute, Component, ComponentObject
 
 
 def generate_component(
-    json_spec: Dict[str, Any]
+    json_spec: Dict[str, Any],
 ) -> Tuple[str, Dict[str, Any]]:
     component_id = str(uuid4())
     component = {

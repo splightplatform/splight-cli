@@ -145,6 +145,8 @@ class ResourceManager:
 
     @staticmethod
     def get_query_params(filters: Optional[List[str]]) -> Dict[str, Any]:
+        if filters is None:
+            return {}
         params = {}
         filter_dict = {}
         for filter in filters:
