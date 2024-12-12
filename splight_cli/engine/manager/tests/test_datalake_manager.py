@@ -23,7 +23,7 @@ DATAFRAME = pd.DataFrame(
     index=pd.date_range(
         start="2020-01-01 00:00:00+00:00",
         end="2020-01-01 04:00:00+00:00",
-        freq="H",
+        freq="h",
     ),
 )
 
