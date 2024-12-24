@@ -11,7 +11,8 @@ case-converter = "1.1.0"
 click = "8.0.4"
 click-default-group = "1.2.2"
 setuptools = "70.0.0"
-splight-lib = "^5.13.0"
+# splight-lib = "^5.13.0"
+splight-lib = {path = "../splight-lib-python", develop=true}
 py7zr = "0.20.8"
 typer = "0.15.1"
 colorama = "0.4.4"
@@ -33,7 +34,7 @@ pre-commit = "3.2.2"
 pytest = "^7.4.3"
 coverage = "^7.3.2"
 mock = "^5.1.0"
-ruff = "^0.3.5"
+ruff = "^0.8"
 
 [tool.poetry.scripts]
 splight = "splight_cli.cli:app"

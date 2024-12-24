@@ -7,7 +7,6 @@ from rich.console import Console
 
 from splight_cli.component.component import ComponentManager
 from splight_cli.constants import error_style, success_style
-from splight_cli.context import check_credentials
 
 component_app = typer.Typer(
     name="Splight Component",
@@ -18,11 +17,6 @@ component_app = typer.Typer(
 
 logger = logging.getLogger()
 console = Console()
-
-
-@component_app.callback(invoke_without_command=True)
-def callback(ctx: typer.Context):
-    check_credentials(ctx)
 
 
 @component_app.command()
@@ -109,21 +103,4 @@ def test(
     except Exception as e:
         logger.exception(e)
         console.print(f"Error testing component: {str(e)}", style=error_style)
-        raise typer.Exit(code=1)
-
-
-@component_app.command()
-def create_local_db(
-    ctx: typer.Context,
-    path: str = typer.Argument(..., help="Path to component source code"),
-) -> None:
-    try:
-        manager = ComponentManager()
-        console.print("Creating local component db...", style=success_style)
-        manager.create_local_db(path=path)
-    except Exception as e:
-        logger.exception(e)
-        console.print(
-            f"Error creating local component db: {str(e)}", style=error_style
-        )
         raise typer.Exit(code=1)
