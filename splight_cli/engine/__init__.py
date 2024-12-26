@@ -1,6 +1,5 @@
 import typer
 
-from splight_cli.context import check_credentials
 from splight_cli.engine.alert import alert_app
 from splight_cli.engine.asset import asset_app
 from splight_cli.engine.attribute import attribute_app
@@ -23,8 +22,3 @@ engine_app.add_typer(component_app, name="component")
 engine_app.add_typer(datalake_app, name="datalake")
 engine_app.add_typer(file_app, name="file")
 engine_app.add_typer(secret_app, name="secret")
-
-
-@engine_app.callback(invoke_without_command=True)
-def engine_callback(ctx: typer.Context):
-    check_credentials(ctx)

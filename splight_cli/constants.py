@@ -4,8 +4,6 @@ from pathlib import Path
 from pydantic import AnyUrl
 from rich.style import Style
 
-from splight_cli.settings import SplightCLISettings
-
 error_style = Style(color="red", bold=True)
 success_style = Style(color="green")
 warning_style = Style(color="yellow")
@@ -19,9 +17,6 @@ TEMPLATES_FOLDER = os.path.join(
 COMPRESSION_TYPE = "7z"
 DEFAULT_NAMESPACE = "NO_NAMESPACE"
 DEFAULT_COMPONENT_ID = "DEMO"
-DEFAULT_WORKSPACE_NAME = "default"
-DEFAULT_WORKSPACE = SplightCLISettings().model_dump()
-DEFAULT_WORKSPACES = {DEFAULT_WORKSPACE_NAME: DEFAULT_WORKSPACE}
 
 CONFIG_FILE = os.path.join(SPLIGHT_PATH, "config")
 PYTHON_COMPONENT_FILE = "main.py"

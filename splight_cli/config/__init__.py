@@ -1,9 +1,11 @@
-import json
 import sys
 
 import typer
-
-from splight_cli.settings import CONFIG_VARS, SplightCLISettings
+from splight_lib.config import (
+    SplightConfigError,
+    SplightConfigManager,
+    Workspace,
+)
 
 config_app = typer.Typer(
     name="Splight CLI Configure",
@@ -12,83 +14,121 @@ config_app = typer.Typer(
 
 
 @config_app.callback(invoke_without_command=True)
-def config(
-    ctx: typer.Context,
-    from_json: str = typer.Option(
-        None, "--from-json", help="Configuration by json instaed of prompt"
-    ),
-):
+def config(ctx: typer.Context):
     if ctx.invoked_subcommand:
         return
 
-    cli_context = ctx.obj
     try:
-        if from_json:
-            from_json = json.loads(from_json)
-            new_settings = SplightCLISettings.model_validate(from_json)
-        else:
-            new_settings_data = {}
-            for config_var in CONFIG_VARS:
-                default = getattr(
-                    cli_context.workspace.settings, config_var, None
-                )
-                value = typer.prompt(
-                    typer.style(config_var, fg="yellow"),
-                    type=str,
-                    default=default,
-                    show_default=True,
-                )
-                new_settings_data.update({config_var: value})
-            new_settings = SplightCLISettings.model_validate(new_settings_data)
-        cli_context.workspace.update_workspace(new_settings)
-        typer.echo("Configuration saved successfully", color="green")
+        manager = SplightConfigManager()
+
+        typer.echo(
+            typer.style(
+                "Interactive configuration for Splight CLI:",
+                fg="cyan",
+                bold=True,
+            )
+        )
+        current_workspace = manager.get(manager.current)
+        typer.echo(
+            typer.style(f"Current Workspace: {manager.current}", fg="yellow")
+        )
+
+        # Prompt for inputs
+        access_id = typer.prompt(
+            "SPLIGHT_ACCESS_ID",
+            default=current_workspace.SPLIGHT_ACCESS_ID or "",
+            show_default=True,
+        )
+        secret_key = typer.prompt(
+            "SPLIGHT_SECRET_KEY",
+            default=current_workspace.SPLIGHT_SECRET_KEY or "",
+            show_default=False,
+        )
+        api_host = typer.prompt(
+            "SPLIGHT_PLATFORM_API_HOST",
+            default=current_workspace.SPLIGHT_PLATFORM_API_HOST,
+            show_default=True,
+        )
+
+        # Update workspace
+        updated_workspace = Workspace(
+            SPLIGHT_ACCESS_ID=access_id,
+            SPLIGHT_SECRET_KEY=secret_key,
+            SPLIGHT_PLATFORM_API_HOST=api_host,
+        )
+        manager.update(manager.current, updated_workspace)
+
+        typer.echo(
+            typer.style("Configuration saved successfully.", fg="green")
+        )
+
+    except SplightConfigError as e:
+        typer.echo(
+            typer.style(f"Error configuring Splight CLI: {str(e)}", fg="red")
+        )
+        sys.exit(1)
     except Exception as e:
-        typer.echo(f"Error configuring Splight CLI: {str(e)}", color="red")
+        typer.echo(typer.style(f"Unexpected error: {str(e)}", fg="red"))
         sys.exit(1)
 
 
 @config_app.command(name="get")
 def get_variable(
     ctx: typer.Context,
-    var_name: str = typer.Argument(..., help="The variable name to get value"),
+    var_name: str = typer.Argument(..., help="The variable name to retrieve."),
 ):
-    """Prints the value of the requested variable.
+    try:
+        manager = SplightConfigManager()
+        current_workspace = manager.get(manager.current)
+        variable_name = var_name.upper()
 
-    Parameters
-    ----------
-    ctx: Context
-        The current context
-    var_name:
-        The variable name to get the value
-    """
-    variable_name = var_name.upper()
-    settings = ctx.obj.workspace.settings
+        if hasattr(current_workspace, variable_name):
+            value = getattr(current_workspace, variable_name)
+            typer.echo(typer.style(f"{variable_name}: {value}", fg="green"))
+        else:
+            typer.echo(
+                typer.style(
+                    f"Variable '{variable_name}' does not exist in the workspace.",
+                    fg="red",
+                )
+            )
 
-    if hasattr(settings, variable_name):
-        value = getattr(settings, variable_name)
-        typer.echo(value)
+    except SplightConfigError as e:
+        typer.echo(
+            typer.style(f"Error retrieving variable: {str(e)}", fg="red")
+        )
+        sys.exit(1)
 
 
 @config_app.command(name="set")
 def set_variable(
     ctx: typer.Context,
-    var_name: str = typer.Argument(..., help="The variable name to update"),
-    value: str = typer.Argument(..., help="The new value"),
+    var_name: str = typer.Argument(..., help="The variable name to update."),
+    value: str = typer.Argument(..., help="The new value for the variable."),
 ):
-    """Sets a value of a variable in the current workspace.
+    try:
+        manager = SplightConfigManager()
+        current_workspace = manager.get(manager.current)
+        variable_name = var_name.upper()
 
-    Parameters
-    ----------
-    ctx: Context
-        The current context
-    var_name: str
-        The variable's name to be updated
-    value: Any
-        The new value
-    """
-    variable_name = var_name.upper()
-    settings = ctx.obj.workspace.settings
+        if hasattr(current_workspace, variable_name):
+            setattr(current_workspace, variable_name, value)
+            manager.update(manager.current, current_workspace)
 
-    if hasattr(settings, variable_name):
-        setattr(settings, variable_name, value)
-        ctx.obj.workspace.update_workspace(settings)
+            typer.echo(
+                typer.style(
+                    f"Successfully updated '{variable_name}' to '{value}'.",
+                    fg="green",
+                )
+            )
+        else:
+            typer.echo(
+                typer.style(
+                    f"Variable '{variable_name}' does not exist in the workspace.",
+                    fg="red",
+                )
+            )
+
+    except SplightConfigError as e:
+        typer.echo(typer.style(f"Error updating variable: {str(e)}", fg="red"))
+        sys.exit(1)

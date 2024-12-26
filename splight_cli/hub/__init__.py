@@ -1,6 +1,5 @@
 import typer
 
-from splight_cli.context import check_credentials
 from splight_cli.hub.component import component_app
 from splight_cli.hub.server import server_app
 
@@ -13,8 +12,3 @@ hub_app = typer.Typer(
 
 hub_app.add_typer(component_app, name="component")
 hub_app.add_typer(server_app, name="server")
-
-
-@hub_app.callback(invoke_without_command=True)
-def hub_callback(ctx: typer.Context):
-    check_credentials(ctx)
