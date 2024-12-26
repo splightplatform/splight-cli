@@ -54,6 +54,7 @@ def main(
         "workspace",
         "configure",
     ]:
+        # Forward the check to every sub command
         ensure_settings(ctx)
 
     if command is None:
