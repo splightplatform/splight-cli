@@ -17,21 +17,15 @@ MODEL = Component
 
 
 @component_app.command()
-def push(
+def build(
     ctx: typer.Context,
     path: str = typer.Argument(..., help="Path to component source code"),
-    force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Overwrite existing component in Splight HUB",
-    ),
 ):
     try:
         manager = HubComponentManager()
-        manager.push(path, force=force)
+        manager.build(path)
     except Exception as exc:
-        console.print(f"Error pushing component: {exc}", style=error_style)
+        console.print(f"Error building component: {exc}", style=error_style)
         raise typer.Exit(code=1)
 
 

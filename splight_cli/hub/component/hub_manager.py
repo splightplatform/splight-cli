@@ -29,7 +29,7 @@ console = Console()
 
 
 class HubComponentManager:
-    def push(self, path: str, force: Optional[bool] = False):
+    def build(self, path: str):
         try:
             with open(os.path.join(path, SPEC_FILE)) as fid:
                 spec = json.load(fid)
@@ -42,20 +42,11 @@ class HubComponentManager:
         except ValidationError as exc:
             raise SpecValidationError(exc)
 
-        name = spec["name"]
-        version = spec["version"]
-
-        if not force and self._exists_in_hub(name, version):
-            raise ComponentAlreadyExists(name, version)
-
         builder = ComponentBuilder(spec, path)
-        image_file = builder.build()
-
-        with Loader("Pushing Component to Splight Hub"):
-            component = HubComponent.upload(path, image_file)
+        builder.build()
 
         console.print(
-            f"Component {component.id} pushed succesfully", style=success_style
+            f"Component {component.id} build succesfully", style=success_style
         )
 
     def pull(self, name: str, version: str):
@@ -121,17 +112,3 @@ class HubComponentManager:
                 )
         except FileNotFoundError:
             return None
-
-    def _get_component(self, name: str, version: str):
-        components = HubComponent.list_all(name=name, version=version)
-        return components
-
-    def _exists_in_hub(self, name: str, version: str) -> bool:
-        components = self._get_component(name, version)
-        return len(components) > 0
-
-    def fetch_component_version(self, name: str, version: str):
-        components = self._get_component(name, version)
-        if not components:
-            raise HubComponentNotFound(name, version)
-        return components[0]
