@@ -7,11 +7,7 @@ from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubComponent
 
-from splight_cli.constants import (
-    SPEC_FILE,
-    SPLIGHT_IGNORE,
-    success_style,
-)
+from splight_cli.constants import SPEC_FILE, SPLIGHT_IGNORE, success_style
 from splight_cli.hub.component.component_builder import ComponentBuilder
 from splight_cli.hub.exceptions import SpecFormatError, SpecValidationError
 
