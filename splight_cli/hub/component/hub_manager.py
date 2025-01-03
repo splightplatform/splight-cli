@@ -1,28 +1,19 @@
 import json
 import os
-import shutil
 
 import pathspec
-import py7zr
 from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 from splight_lib.models import HubComponent
 
 from splight_cli.constants import (
-    COMPRESSION_TYPE,
     SPEC_FILE,
     SPLIGHT_IGNORE,
     success_style,
 )
 from splight_cli.hub.component.component_builder import ComponentBuilder
-from splight_cli.hub.component.exceptions import (
-    ComponentAlreadyExists,
-    ComponentDirectoryAlreadyExists,
-    HubComponentNotFound,
-)
 from splight_cli.hub.exceptions import SpecFormatError, SpecValidationError
-from splight_cli.utils.loader import Loader
 
 console = Console()
 
@@ -47,43 +38,6 @@ class HubComponentManager:
         console.print(
             f"Component {component.id} build succesfully", style=success_style
         )
-
-    def pull(self, name: str, version: str):
-        with Loader("Pulling component from Splight Hub"):
-            self._pull_component(name, version)
-        console.print(
-            f"Component {name} pulled succesfully", style=success_style
-        )
-
-    def _pull_component(self, name: str, version: str):
-        components = HubComponent.list(name=name, version=version)
-        if not components:
-            raise HubComponentNotFound(name, version)
-
-        component_file_wrapper = components[0].download()
-        component_data = component_file_wrapper.read()
-
-        # TODO: search for a better approach
-        version_modified = version.replace(".", "_")
-        component_path = f"{name}/{version_modified}"
-        versioned_name = f"{name}-{version}"
-        file_name = f"{versioned_name}.{COMPRESSION_TYPE}"
-        if os.path.exists(component_path):
-            raise ComponentDirectoryAlreadyExists(component_path)
-
-        try:
-            with open(file_name, "wb") as fid:
-                fid.write(component_data)
-
-            with py7zr.SevenZipFile(file_name, "r") as z:
-                z.extractall(path=".")
-            shutil.move(f"{versioned_name}", component_path)
-
-        except Exception as exc:
-            raise exc
-        finally:
-            if os.path.exists(file_name):
-                os.remove(file_name)
 
     def list_components(self):
         components = HubComponent.list(limit_=10000)
