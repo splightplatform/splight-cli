@@ -114,7 +114,7 @@ def test_push_already_exists_with_force(
         mock_hub.assert_called_with(test_component_path, "image_file")
 
 
-@patch.object(HubComponent, "list_mine", return_value=[HUB_COMPONENT])
+@patch.object(HubComponent, "list", return_value=[HUB_COMPONENT])
 @patch.object(
     HubComponent,
     "download",
@@ -128,7 +128,7 @@ def test_pull(mock_move, mock_zip, mock_open, mock_download, mock_list):
     manager.pull(name="TestComponent", version="1.1.0")
 
 
-@patch.object(HubComponent, "list_mine", return_value=[])
+@patch.object(HubComponent, "list", return_value=[])
 def test_pull_not_found(mock_list):
     manager = HubComponentManager()
     with pytest.raises(HubComponentNotFound):

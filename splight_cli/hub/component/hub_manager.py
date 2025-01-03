@@ -1,7 +1,6 @@
 import json
 import os
 import shutil
-from typing import Optional
 
 import pathspec
 import py7zr
@@ -57,7 +56,7 @@ class HubComponentManager:
         )
 
     def _pull_component(self, name: str, version: str):
-        components = HubComponent.list_mine(name=name, version=version)
+        components = HubComponent.list(name=name, version=version)
         if not components:
             raise HubComponentNotFound(name, version)
 
@@ -87,14 +86,14 @@ class HubComponentManager:
                 os.remove(file_name)
 
     def list_components(self):
-        components = HubComponent.list_mine(limit_=10000)
+        components = HubComponent.list(limit_=10000)
         names = set([component.name for component in components])
         table = Table("Name")
         [table.add_row(name) for name in names]
         console.print(table)
 
     def versions(self, name: str):
-        components = HubComponent.list_mine(name=name)
+        components = HubComponent.list(name=name)
         table = Table("Name", "Version", "Verification", "Privacy Policy")
         for item in components:
             table.add_row(
