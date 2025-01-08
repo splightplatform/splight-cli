@@ -17,40 +17,6 @@ MODEL = Component
 
 
 @server_app.command()
-def push(
-    ctx: typer.Context,
-    path: str = typer.Argument(..., help="Path to server files"),
-    force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Overwrite existing server in Splight HUB",
-    ),
-):
-    try:
-        manager = HubServerManager()
-        manager.push(path, force=force)
-    except Exception as exc:
-        console.print(f"Error pushing server: {exc}", style=error_style)
-        raise
-        raise typer.Exit(code=1)
-
-
-@server_app.command()
-def pull(
-    ctx: typer.Context,
-    name: str = typer.Argument(..., help="The servers's name"),
-    version: str = typer.Argument(..., help="The servers's version"),
-):
-    try:
-        manager = HubServerManager()
-        manager.pull(name=name, version=version)
-    except Exception as exc:
-        console.print(f"Error pulling server: {exc}", style=error_style)
-        raise typer.Exit(code=1)
-
-
-@server_app.command()
 def list(ctx: typer.Context):
     try:
         manager = HubServerManager()
