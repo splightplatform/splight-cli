@@ -17,39 +17,6 @@ MODEL = Component
 
 
 @component_app.command()
-def push(
-    ctx: typer.Context,
-    path: str = typer.Argument(..., help="Path to component source code"),
-    force: bool = typer.Option(
-        False,
-        "--force",
-        "-f",
-        help="Overwrite existing component in Splight HUB",
-    ),
-):
-    try:
-        manager = HubComponentManager()
-        manager.push(path, force=force)
-    except Exception as exc:
-        console.print(f"Error pushing component: {exc}", style=error_style)
-        raise typer.Exit(code=1)
-
-
-@component_app.command()
-def pull(
-    ctx: typer.Context,
-    name: str = typer.Argument(..., help="The component's name"),
-    version: str = typer.Argument(..., help="The component's version"),
-):
-    try:
-        manager = HubComponentManager()
-        manager.pull(name=name, version=version)
-    except Exception as exc:
-        console.print(f"Error pulling component: {exc}", style=error_style)
-        raise typer.Exit(code=1)
-
-
-@component_app.command()
 def list(ctx: typer.Context):
     try:
         manager = HubComponentManager()

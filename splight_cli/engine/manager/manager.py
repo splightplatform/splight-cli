@@ -500,7 +500,7 @@ class ComponentUpgradeManager:
             self._console.print(
                 f"Getting {hub_component_name} version {version} from hub"
             )
-            hub_component = HubComponent.list_all(
+            hub_component = HubComponent.list(
                 name=hub_component_name, version=version
             )
         except Exception as exc:
