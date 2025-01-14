@@ -41,6 +41,20 @@ install: clean ## install the package to the active Python's site-packages
 	pip install -e ".[dev]"
 	pre-commit install
 
-format:
+black: ## run black formatter
 	black .
+
+isort: ## run isort formatter
 	isort .
+
+format: 
+	isort splight_cli/
+	ruff format splight_cli/
+
+check_isort:
+	isort --check-only --diff splight_cli/
+
+check_ruff:
+	ruff format --check --diff splight_cli/
+
+check_format: check_ruff check_isort 
