@@ -115,7 +115,7 @@ class ResourceManager:
         instance.save()
 
         table = Table(
-            title=f"{self._resource_name} = {getattr(instance,'name', '')}",
+            title=f"{self._resource_name} = {getattr(instance, 'name', '')}",
             show_header=False,
         )
         _ = [
