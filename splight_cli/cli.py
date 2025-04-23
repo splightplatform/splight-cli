@@ -7,7 +7,6 @@ from splight_lib.settings import workspace_settings
 from splight_cli.component import component_app
 from splight_cli.config import config_app
 from splight_cli.engine import engine_app
-from splight_cli.hub import hub_app
 from splight_cli.version import __version__
 from splight_cli.workspace import workspace_app
 
@@ -24,7 +23,6 @@ app = typer.Typer(
 app.add_typer(config_app, name="configure")
 app.add_typer(component_app, name="component")
 app.add_typer(engine_app, name="engine")
-app.add_typer(hub_app, name="hub")
 app.add_typer(workspace_app, name="workspace")
 
 
