@@ -11,18 +11,16 @@ from rich.table import Table
 from splight_lib.models import (
     Component,
     ComponentObject,
+    DataAddress,
     File,
     HubComponent,
-    RoutineObject,
-)
-from splight_lib.models.component import (
-    DataAddress,
     InputDataAddress,
     InputParameter,
     Parameter,
+    RoutineObject,
+    SplightDatabaseBaseModel,
+    SplightDatalakeBaseModel,
 )
-from splight_lib.models.database_base import SplightDatabaseBaseModel
-from splight_lib.models.datalake_base import SplightDatalakeBaseModel
 
 from splight_cli.component.exceptions import InvalidCSVColumns
 from splight_cli.constants import (
