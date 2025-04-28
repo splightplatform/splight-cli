@@ -12,7 +12,7 @@ dependencies = [
     "click (==8.0.4)",
     "click-default-group (==1.2.2)",
     "setuptools (==70.0.0)",
-    "splight-lib (>=5.18.2,<6.0.0)",
+    "splight-lib (>=5.18.3,<6.0.0)",
     "py7zr (==0.20.8)",
     "typer (==0.15.1)",
     "colorama (==0.4.4)",
