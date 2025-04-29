@@ -15,8 +15,6 @@
   - [Commands](#commands)
     - [Component](#component)
     - [Configure](#configure)
-    - [Hub](#hub)
-      - [Component](#component-1)
     - [Engine](#engine)
     - [Workspace](#workspace)
   - [Developing Components](#developing-components)
@@ -202,11 +200,6 @@ In the same way you can modify one parameter using the `set` command
 ```bash
 splight configure set <parameter> <value>
 ```
-
-### Hub
-
-This command allows you to interact with the Splight HUB, places where you can find all the
-existing components that can be used in the platform.
 
 #### Component
 

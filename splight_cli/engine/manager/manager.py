@@ -34,7 +34,6 @@ from splight_cli.engine.manager.exceptions import (
     UpdateParametersError,
     VersionUpdateError,
 )
-from splight_cli.hub.component.exceptions import HubComponentNotFound
 from splight_cli.utils.input import prompt_data_address_value, prompt_param
 
 SplightModel = Type[SplightDatabaseBaseModel]
