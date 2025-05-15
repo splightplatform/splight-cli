@@ -30,6 +30,7 @@ from splight_cli.constants import (
 )
 from splight_cli.engine.manager.exceptions import (
     ComponentCreateError,
+    HubComponentNotFound,
     InvalidComponentId,
     UpdateParametersError,
     VersionUpdateError,
