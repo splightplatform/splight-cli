@@ -1,6 +1,6 @@
 [project]
 name = "splight-cli"
-version = "5.5.2"
+version = "5.5.3"
 description = "Splight Command Line Interface"
 authors = [
     {name = "Splight Dev",email = "dev@splight-ae.com"}
@@ -12,7 +12,7 @@ dependencies = [
     "click (==8.0.4)",
     "click-default-group (==1.2.2)",
     "setuptools (==80.7.1)",
-    "splight-lib (>=5.18.3,<6.0.0)",
+    "splight-lib (>=5.19.8,<6.0.0)",
     "py7zr (==0.20.8)",
     "typer (==0.15.1)",
     "colorama (==0.4.4)",
