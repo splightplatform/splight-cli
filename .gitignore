@@ -55,3 +55,6 @@ Thumbs.db
 
 # Cov report
 .coverage
+
+# Mise
+mise.toml
