@@ -1,6 +1,6 @@
 [project]
 name = "splight-cli"
-version = "5.5.2"
+version = "5.5.3"
 description = "Splight Command Line Interface"
 authors = [
     {name = "Splight Dev",email = "dev@splight-ae.com"}
