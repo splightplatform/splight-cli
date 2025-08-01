@@ -47,6 +47,7 @@ build-backend = "hatchling.build"
 
 [tool.black]
 line-length = 79
+force-exclude = ".*/component/templates/.*py"
 
 [tool.isort]
 profile = "black"
@@ -91,6 +92,7 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "*/component/templates/*",
 ]
 
 # Same as Black.
