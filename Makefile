@@ -28,33 +28,23 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 
 update-version:
-	poetry version $(scope)
+	uv version --bump=$(scope)
 
 test: ## run tests with pytest
-	pytest splight_cli
+	uv run pytest splight_cli/
 
-coverage: ## run coverage
-	coverage run --source=. -m pytest; coverage html
-	open htmlcov/index.html
+install:
+	uv sync --all-extras
 
-install: clean ## install the package to the active Python's site-packages
-	pip install -e ".[dev]"
-	pre-commit install
-
-black: ## run black formatter
-	black .
+install-dev:
+	uv sync --all-extras --dev
 
 isort: ## run isort formatter
-	isort .
+	uv run isort .
 
-format: 
-	isort splight_cli/
-	ruff format splight_cli/
 
-check_isort:
-	isort --check-only --diff splight_cli/
+format: install-dev
+	uv run pre-commit run --all-files
 
-check_ruff:
-	ruff format --check --diff splight_cli/
-
-check_format: check_ruff check_isort 
+check-format: install-dev
+	uv run pre-commit run --all-files

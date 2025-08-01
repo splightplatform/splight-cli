@@ -662,9 +662,6 @@ class ComponentUpgradeManager:
             new_hub_version = f"{hub_component.name}-{hub_component.version}"
             from_component.version = new_hub_version
             from_component.save()
-            self._create_component_objects(
-                from_component, hub_component, create_new=False
-            )
             self._create_component_routines(
                 from_component, hub_component, create_new=False
             )
@@ -693,9 +690,6 @@ class ComponentUpgradeManager:
             )
             new_component = self._create_new_component(
                 from_component, hub_component, new_inputs
-            )
-            self._create_component_objects(
-                new_component, hub_component, create_new=True
             )
             self._create_component_routines(
                 new_component, hub_component, create_new=True

@@ -1,48 +1,49 @@
 [project]
 name = "splight-cli"
-version = "5.5.3"
+version = "5.6.0"
 description = "Splight Command Line Interface"
+readme = "README.md"
 authors = [
     {name = "Splight Dev",email = "dev@splight-ae.com"}
 ]
-readme = "README.md"
 requires-python = ">=3.11,<4.0.0"
 dependencies = [
-    "case-converter (==1.1.0)",
-    "click (==8.0.4)",
-    "click-default-group (==1.2.2)",
-    "setuptools (==80.7.1)",
-    "splight-lib (>=5.19.8,<6.0.0)",
-    "py7zr (==0.20.8)",
-    "typer (==0.15.1)",
-    "colorama (==0.4.4)",
-    "requests (==2.32.2)",
-    "pyyaml (==6.0.1)",
-    "rich (==13.0.1)",
-    "pathspec (==0.11.1)",
-    "packaging (==23.0)",
-    "toposort (>=1.10,<2.0)",
-    "docker (==7.1.0)"
+    "case-converter==1.1.0",
+    "click==8.0.4",
+    "click-default-group==1.2.2",
+    "colorama==0.4.4",
+    "packaging==23.0",
+    "pathspec==0.11.1",
+    "py7zr==0.20.8",
+    "pyyaml==6.0.1",
+    "requests==2.32.2",
+    "rich==13.0.1",
+    "setuptools==80.7.1",
+    "splight-lib>=5.21.0",
+    "toposort>=1.10,<2.0",
+    "typer==0.15.1",
 ]
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "black==24.3.0",
+    "coverage>=7.3.2",
+    "flake8>=6.1.0",
+    "ipdb>=0.13.13",
+    "ipython==8.12.2",
+    "isort==5.12.0",
+    "mock>=5.1.0",
+    "pre-commit==3.2.2",
+    "pytest>=7.4.3",
+    "ruff==0.9.1",
+]
 
 [project.scripts]
 splight = "splight_cli.cli:app"
 
-[tool.poetry.group.dev.dependencies]
-black = "24.3.0"
-isort = "5.12.0"
-ipdb = "^0.13.13"
-ipython = "8.12.2"
-flake8 = "^6.1.0"
-pre-commit = "3.2.2"
-pytest = "^7.4.3"
-coverage = "^7.3.2"
-mock = "^5.1.0"
-ruff = "0.9.1"
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.black]
 line-length = 79
@@ -51,10 +52,6 @@ force-exclude = ".*/component/templates/.*py"
 [tool.isort]
 profile = "black"
 line_length = 79
-
-[tool.ruff]
-line-length = 79
-exclude = ["*/component/templates/*"]
 
 [tool.pytest.ini_options]
 filterwarnings = [
@@ -66,7 +63,55 @@ filterwarnings = [
     "ignore::pytest.PytestAssertRewriteWarning",
 ]
 
-[tool.coverage.run]
-omit = [
-    "*/tests/*",
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    "*/component/templates/*",
 ]
+
+# Same as Black.
+line-length = 79
+indent-width = 4
+
+target-version = "py311"
+
+extend-select = ["F", "I"]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
