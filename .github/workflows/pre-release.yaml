@@ -44,30 +44,36 @@ jobs:
         with:
           ref: master
 
-      - name: Get version from master branch
-        run: |
-          if [ -f "setup.py" ]; then
-            echo "MASTER_VERSION=$(grep -E 'version' splight_cli/version.py | awk -F'\"' '{ print $2 }')" >> "$GITHUB_ENV"
-          else
-            echo "MASTER_VERSION=$(grep version pyproject.toml | awk '{print $3}' | tr -d '\"')" >> "$GITHUB_ENV"
-          fi
-
-      # get current branch version
-      - name: Checkout to feature branch
-        uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: "3.11"
 
       - name: Get version from feature branch
-        run: |
-          if [ -f "setup.py" ]; then
-            echo "CURRENT_VERSION=$(grep -E 'version' cli/version.py | awk -F'\"' '{ print $2 }')" >> "$GITHUB_ENV"
-          else
-            echo "CURRENT_VERSION=$(grep version pyproject.toml | awk '{print $3}' | tr -d '\"')" >> "$GITHUB_ENV"
-          fi
+        run: echo "MASTER_VERSION=$(grep version pyproject.toml | awk '{print $3}' | tr -d '\"')" >> "$GITHUB_ENV"
+
+      # - name: Get version from master branch
+      #   run: |
+      #     if [ -f "setup.py" ]; then
+      #       echo "MASTER_VERSION=$(grep -E 'version' splight_cli/version.py | awk -F'\"' '{ print $2 }')" >> "$GITHUB_ENV"
+      #     else
+      #       echo "MASTER_VERSION=$(grep version pyproject.toml | awk '{print $3}' | tr -d '\"')" >> "$GITHUB_ENV"
+      #     fi
+
+      # get current branch version
+      - name: Checkout to feature branch
+        uses: actions/checkout@v3
+
+      - name: Get version from feature branch
+        run: echo "CURRENT_VERSION=$(grep version pyproject.toml | awk '{print $3}' | tr -d '\"')" >> "$GITHUB_ENV"
+
+      # - name: Get version from feature branch
+      #   run: |
+      #     if [ -f "setup.py" ]; then
+      #       echo "CURRENT_VERSION=$(grep -E 'version' cli/version.py | awk -F'\"' '{ print $2 }')" >> "$GITHUB_ENV"
+      #     else
+      #       echo "CURRENT_VERSION=$(grep version pyproject.toml | awk '{print $3}' | tr -d '\"')" >> "$GITHUB_ENV"
+      #     fi
 
       # validate versions
       - name: Verify version is a valid release version
