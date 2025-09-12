@@ -8,28 +8,40 @@ import click
 Primitive = Union[int, str, float, bool]
 
 
-def prompt_data_address_value():
-    while True:
-        asset_id = click.prompt(
-            text="Asset ID",
-            type=str,
-            default=None,
-        )
-        if asset_id:
-            break
-        else:
-            click.echo("Asset ID cannot be empty. Please try again.")
+def prompt_data_address_value(required: bool = False):
+    asset_has_input = False
+    asset_id = attribute_id = None
 
-    while True:
-        attribute_id = click.prompt(
-            text="Attribute ID",
-            type=str,
-            default=None,
-        )
-        if attribute_id:
-            break
-        else:
-            click.echo("Attribute ID cannot be empty. Please try again.")
+    asset_id = click.prompt(
+        text="Asset ID",
+        type=str,
+        default=None,
+    )
+    if asset_id:
+        asset_has_input = True
+
+    if required:
+        while not asset_has_input:
+            click.echo("Asset ID cannot be empty. Please try again.")
+            asset_id = click.prompt(
+                text="Asset ID",
+                type=str,
+                default=None,
+            )
+            if asset_id:
+                asset_has_input = True
+
+    if asset_has_input:
+        while True:
+            attribute_id = click.prompt(
+                text="Attribute ID",
+                type=str,
+                default=None,
+            )
+            if attribute_id:
+                break
+            else:
+                click.echo("Attribute ID cannot be empty. Please try again.")
 
     return {"asset": asset_id, "attribute": attribute_id}
 

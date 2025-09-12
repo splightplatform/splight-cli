@@ -338,7 +338,9 @@ class ComponentUpgradeManager:
                         self._console.print(
                             f"Insert values for {source} '{name[0]}' of routine '{routine_name}' ({routine_type}):"
                         )
-                        new_value = prompt_data_address_value()
+                        new_value = prompt_data_address_value(
+                            hub_data_address["required"]
+                        )
                         hub_data_address["value"] = new_value
                     result.append(InputDataAddress(**hub_data_address))
                 except Exception as e:
@@ -562,7 +564,6 @@ class ComponentUpgradeManager:
             f"Creating routines for component '{new_component.name}'"
         )
         routines = RoutineObject.list(component_id=self.component_id)
-
         for routine in routines:
             try:
                 matching_routine = next(
