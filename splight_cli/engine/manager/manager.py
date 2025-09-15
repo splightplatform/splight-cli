@@ -342,7 +342,7 @@ class ComponentUpgradeManager:
                             hub_data_address["required"]
                         )
                         hub_data_address["value"] = new_value
-                        result.append(InputDataAddress(**hub_data_address))
+                    result.append(InputDataAddress(**hub_data_address))
                 except Exception as e:
                     raise UpdateParametersError(
                         hub_data_address, step, "Failed Updating Input"
