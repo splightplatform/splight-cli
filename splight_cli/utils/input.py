@@ -8,27 +8,31 @@ import click
 Primitive = Union[int, str, float, bool]
 
 
-def prompt_data_address_value():
-    while True:
-        asset_id = click.prompt(
-            text="Asset ID",
-            type=str,
-            default=None,
+def prompt_data_address_value(required: bool = False):
+    if not required:
+        fill_value = click.prompt(
+            text="Do you want to set a value? [y/n]",
+            default="n",
+            type=bool,
+            show_default=False,
         )
-        if asset_id:
-            break
-        else:
-            click.echo("Asset ID cannot be empty. Please try again.")
+        if not fill_value:
+            return
 
     while True:
-        attribute_id = click.prompt(
-            text="Attribute ID",
-            type=str,
-            default=None,
-        )
-        if attribute_id:
+        asset_id = click.prompt(text="Asset ID", type=str, default=None)
+        if asset_id:
             break
-        else:
+        click.echo("Asset ID cannot be empty. Please try again.")
+
+    attribute_id = None
+    if asset_id:
+        while True:
+            attribute_id = click.prompt(
+                text="Attribute ID", type=str, default=None
+            )
+            if attribute_id:
+                break
             click.echo("Attribute ID cannot be empty. Please try again.")
 
     return {"asset": asset_id, "attribute": attribute_id}
