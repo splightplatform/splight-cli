@@ -9,9 +9,19 @@ Primitive = Union[int, str, float, bool]
 
 
 def prompt_data_address_value(required: bool = False):
+    if not required:
+        fill_value = click.prompt(
+            text="Do you want to set a value? [y/n]",
+            default="n",
+            type=bool,
+            show_default=False,
+        )
+        if not fill_value:
+            return
+
     while True:
         asset_id = click.prompt(text="Asset ID", type=str, default=None)
-        if asset_id or not required:
+        if asset_id:
             break
         click.echo("Asset ID cannot be empty. Please try again.")
 
