@@ -331,23 +331,22 @@ class ComponentUpgradeManager:
 
         # Ask for a missing InputDataAddress
         for name in hub_data_addresses.keys():
-            # if name not in engine_data_addresses.keys():
-            hub_data_address = hub_data_addresses[name]
-            try:
-                # if "value" not in hub_data_address.keys():
-                print("testing")
-                self._console.print(
-                    f"Insert values for {source} '{name[0]}' of routine '{routine_name}' ({routine_type}):"
-                )
-                new_value = prompt_data_address_value(
-                    hub_data_address["required"]
-                )
-                hub_data_address["value"] = new_value
-                result.append(InputDataAddress(**hub_data_address))
-            except Exception as e:
-                raise UpdateParametersError(
-                    hub_data_address, step, "Failed Updating Input"
-                ) from e
+            if name not in engine_data_addresses.keys():
+                hub_data_address = hub_data_addresses[name]
+                try:
+                    if "value" not in hub_data_address.keys():
+                        self._console.print(
+                            f"Insert values for {source} '{name[0]}' of routine '{routine_name}' ({routine_type}):"
+                        )
+                        new_value = prompt_data_address_value(
+                            hub_data_address["required"]
+                        )
+                        hub_data_address["value"] = new_value
+                        result.append(InputDataAddress(**hub_data_address))
+                except Exception as e:
+                    raise UpdateParametersError(
+                        hub_data_address, step, "Failed Updating Input"
+                    ) from e
         return result
 
     def _update_input(
