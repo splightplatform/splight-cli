@@ -16,7 +16,7 @@ dependencies = [
     "pathspec==0.11.1",
     "py7zr==0.20.8",
     "pyyaml==6.0.1",
-    "requests==2.32.2",
+    "requests==2.32.4",
     "rich==13.0.1",
     "setuptools==80.7.1",
     "splight-lib>=5.21.0",
