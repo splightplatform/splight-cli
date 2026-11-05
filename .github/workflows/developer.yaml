@@ -94,7 +94,7 @@ jobs:
           fi
 
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+        uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086
         if: ${{ env.PUBLISH_PACKAGE == 'true' }}
         with:
           user: __token__
