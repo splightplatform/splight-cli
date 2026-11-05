@@ -1,6 +1,6 @@
 [project]
 name = "splight-cli"
-version = "5.6.3"
+version = "5.6.4"
 description = "Splight Command Line Interface"
 readme = "README.md"
 authors = [
@@ -12,13 +12,13 @@ dependencies = [
     "click==8.0.4",
     "click-default-group==1.2.2",
     "colorama==0.4.4",
-    "packaging==23.0",
+    "packaging>=23.0",
     "pathspec>=0.11.1",
     "py7zr>=0.20.8",
     "pyyaml==6.0.1",
     "requests==2.33.0",
     "rich==13.0.1",
-    "setuptools>=80.7.1",
+    "setuptools>=84.1.0",
     "splight-lib>=5.21.0",
     "toposort>=1.10,<2.0",
     "typer==0.15.1",
@@ -39,9 +39,13 @@ constraint-dependencies = [
     # https://github.com/splightplatform/splight-cli/security/dependabot/73
     "cryptography>=50.0.0",
     # https://github.com/splightplatform/splight-cli/security/dependabot/82
-    "virtualenv>=21.7.12",
+    "virtualenv>=21.14.8",
     # https://github.com/splightplatform/splight-cli/security/dependabot/102
     "dnspython>=2.9.0",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/62
+    "idna>=3.15",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/58
+    "Pygments>=2.20.0",
 ]
 
 [dependency-groups]
