@@ -13,20 +13,40 @@ dependencies = [
     "click-default-group==1.2.2",
     "colorama==0.4.4",
     "packaging==23.0",
-    "pathspec==0.11.1",
-    "py7zr==0.20.8",
+    "pathspec>=0.11.1",
+    "py7zr>=0.20.8",
     "pyyaml==6.0.1",
     "requests==2.33.0",
     "rich==13.0.1",
-    "setuptools==80.7.1",
+    "setuptools>=80.7.1",
     "splight-lib>=5.21.0",
     "toposort>=1.10,<2.0",
     "typer==0.15.1",
 ]
 
+[tool.uv]
+constraint-dependencies = [
+    # https://splight.atlassian.net/browse/SECUR-794
+    "certifi>=v2026.10.19",
+    # https://splight.atlassian.net/browse/SECUR-793
+    "urllib3>=2.8.0",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/72
+    "anyio>=4.14.2",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/92
+    "brotlicffi>=1.2.1.0",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/91
+    "brotli>=1.2.1",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/73
+    "cryptography>=50.0.0",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/82
+    "virtualenv>=21.7.12",
+    # https://github.com/splightplatform/splight-cli/security/dependabot/102
+    "dnspython>=2.9.0",
+]
+
 [dependency-groups]
 dev = [
-    "black==24.3.0",
+    "black>=26.3.1",
     "coverage>=7.3.2",
     "flake8>=6.1.0",
     "ipdb>=0.13.13",
